@@ -1,0 +1,10 @@
+id: live_room_relay
+status: ratified
+scope: relay_only_agents
+summary: Live-room relay behavior for agents that cannot create, join, or monitor live rooms.
+bucket: B_outcome_plus_bounds
+rules:
+  - If the agent lacks live-room access, it may provide Jason a ready-to-use room-start prompt for an agent that can create or join the room.
+  - Relay-only room-start text should name the intended room purpose, participants or target agent roles, decision owner, required source material, and any expected durable closeout.
+  - A relay-only agent must not imply that it has joined, monitored, or closed a live room.
+  - If a relay exchange becomes repeated back-and-forth or clearly needs live coordination, surface that immediately.

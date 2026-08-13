@@ -1,0 +1,12 @@
+id: outbound_correspondence
+status: ratified
+scope: outbound_correspondence_work
+summary: Style and boundary rules for text Jason may send or publish externally.
+bucket: B_outcome_plus_bounds
+rules:
+  - Load this policy when drafting, editing, or reviewing outbound correspondence or text Jason may send, submit, post, publish, or place in an external form.
+  - Jason's punctuation screen binds outbound correspondence and anything Jason will send out.
+  - Under Jason's punctuation screen, do not use em dashes or hyphens as punctuation.
+  - Under Jason's punctuation screen, use at most one semicolon.
+  - Jason's punctuation screen does not bind internal notes or documents authored by the agent inside a workspace unless Jason says otherwise.
+  - Apply the outbound external communication hard invariant before any send, submit, post, transmit, or external publish action.

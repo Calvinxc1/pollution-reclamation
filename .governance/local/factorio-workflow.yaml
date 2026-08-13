@@ -1,0 +1,99 @@
+schema: factorio_local_workflow
+schema_version: 1
+mod_name: pollution-reclamation
+canonical_agent_name: Pollution Reclamation Factorio Modding Agent
+workspace_path: /home/jcherry/Documents/git/factorio-mods/k2-air-purifier-recycled
+metadata_path: src/info.json
+ownership_model: independent_continuation
+upstream_or_fork_source: >
+  Reconstructed from the released KrastorioAirPurifier 1.2.2 by Tarckmhog (mod portal listing,
+  no public source repository or other contact channel found). KrastorioAirPurifier itself ports
+  the air purifier from Krastorio 2 by raiguard, Krastor, and Linver. Continued independently
+  under a new name and namespace because the original mod name is unavailable to publish under.
+namespace_prefixes:
+  - pr_
+  - __pollution-reclamation__/
+dependency_stack:
+  - base >= 2.1.0
+optional_dependencies:
+  - space-age
+incompatible_mods:
+  - air-filtering
+  - Krastorio2
+scope_boundaries:
+  - Owns the air purifier building, pollution filter items, filter recipes, filter restoration, and air purification technologies.
+  - Keep this repository focused on air/pollution filtering. Keep unrelated gameplay systems out unless Jason explicitly approves a scope expansion.
+release_target: Factorio 2.1 mod releases. Space Age is optional, not required.
+internal_gitflow_stage: full_gitflow
+branch_roles:
+  main: Release branch. Main validates on every push and publishes only when src/info.json version changes or public release recovery is needed.
+  dev: Long-lived integration branch for completed feature work.
+  feature: Short-lived feature/* branches created from dev and merged back to dev.
+  release: Short-lived release/* branches created from dev and merged to main.
+  hotfix: Short-lived hotfix/* branches created from main for urgent release-line fixes.
+release_promotion_path: dev -> release/<version-or-purpose> -> main -> dev
+feature_branching_enabled: true
+release_branching_enabled: true
+main_branch_protection:
+  enabled: false
+  notes: Not yet configured on the Gitea side; branch protection parity with the other family repos is still pending.
+feature_branch_base_requirements:
+  required_base: dev
+  pre_pr_verification:
+    - Fetch origin before opening a feature pull request.
+    - Verify the feature branch merge-base is origin/dev, not another feature branch.
+    - Verify the pull request base branch is dev.
+  required_commands:
+    - git fetch origin dev
+    - test "$(git merge-base HEAD origin/dev)" = "$(git rev-parse origin/dev)"
+    - confirm the pull request target/base branch is dev before creating or updating it.
+hotfix_flow:
+  enabled: true
+  branch_pattern: hotfix/<version-or-topic>
+  sync_requirements:
+    - Merge or cherry-pick hotfix results back to dev after main receives the fix.
+    - Evaluate any active release branch for the same fix before closing the hotfix.
+post_release_main_to_dev_sync:
+  required: true
+  mechanism: Manual merge or fast-forward from main back into dev unless validated automation is added later.
+  automation_validated: false
+  failure_owner: Jason or the acting release agent.
+ci_cd_release_gates:
+  validation: Pull-request CI validates release branches into main; main push workflow validates main.
+  packaging: Main push workflow packages only when release publication is enabled.
+  publishing: Main push workflow publishes Gitea and GitHub releases on src/info.json version bumps. Factorio Mod Portal upload and Discord announcement are not wired in yet; see docs/release-process.md.
+  post_release_sync: Manual; no validated automation currently records main-to-dev sync.
+changelog_process:
+  format: Factorio mod portal changelog in src/changelog.txt.
+  pending_notes_mechanism: Merge summary must state no player-visible release impact or name the intended changelog bullet/category until a dedicated pending-notes mechanism exists.
+  top_version_must_match_metadata: true
+validation_available:
+  json: true
+  lua_syntax: true
+  lint: false
+  format: false
+  factorio_load: true
+declared_deviations:
+  - Post-release main-to-dev sync is manual until automation is implemented and validated.
+  - GitHub mirror repository Calvinxc1/pollution-reclamation does not exist yet; create it before the deploy workflow's GitHub release step can succeed.
+  - Factorio Mod Portal upload and Discord release announcement are not wired into deploy.yml yet. KrastorioAirPurifier is already taken on the portal, so this mod needs its own listing before that step is meaningful.
+  - main branch protection is not yet enabled on Gitea for this repository, unlike advanced-fluid-infrastructure.
+workspace_specific_rules:
+  - Start ordinary implementation branches from dev as feature/<topic>.
+  - Before opening or updating a feature pull request, verify the branch descends directly from origin/dev and the pull request base is dev.
+  - Merge feature branches back to dev after review and validation.
+  - Cut release branches from dev as release/<version-or-purpose>.
+  - Merge release branches to main, then sync main back to dev before starting new ordinary feature work.
+  - Do not open recurring dev-to-main pull requests.
+  - Do not publish, tag, upload, or create release artifacts outside explicit release work.
+migration_notes:
+  - Full GitFlow, governance, CI, and release automation were instantiated on 2026-08-13 to bring this repository to parity with advanced-energy-grid, advanced-fluid-infrastructure, and advanced-power-infrastructure, at Jason's request.
+  - Repository was previously an uncommitted reconstruction of the released KrastorioAirPurifier 1.2.2 mod with no CI, governance, or release automation.
+  - Renamed from KrastorioAirPurifier to Pollution Reclamation (slug pollution-reclamation) because the original name is already published on the Factorio Mod Portal by a different author with no reachable contact channel.
+last_stage_reviewed_at: 2026-08-13T00:00:00-07:00
+known_gaps:
+  - Post-release main-to-dev sync is manual until automation is implemented and validated.
+  - GitHub mirror repository does not exist yet.
+  - Factorio Mod Portal listing does not exist yet.
+  - main branch protection is not yet enabled.
+notes: This local workflow file is the repo-specific source of truth for GitFlow stage and branch roles.

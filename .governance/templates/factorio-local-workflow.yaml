@@ -1,0 +1,60 @@
+schema: factorio_local_workflow
+schema_version: 1
+mod_name: null
+canonical_agent_name: null
+workspace_path: null
+metadata_path: null
+ownership_model: null
+upstream_or_fork_source: null
+namespace_prefixes: []
+dependency_stack: []
+optional_dependencies: []
+scope_boundaries: []
+release_target: null
+internal_gitflow_stage: null
+branch_roles:
+  main: null
+  dev: null
+  feature: null
+  release: null
+  hotfix: null
+release_promotion_path: null
+feature_branching_enabled: null
+release_branching_enabled: null
+main_branch_protection:
+  enabled: null
+  notes: null
+hotfix_flow:
+  enabled: null
+  branch_pattern: null
+  sync_requirements: []
+post_release_main_to_dev_sync:
+  required: null
+  mechanism: null
+  automation_validated: null
+  failure_owner: null
+ci_cd_release_gates:
+  validation: null
+  packaging: null
+  publishing: null
+  post_release_sync: null
+changelog_process:
+  format: null
+  pending_notes_mechanism: null
+  top_version_must_match_metadata: null
+validation_available:
+  json: null
+  lua_syntax: null
+  lint: null
+  format: null
+  factorio_load: null
+declared_deviations: []
+workspace_specific_rules: []
+migration_notes: []
+last_stage_reviewed_at: null
+known_gaps: []
+notes: >-
+  Copy this scaffold into the workspace's `.governance/local/` tree, commonly
+  as `.governance/local/factorio-workflow.yaml`, and load that local file
+  through `.governance/local/index.yaml`. The copied local file is the
+  repo-specific source of truth. Do not put secrets or credentials here.

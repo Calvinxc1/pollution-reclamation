@@ -1,0 +1,41 @@
+id: hard_invariant_index
+status: ratified
+scope: all_agents
+summary: Tiny always-loaded routing index for guarded domains whose full Bucket A invariant bodies load only when relevant.
+bucket: A_hard_invariants
+rules:
+  - Load the full hard-invariant register through the `guarded_domain_action` route when an intended action touches any guarded domain below.
+  - If unsure whether an action touches a guarded domain, load the full register and classify the risk higher.
+  - Every hard invariant in the full register must have an entry in this index.
+  - This index is a surfacing aid; capability removal, server-side guards, and repo-carried checks remain the reliable enforcement substrate.
+guarded_domains:
+  - id: secrets_committed_or_pushed
+    domain: Secrets, tokens, credentials, or keys in committed or pushed files.
+    full_policy: .governance/policies/hard-invariants.yaml
+  - id: owner_controlled_data_boundary
+    domain: Lab content, secrets, third-party or cloud transmission, and plaintext secret logging.
+    full_policy: .governance/policies/hard-invariants.yaml
+  - id: financial_operations
+    domain: Money movement, bill pay, purchases, trading, banking, or any financial operation.
+    full_policy: .governance/policies/hard-invariants.yaml
+  - id: outbound_external_communication
+    domain: Sending, submitting, posting, transmitting, or externally publishing communication or form content.
+    full_policy: .governance/policies/hard-invariants.yaml
+  - id: gmail_read_only
+    domain: Gmail search, read, message mutation, thread mutation, label, archive, trash, spam, draft, or send behavior.
+    full_policy: .governance/policies/hard-invariants.yaml
+  - id: impersonation
+    domain: Acting as Jason, speaking as Jason, signing as Jason, or presenting agent output as Jason's own action.
+    full_policy: .governance/policies/hard-invariants.yaml
+  - id: data_destruction_and_protective_controls
+    domain: Deleting, overwriting, weakening retention, object lock, branch protection, 2FA, backup, or other protective controls.
+    full_policy: .governance/policies/hard-invariants.yaml
+  - id: sanctioned_change_channels
+    domain: Mutating cluster components, deployment paths, GitOps-managed state, or other systems with a required system-of-record channel.
+    full_policy: .governance/policies/hard-invariants.yaml
+  - id: runtime_surface_authority
+    domain: Granting production or protected mutation authority to a runtime surface without tested gates or capability removal.
+    full_policy: .governance/policies/hard-invariants.yaml
+  - id: governance_integrity
+    domain: Editing canon, changing policy process, weakening a never, or tuning down a hard invariant.
+    full_policy: .governance/policies/hard-invariants.yaml

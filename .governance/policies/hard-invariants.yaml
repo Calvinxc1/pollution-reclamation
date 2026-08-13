@@ -1,0 +1,80 @@
+id: hard_invariants
+status: ratified
+scope: all_agents
+summary: Context-loaded Bucket A hard-invariant register for guarded domains.
+bucket: A_hard_invariants
+status_values:
+  capability_enforced: The primary control is capability absence or removal.
+  guard_enforced: The primary control is a server-side or repo-carried guard where installed.
+  approval_gate: The invariant can proceed only through direct per-instance Jason approval.
+  mixed_with_residual: Some enforcement exists, but meaningful residual risk remains.
+  prose_only_tracked_debt: No reliable hard gate currently exists; the residual is accepted only as tracked governance debt.
+rules:
+  - Do not weaken, remove, or tune down a hard invariant without Jason's explicit ratification.
+  - Push each hard invariant as high up the enforcement ladder as feasible before relying on prose.
+  - Treat a prose-only hard invariant as governance debt, not as an adequate recurring control.
+  - Keep this register reachable from `.governance/policies/hard-invariant-index.yaml`.
+invariants:
+  - id: secrets_committed_or_pushed
+    status: guard_enforced
+    invariant: Never write secrets, tokens, credentials, or keys into a committed or pushed file.
+    enforcement_point: Pre-receive secret scanning where installed.
+    fallback: Prose rule and pre-commit human or agent review where scanning is absent.
+    residual_risk: Repositories without pre-receive secret scanning can still accept a secret if agent and human review miss it.
+  - id: owner_controlled_data_boundary
+    status: mixed_with_residual
+    invariant: Never transmit lab content or secrets to a third party or cloud outside the owner-controlled boundary, and never log secrets in plaintext.
+    enforcement_point: Least-privilege credential scoping plus content-free cloud boundary patterns where implemented.
+    fallback: Prose rule, redaction, and connector scope review.
+    residual_risk: An agent holding a broad credential or broad connector can still cross the boundary if no substrate guard blocks it.
+  - id: financial_operations
+    status: capability_enforced
+    invariant: An agent never executes any financial operation of any kind; it may only recommend because financial action remains a human decision.
+    enforcement_point: Capability removal by withholding money-moving credentials from agent-reachable places.
+    fallback: Prose rule if a financial credential is ever exposed before capability removal is restored.
+    residual_risk: Low while no agent-reachable money-moving credential exists; any future bill-pay-capable bank credential would reopen the risk until removed or mediated.
+  - id: outbound_external_communication
+    status: approval_gate
+    invariant: Never send outbound external communication without Jason's direct and explicit per-instance approval.
+    enforcement_point: Procedural approval gate before send, submit, post, transmit, or external publish actions.
+    fallback: Capability removal or read-only connector scope where available.
+    residual_risk: Depends on approval discipline and on whether the connector exposes mutation tools.
+  - id: gmail_read_only
+    status: capability_enforced
+    invariant: Gmail access is strictly read-only; agents search and read only and never create, send, draft, label, archive, move, trash, mark spam, or delete in Gmail.
+    enforcement_point: Desktop-orchestrator Gmail connector write tools for trash and spam were removed on 2026-07-10; PyCharm chat agents have no Gmail access.
+    fallback: Prose rule and connector capability verification if a Gmail surface changes.
+    residual_risk: Near zero while the connector remains read-only; watch for future connector updates that reintroduce write tools.
+  - id: impersonation
+    status: mixed_with_residual
+    invariant: Never impersonate Jason or act as him.
+    enforcement_point: Outbound external communication approval gate blocks many practical impersonation paths.
+    fallback: Prose rule and identity review in drafted correspondence or external forms.
+    residual_risk: Prose-dependent for non-outbound contexts or artifacts that could be mistaken for Jason's own action.
+  - id: data_destruction_and_protective_controls
+    status: mixed_with_residual
+    invariant: Never delete or overwrite data without a recoverable path, and never weaken a protective control such as object lock, retention, branch protection, backup protection, or 2FA without Jason's ratification.
+    enforcement_point: Capability removal where feasible; agents should not receive access that can disable immutability or protective controls.
+    fallback: Prose rule, explicit ratification, and recovery-path verification before destructive action.
+    residual_risk: High wherever destructive or protection-disabling access cannot be withheld from a shell-capable or broadly credentialed agent.
+  - id: sanctioned_change_channels
+    status: mixed_with_residual
+    invariant: Never apply an unreviewed change to a cluster component or other governed system outside its sanctioned change channel.
+    enforcement_point: Branch protection and GitOps enforce the GitOps path where the component is governed through those controls.
+    fallback: Prose rule requiring read-only inspection over raw mutation paths unless Jason explicitly authorizes a named bypass.
+    residual_risk: Real deployment-agent-local governance debt remains where shell-capable agents can use raw `kubectl apply` or equivalent mutation paths outside the sanctioned channel.
+    tracked_debt: Deployment-agent-local raw cluster mutation remains insufficiently capability-mediated until a hard gate or mediated interface exists.
+  - id: runtime_surface_authority
+    status: mixed_with_residual
+    invariant: Ungated runtime surfaces may not hold production or protected mutation authority.
+    enforcement_point: Capability removal or withholding of mutation-capable connectors, MCP servers, credentials, and skills on ungated surfaces; managed requirements and sandbox gates on behaviorally validated gated surfaces.
+    fallback: If authority cannot be removed, mediated outside the agent, or gated by a tested runtime control, stop and route the decision to Jason before using that surface for protected work.
+    residual_risk: A surface that actually holds mutation capability can still misuse it when no runtime or substrate gate blocks the action; policy text alone is not an adequate recurring control.
+    related_policy: .governance/policies/runtime-surface-adapter.yaml
+  - id: governance_integrity
+    status: capability_enforced
+    invariant: Never edit canon outside the policy maintenance process, and never weaken, remove, or tune down a hard invariant without Jason's ratification.
+    enforcement_point: Capability removal for protected governance pushes where agent tokens cannot push governance branches.
+    fallback: Policy-maintenance preflight, branch protection, and Jason ratification.
+    residual_risk: Low while push capability remains withheld; local unpushed edits still require process discipline and review.
+    note: Request-elicitation aggressiveness may tune downward under its own policy; hard invariants may not.

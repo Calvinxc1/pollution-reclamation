@@ -1,0 +1,42 @@
+id: enforcement_model
+status: ratified
+scope: all_agents
+summary: Enforcement-first governance model for the enforcement-redesign policy line.
+enforcement_buckets:
+  A_hard_invariants:
+    description: Short bright-line rules that protect high-stakes boundaries. When infrastructure can enforce them, name the enforcement point.
+    examples:
+      - No secrets in committed or pushed files.
+      - Do not bypass the required system-of-record mutation path.
+      - Do not force-push or rewrite shared history without explicit authority.
+  B_outcome_plus_bounds:
+    description: Procedure-heavy areas expressed as required outcomes and guardrails, leaving agents to choose the cheapest compliant protocol.
+    examples:
+      - Live-room coordination.
+      - Governance maintenance.
+      - Connector capability handling.
+  C_deliberately_ungoverned:
+    description: Cheap, reversible, low-risk work left to ordinary agent judgment so governance does not consume more effort than the task.
+    examples:
+      - Local reading and summarization.
+      - Low-risk formatting or wording suggestions.
+      - Reversible draft-only exploration.
+rules:
+  - Classify every new or materially changed rule as Bucket A, Bucket B, or Bucket C.
+  - High-stakes recurring failures must not be answered with prose-only rules unless Jason explicitly accepts that residual risk as tracked governance debt.
+  - For Bucket A rules, state the invariant, the enforcement point when one exists, the fallback when it does not, and the residual risk.
+  - For Bucket B rules, state the required outcome, the non-negotiable bounds, and the evidence that demonstrates completion.
+  - For Bucket C work, do not add process requirements merely because a rule could be written.
+  - When a violation recurs, first identify the missing hard gate, cheaper default path, or detector before adding any new prose.
+  - Prose policy remains useful for shared language, diagnosis, and edge cases; it is not by itself a reliable control for recurring high-stakes failures.
+known_enforcement_points:
+  - Branch protection on `main` enforces no direct-push substitution for PR-governed release branches where enabled.
+  - Branch protection on `main` enforces no force-push or shared-history rewrite for protected release branches where enabled.
+  - Pre-receive secret scanning enforces the no-secret commit and push invariant where installed.
+  - Capability removal or withholding enforces invariants when the agent cannot reach a mutation-capable tool, connector, credential, MCP server, or skill.
+  - Kernel sandboxing enforces filesystem and network containment where the runtime surface keeps the sandbox active.
+  - Managed runtime requirements enforce policy only after behavioral testing proves the target surface honors that managed layer.
+  - Runtime hooks or launchers may enforce startup governance-version checks when available.
+known_guardrails:
+  - Execpolicy rules are guardrails against error and drift, not adversarial boundaries, because command matching can be bypassed.
+  - Runtime-injected forced-core instructions improve policy loading reliability but are not enforcement gates.

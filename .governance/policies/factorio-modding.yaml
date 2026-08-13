@@ -1,0 +1,34 @@
+id: factorio_modding
+status: ratified
+scope: factorio_modding_agents
+summary: Factorio mod structure, lifecycle, prototype, dependency, local workflow, and validation rules.
+rules:
+  - Factorio modding agents inherit coding-agent policy and add these Factorio-specific rules.
+  - Treat `info.json` or `src/info.json` as the workspace's mod metadata and dependency source of truth, depending on repo layout.
+  - Keep repo-local Factorio workflow and status facts under `.governance/local/`, loaded through `.governance/local/index.yaml`; governed templates are scaffolds only and are not the repo-specific source of truth.
+  - Distinguish locally developed internal mods from upstream forks or continuations before applying branch, release, or changelog workflow policy.
+  - Apply the internal staged release workflow only to locally developed internal mods unless the workspace's loaded local governance explicitly opts another ownership model into that workflow.
+  - For upstream forks, continuations, or externally sourced mods, require a repo-local process that records upstream source, local authority, branch strategy, changelog policy, release target, and divergence rules before assuming the internal-mod path.
+  - Record long-running deviations from Factorio kind policy in loaded local governance, preferably `.governance/local/deviations.yaml` for durable deviations and a local Factorio workflow/status file for current stage facts.
+  - Local deviation records should state what differs, why it differs, authoritative branches, active and inactive workflow pieces, review timing, and the condition that would retire the deviation.
+  - Keep local Factorio workflow facts for ownership model, namespace, dependency stack, upstream or fork source, scope boundaries, release target, validation availability, Gitflow stage, CI/CD status, branch protection status, hotfix status, changelog process, and migration notes.
+  - Do not hard-code another mod workspace's namespace, dependency stack, balance scope, or upstream URL into branch-level reasoning.
+  - Respect Factorio lifecycle stage boundaries, including settings, data, data-updates, data-final-fixes, control/runtime, and migrations.
+  - Keep lifecycle entrypoints shallow and stage-appropriate; place substantive prototype, compatibility, or runtime logic in modules.
+  - Distinguish data-stage prototype changes from runtime or control-stage changes before editing or reviewing.
+  - Prefer `data:extend` for new prototypes.
+  - Use narrow guarded table mutation for base, dependency, or optional-mod prototypes.
+  - Guard optional dependency access through `mods[...]`, compatibility APIs, prototype existence checks, or local compatibility tables before touching external prototypes.
+  - Preserve prototype names unless an intentional migration or backward-compatibility strategy is part of the task.
+  - Treat upstream API drift, optional dependency drift, nil prototype access, technology or recipe unlock regressions, migration risk, and Factorio version compatibility as first-class review risks.
+  - Keep locale aligned when item, entity, recipe, technology, setting, or user-visible descriptions change.
+  - Do not invent Factorio APIs or mod APIs; inspect local code, local vendored references, upstream references, or official documentation before relying on an API.
+  - Avoid broad global search-and-replace across prototype files unless the target is unambiguous and the blast radius has been checked.
+  - Do not reformat unrelated Lua, locale, JSON, changelog, or documentation files.
+  - Do not write to saves, user data, installed mods, vendored downloaded mods, generated build artifacts, or external mod folders unless Jason explicitly requests it.
+validation:
+  - Validate JSON metadata when touched.
+  - Validate Lua syntax, lint, and formatting when the workspace has configured tools.
+  - Run or recommend a Factorio load check for prototype, dependency, migration, or runtime changes when feasible.
+  - Report what was validated and what could not be launched or load-tested.
+  - Scale validation higher when changes affect dependencies, prototype names, migrations, unlock chains, recipes, technologies, runtime scripts, or compatibility layers.

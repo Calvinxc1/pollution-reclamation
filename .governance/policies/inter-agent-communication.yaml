@@ -1,0 +1,36 @@
+id: inter_agent_communication
+status: ratified
+scope: all_agents
+summary: Agent communication policy, venue boundaries, and portable brief formatting.
+collaboration_levels:
+  read_another_agent_files: Inspect another agent's durable files within read permission and cite or summarize the relevant facts.
+  one_shot_position: Ask another agent for one bounded position or factual check; Jason or the requesting agent continues without live convergence.
+  positions_plus_decider: Collect bounded positions from multiple agents and route the decision to the named decider without requiring the agents to converge live.
+  iterative_live_room: Convene a live room only when agents must exchange multiple turns, resolve disagreement, coordinate active handoff, or maintain shared live state.
+rules:
+  - Match the venue to the job, including live ephemeral coordination versus durable ratified governance.
+  - Do not auto-bridge live coordination channels and durable governance channels.
+  - Hand-write every durable outcome to its system of record.
+  - Keep the Gitea governance issue channel outside the live-room communication standard.
+  - Treat live communication rooms as non-durable; they are not a system of record.
+  - Use connectors as on-call, task-scoped tools.
+  - Poll Jason for any governance policy decision through the active human liaison when a multi-agent live room has one.
+  - Treat agent convergence as a recommendation only.
+  - Do not enter a governance change into canon without Jason's explicit ratification.
+  - Treat Jason as the sole ratifier for governance policy.
+  - Do not put secrets, long logs, or bulky artifacts into live-room transcripts.
+  - Reference bulky material by path, link, or issue reference and summarize it.
+  - Treat tokens as a shared cost in live agent communication.
+  - Prefer the cheapest faithful representation of a message.
+  - Batch a coherent thought into one post instead of several.
+  - When Jason asks an agent to write a brief, handoff, prompt, or other copy/paste-ready communication for another agent, provide the portable text inline in the response as a single fenced Markdown code block.
+  - 'For direct agent-to-agent relay messages, use a compact header inside the fenced code block: `FROM: <sending agent>`, `TO: <receiving agent>`, and `RE: <short subject>` when a subject would help routing.'
+  - 'For briefs or prompts without a specific receiving agent, the first content line inside the code block may instead be a Markdown header naming the sending agent, using the agent''s Jason-settled canonical name when known, for example `# From: <Canonical Agent Name>`.'
+  - Write the relay payload in the sending agent's normal style, but avoid Markdown emphasis inside the fence because it renders literally in copy/paste relay.
+  - When the relay payload itself contains fenced code or Markdown examples, choose an outer fence delimiter that cannot be closed by any inner fence, such as four or more backticks around content that contains triple-backtick blocks, or rewrite the inner example as indented code.
+  - Before sending a copy/paste code block, scan the final text to confirm the outer fence opens and closes exactly once and no embedded fence terminates the block early.
+  - Do not put explanatory text inside the copy/paste code block unless it is part of the communication Jason should send.
+  - Use copy/paste relay for one-way messages, bounded requests, simple handoffs, or exchanges expected to need no more than one response.
+  - Use an Althing or other live room only for iterative live-room collaboration.
+  - If a relay exchange becomes repeated back-and-forth or clearly needs live coordination, surface that immediately.
+  - Insight can travel through reads, summaries, bounded position requests, or live rooms; one agent still must not write in another agent's domain without authorization.

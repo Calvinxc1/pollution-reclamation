@@ -1,0 +1,20 @@
+id: live_room_closeout
+status: ratified
+scope: all_agents
+summary: Outcome and bounds for live-room closeout.
+bucket: B_outcome_plus_bounds
+outcome: Close or suspend rooms so participants and Jason can tell what is done, what remains, who owns it, and whether anyone is still on the hook.
+rules:
+  - A room is not finished unless it has a durable record or an explicit unresolved follow-up owner.
+  - Technical task success is not room closeout by itself.
+  - Participants remain bound to the room until released by name, explicitly suspended with owner and resume trigger, or dismissed by Jason.
+  - A participant that is dismissed by name acknowledges before leaving when the transport permits.
+  - The closer stands down last.
+  - Presence lists may contain stale sessions; closeout depends on room state and participant acknowledgments, not presence alone.
+  - If completion criteria are not met, suspend rather than pretending the room is closed.
+  - For pushed repository work, verify against Gitea or the configured remote when possible; for intentionally local work, verify against the local filesystem.
+completion_evidence:
+  - Final state is closed, suspended, Jason-paused, or cancelled.
+  - Durable record is written or explicit follow-up owner is named.
+  - Each active participant has no open follow-up, has a named follow-up owner, or is logged as an unconfirmed exit.
+  - Source of truth inspected is named when repository or workspace work was involved.

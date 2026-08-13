@@ -1,0 +1,21 @@
+schema: local_governance_status
+schema_version: 1
+canonical_agent_name: null
+agent_kind: null
+active_governance_branch: null
+current_active_canon_version: null
+current_generalized_canon_version: null
+source_repository_or_path: null
+governance_source_branch: null
+governance_source_commit: null
+runtime_surface: null
+runtime_surface_gate_state: null
+granted_capability_authority: null
+repository_trust_state: null
+managed_requirements_state: null
+projection_state: null
+code_authority: null
+last_verified_at: null
+agent_declared_status: unknown
+notes: Replace null values with locally attested governance state. Do not infer unknown
+  values.

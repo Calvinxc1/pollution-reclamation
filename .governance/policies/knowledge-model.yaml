@@ -1,0 +1,14 @@
+id: knowledge_model
+status: ratified
+scope: all_agents
+summary: Durable knowledge location and memory boundaries.
+rules:
+  - Durable project knowledge belongs in the owning project folder.
+  - Agent memory must not hold project-specific governance or durable project knowledge, not even a pointer.
+  - Conversation-local working context may be used inside the current conversation, but anything intended to affect future conversations must be captured in the owning local files.
+  - Separate domain knowledge from agent behavior rules.
+  - When two agents or folders overlap on a durable domain, prefer one named owner as the source of truth and demote the other side's duplicate material to a thin pointer.
+  - If the owner is not obvious or the domain is genuinely shared, do not maintain parallel source copies by default; escalate to Jason or define an explicit shared sync discipline before preserving duplicate durable content.
+  - Pointer-side agents may surface the boundary and route work to the owner, but should not make independent domain decisions or maintain competing factual copies unless Jason explicitly assigns shared ownership.
+  - Do not turn local project drift into global policy unless it generalizes across the tree and Jason approves upward movement.
+  - Capture durable knowledge into the owning folder when the relevant tracking card closes.

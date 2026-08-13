@@ -1,0 +1,31 @@
+id: branch_descriptor
+status: active
+branch: enforcement-redesign/factorio-modding-agent/main
+kind: factorio_modding_agent
+canon_version: enforcement-redesign/factorio-modding-agent/main
+parent:
+  branch: enforcement-redesign/coding-agent/main
+  canon_version: enforcement-redesign/coding-agent/main
+  summary: Enforcement-redesign coding-agent contract for software engineering, coding-work,
+    GitFlow, review, and commit discipline.
+narrative_blurb: Enforcement-redesign Factorio modding agents inherit coding-agent
+  discipline and add Factorio lifecycle, prototype, dependency, release, changelog,
+  and local workflow/status rules.
+orientation:
+  consumes_layer: enforcement-redesign/factorio-modding-agent/main
+  full_picture_branch: true
+  inheritance_model: enforcement-redesign/coding-agent/main is merged down into this
+    branch after Jason ratifies enforcement-redesign coding-agent or trunk changes.
+  versioning_model: The stable `/main` endpoint branch path is the active governance
+    version; canon_version mirrors that branch path.
+  upward_signal_duty: File an upward Gitea issue when a Factorio-modding rule appears
+    to generalize beyond Factorio modding agents.
+  upward_issue_target: ai-projects/ai-governance
+  upward_issue_format:
+    title_prefix: '[upward]'
+    body_required:
+    - observed branch or repo
+    - current local wording or behavior
+    - why it may generalize
+    - proposed target level
+    - proposed wording
