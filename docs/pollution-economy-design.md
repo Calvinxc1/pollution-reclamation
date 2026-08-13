@@ -86,10 +86,47 @@ position within one chunk. That has a useful consequence: multiple capture build
 the same chunk naturally compete for the same pool, which organically encourages
 spreading them out instead of stacking them.
 
-**Open question:** `pollute()` takes an optional pollutant prototype, but
-`get_pollution()` takes no pollutant argument. On Space Age surfaces where the pollutant
-is spores rather than pollution, it is unclear which value `get_pollution` returns. Needs
-in-game verification before any Gleba behavior is designed.
+### Airborne pollutants and per-surface scoping (resolved)
+
+`pollute()` takes an optional pollutant prototype but `get_pollution()` takes none,
+which initially looked ambiguous on surfaces where the pollutant is spores rather than
+pollution. Checked against the shipped prototype data, and it is not ambiguous:
+**each surface has at most one pollutant type**, so `get_pollution` is implicitly scoped
+to that surface's pollutant.
+
+`airborne-pollutant` is a real prototype type. Vanilla plus Space Age ships exactly two:
+`pollution` (base) and `spores` (space-age). Planet assignments:
+
+| Planet | `pollutant_type` |
+| --- | --- |
+| Nauvis | `pollution` |
+| Gleba | `spores` |
+| Vulcanus | nil |
+| Fulgora | nil |
+| Aquilo | nil |
+
+Consequences:
+
+- **The gating design works unchanged on Gleba.** Same `get_pollution` call, it simply
+  returns spore density there.
+- **This is structurally a Nauvis and Gleba mod.** Three of five planets have no
+  airborne pollutant at all, so capture buildings there would read zero forever and
+  never activate. That is a property of the base game's data, not a gap in this mod, and
+  it usefully bounds scope: no Vulcanus, Fulgora, or Aquilo content is owed.
+- **Spores and pollution are materially different substances.** Both set
+  `affects_evolution = true`, but spores have `damages_trees = false` and
+  `affects_water_tint = false`. Capturing industrial smog and capturing biological
+  spores should plausibly yield different products. This is a content opportunity: one
+  set of buildings, two input fluids, outputs that match each planet's material
+  identity (carbon/sulfur/ash on Nauvis, biological or agricultural material on Gleba).
+- **The mod's existing emissions handling is already correct.** Declaring
+  `{ pollution = -X, spores = -Y }` and letting the engine apply whichever matches the
+  surface is the right pattern and needs no change.
+
+**Remaining verification:** the above is inferred from prototype data rather than
+documented runtime behavior. Confirm in-game on a Gleba save near a spore source with
+`/c game.print(game.player.surface.get_pollution(game.player.position))`. A nonzero
+reading closes this question entirely.
 
 ## Ingestion mechanism: options
 
@@ -219,8 +256,11 @@ for two or three intermediate steps.
 - **Sequestration as a degenerate strategy.** Tank farms are a legitimate answer, but
   confirm the land and material cost actually escalates fast enough to force a decision
   eventually.
-- **Space Age spores.** Behavior of `get_pollution` on spore-based surfaces is unverified
-  (see API section). Gleba support should be deferred until that is tested.
+- **Space Age spores.** Largely resolved (see the airborne pollutant section above):
+  one pollutant per surface, so the gating design carries to Gleba unchanged. Two open
+  threads remain — confirming the runtime reading in-game, and deciding whether captured
+  spores are the same commodity as captured pollution or a separate fluid with its own
+  processing outputs.
 - **Filter role.** Filters most likely stay as the capture building's consumable, which
   preserves the original Krastorio flavor. Confirm this rather than assuming it, since it
   interacts with the existing restore recipes.
