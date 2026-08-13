@@ -17,6 +17,16 @@ used filter is bottled pollution. It only exists because the factory was dirty. 
 design direction below generalizes that idea from an item into a fluid, and gives the
 captured pollution more than one possible fate.
 
+## Scope
+
+**The core loop below is Nauvis-specific.** Decided 2026-08-13: the capture / store /
+vent / process economy applies to industrial pollution only. Gleba is intended to get a
+different mechanic entirely rather than a reskin of this one — see the parked sketch at
+the end of this document.
+
+Vulcanus, Fulgora, and Aquilo have no airborne pollutant and are out of scope by
+construction.
+
 ## Core loop
 
 1. The factory emits pollution. Unavoidable, and scales with how hard you are pushing.
@@ -256,11 +266,11 @@ for two or three intermediate steps.
 - **Sequestration as a degenerate strategy.** Tank farms are a legitimate answer, but
   confirm the land and material cost actually escalates fast enough to force a decision
   eventually.
-- **Space Age spores.** Largely resolved (see the airborne pollutant section above):
-  one pollutant per surface, so the gating design carries to Gleba unchanged. Two open
-  threads remain — confirming the runtime reading in-game, and deciding whether captured
-  spores are the same commodity as captured pollution or a separate fluid with its own
-  processing outputs.
+- **Space Age spores.** Resolved for the API question (see the airborne pollutant
+  section above): one pollutant per surface, so the gating design would carry to Gleba
+  unchanged if it were used there. Superseded as a design question by the scope decision
+  — Gleba gets its own mechanic instead. Still worth confirming the runtime reading
+  in-game before building anything spore-facing.
 - **Filter role.** Filters most likely stay as the capture building's consumable, which
   preserves the original Krastorio flavor. Confirm this rather than assuming it, since it
   interacts with the existing restore recipes.
@@ -279,3 +289,44 @@ Verified in the current source:
 
 The restore loop is already a mild material source rather than pure cost recovery, which
 is a good foundation for the processing branch to build on.
+
+---
+
+# Parked: Gleba spore routing sketch
+
+Status: **rough sketch, parked, not evaluated.** Recorded 2026-08-13 at Jason's request
+to capture the shape of the idea before attention returns to Nauvis. Deliberately not
+critiqued yet. Do not treat anything here as decided, or as having survived review.
+
+Gleba is intended to get a mechanic of its own rather than a reskin of the Nauvis
+capture / vent / process loop.
+
+## Shape of the idea
+
+A new **planter** building. Rather than emitting spores into the atmosphere the way
+normal Gleba agriculture does, it captures its own spore output at the source and exposes
+it through an **extra pipe connection**, making spores a routable substance instead of an
+ambient emission.
+
+From there the player chooses how spores move through the base:
+
+- **Centralized.** Spores stay managed at the harvest points. The risk is concentrated
+  where the planters are.
+- **Dispersed.** Spores are piped out through the base, optionally via **leaky pipes**
+  that release spores slowly along their length. Risk spreads across the whole base
+  rather than pooling at the harvest sites, and the base itself becomes exposed.
+
+The intended tension is between concentrating spore pressure at a defensible point and
+accepting diffuse, base-wide pressure instead.
+
+## Open threads, not yet worked
+
+- The upside of the dispersed option is not yet specified. As sketched, dispersal spreads
+  risk without a stated benefit, so the choice is not yet a trade-off.
+- Whether "leaky pipes" is a distinct pipe prototype, a property of normal pipes carrying
+  the spore fluid, or a separate entity.
+- How the planter relates to vanilla Gleba agriculture: replacement, alternative, or
+  upgrade.
+- Whether spores in pipes should be the same fluid concept as Nauvis captured pollution
+  or a wholly separate substance.
+- Whether any of the Nauvis processing branch applies to spores at all.
