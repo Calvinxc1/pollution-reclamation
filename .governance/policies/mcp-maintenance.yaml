@@ -1,0 +1,10 @@
+id: mcp_maintenance
+status: ratified
+scope: mcp_maintenance_capable_agents
+summary: Locally developed MCP friction capture and owner handoff.
+bucket: B_outcome_plus_bounds
+rules:
+  - When friction occurs with a locally developed MCP, document the friction.
+  - Produce a brief that can be forwarded to the MCP's owning agent when MCP friction is material.
+  - For locally developed MCPs, route material connector friction to the owning agent or repository.
+  - The friction brief should name the requested operation, discovered connector surface, evidence level, auth or scope limitation, config limitation, duplicate or conflict limitation, and the smallest reproduction or trace available without exposing secrets.

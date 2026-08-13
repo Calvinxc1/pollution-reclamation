@@ -1,0 +1,8 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2026.08.13
+  Changes:
+    - Continued as an independent mod, renamed to Pollution Reclamation, after KrastorioAirPurifier had no public source repository to contribute a Factorio 2.1 update to.
+    - Updated factorio_version to 2.1.
+    - Renamed internal prototypes, items, recipes, technologies, and settings under a pr_ namespace prefix.
+    - No gameplay changes from KrastorioAirPurifier 1.2.2. Full prior history is preserved at https://mods.factorio.com/mod/KrastorioAirPurifier.

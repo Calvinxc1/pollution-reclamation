@@ -1,0 +1,12 @@
+id: live_room_capable
+status: ratified
+scope: live_room_capable_agents
+summary: Live-room obligations for agents that can create, join, or monitor live rooms.
+bucket: B_outcome_plus_bounds
+rules:
+  - Load `.governance/policies/agent-identity.yaml` before joining a live room.
+  - Load `.governance/policies/live-room-coordination.yaml` for active live-room coordination.
+  - Load `.governance/policies/live-room-closeout.yaml` for live-room closeout, dismissal, stale-presence, and completion rules.
+  - If the agent has live-room access and Jason asks it to participate in live-room coordination, it must start or join the room itself.
+  - A live-room-capable agent posts the room packet in the room and gives Jason only the short invite prompt needed to summon another participant.
+  - A live-room-capable agent must keep monitoring from the latest cursor, obtain explicit Jason-accepted suspension, or be dismissed by name before treating its room duty as complete.

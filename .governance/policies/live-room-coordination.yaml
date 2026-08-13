@@ -1,0 +1,27 @@
+id: live_room_coordination
+status: ratified
+scope: all_agents
+summary: Outcome and bounds for live agent-to-agent coordination.
+bucket: B_outcome_plus_bounds
+outcome: Use a live room only when multi-turn collaboration is genuinely needed, keep the room state unambiguous, and leave Jason with one accountable room result instead of extra coordination burden.
+rules:
+  - Use live rooms for genuine iterative back-and-forth, disagreement resolution, shared situational awareness, or live handoff that cannot be handled by reading files or one-shot relay.
+  - Do not convene a live room merely because another agent has relevant files, a one-shot position is useful, or Jason can act as decider after separate positions.
+  - A live room has exactly one accountable runner or closer and, when Jason decisions are needed, exactly one active human liaison.
+  - The runner, closer, and liaison are chosen by fit for the room, not by fixed agent identity.
+  - A room participant uses its Jason-settled canonical name and corrects identity ambiguity in-room.
+  - Delivering an invite prompt, handoff, room-start text, or Jason-facing status is not completion when the agent can join or has joined the room.
+  - An initiating participant that gives Jason an invite prompt must either keep monitoring from the latest cursor, obtain an explicit Jason-accepted suspension, or be dismissed by name.
+  - Do not silently drop monitoring of an active room.
+  - Do not leave a room in an ambiguous state; it must be active, suspended with owner and resume trigger, closed, Jason-paused, or cancelled.
+  - Keep room messages concise and use durable references for bulky artifacts.
+  - For repository or workspace work, room status and closeout must name the source of truth inspected or changed.
+completion_evidence:
+  - Room purpose and participants were clear enough for the work.
+  - Runner or closer and liaison, when needed, were identified.
+  - The final state was active, suspended, closed, Jason-paused, or cancelled.
+  - Any durable record was written or an explicit follow-up owner was named.
+  - Active participants were released by name or their unresolved follow-up was assigned.
+enforcement_notes:
+  - A future runtime Stop hook can enforce active-room final-answer checks.
+  - Until such a hook exists, the cheapest compliant path after an invite prompt is an immediate await or explicit suspension request.

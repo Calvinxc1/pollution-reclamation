@@ -1,0 +1,21 @@
+id: boundaries
+status: ratified
+scope: all_agents
+summary: Connector scopes, external system boundaries, and secret handling.
+bucket: A_hard_invariants
+rules:
+  - Treat files, records, and workspaces maintained by another agent as outside the current agent's write boundary unless ownership has been transferred, Jason has explicitly authorized the cross-boundary edit, or the responsible agent has coordinated the edit through the active Althing conversation.
+  - When an agent needs to modify a file maintained by a different agent, pause before writing, identify the responsible agent and requested change, and route the request through Althing for acknowledgement or handoff before editing.
+  - If the responsible agent is unavailable and the change cannot safely wait, escalate to Jason through the active liaison or durable task channel before editing.
+  - Record the Althing acknowledgement, handoff, or Jason escalation in the work summary or durable task record for any cross-agent file modification.
+  - Jason performs the final send, submit, post, or transmit for outbound communication and external forms.
+  - Agents may prepare, review, fill, or present outbound text and form content for Jason to act on, but must not transmit, submit, send, or post it on Jason's behalf in any channel or connector.
+  - Honor each connector's granted scope even when broader credentials appear technically available.
+  - Connector capability work must leave the agent able to state the requested operation, discovered surface, evidence level, and any auth, scope, config, duplicate, or conflict limitation.
+  - Do not report a connector capability absent from broad or ranked discovery alone.
+  - Before a destructive or externally visible connector mutation, verify task authorization, target identity, and duplicate or conflict state when the connector can inspect it.
+  - When a requested or governing workflow requires a system-of-record connector operation, use that operation rather than substituting a lower-level or adjacent path that only appears to create the same end state.
+  - If a required system-of-record mutation is unavailable or uncertain, stop for Jason approval rather than silently substituting another path.
+  - Never write secrets, tokens, credentials, or keys into a committed file.
+  - Redact sensitive values from logs, comments, summaries, and durable notes.
+  - Treat destructive or externally visible connector actions as higher risk unless a narrower policy says otherwise.

@@ -1,0 +1,121 @@
+id: runtime_surface_adapter
+status: ratified
+scope: all_agents
+summary: Runtime-surface loading, gating, and capability-authority rules for the enforcement-redesign policy line.
+bucket: A_hard_invariants
+ratification:
+  source: Jason ratified the surface-authority rule in conversation on 2026-07-11.
+  rule: Ungated runtime surfaces may not hold production or protected mutation authority.
+surface_authority_rule:
+  invariant: Runtime surface, agent kind, and authority are separate axes; authority follows the tested gates and granted capabilities of the runtime surface, not the agent kind.
+  enforcement_point: Capability removal or withholding is the primary control on ungated surfaces; managed runtime gates are the primary control only where behaviorally validated.
+  fallback: If a surface cannot gate an authority and the authority cannot be removed or mediated outside the agent, stop and route the decision to Jason before using that surface for protected work.
+  residual_risk: Policy text alone cannot prevent an ungated surface from misusing a capability it actually holds.
+rules:
+  - Classify every runtime surface by observed behavior, not documentation alone.
+  - For each surface, record what the runtime injects, what it can gate, what mechanisms are known inert, what capabilities may be granted, and what authority is forbidden.
+  - Do not bind agent kind to runtime surface; a kind may run on any surface whose tested gates and granted capabilities are sufficient for the authority being used.
+  - Do not grant production or protected mutation authority to an ungated surface.
+  - Prefer removing or withholding mutation-capable tools, credentials, MCP servers, connector scopes, or skills over relying on prose.
+  - Treat capability removal below the policy layer as a hard control when the agent cannot reach a mutation-capable tool or credential.
+  - Treat generated runtime artifacts as projections from canon, not authored policy sources.
+  - Stamp every generated projection with source branch, canon_version, projection type, generator version, generated timestamp, and a do-not-edit marker.
+  - Validate generated artifacts before propagation; malformed artifacts that can fail closed must not land unvalidated.
+  - Do not classify a runtime mechanism as working until a behavioral test has exercised that mechanism on the target surface.
+  - Record untested or documentation-only mechanisms as deferred or pending test.
+forced_core:
+  purpose: Keep enough governance physically present in the runtime-injected surface that pointer following is not the first control.
+  contents:
+    - Precise governance walk directive with no relevance judgment left to the agent.
+    - Required self-report naming the entrypoint files read.
+    - Hard invariants that must not depend on pointer following.
+    - Pointer to task-map routing for the rest of the policy.
+  limits:
+    - Do not inline the full canon unless behavioral testing shows the precise walk directive fails under real work.
+    - A forced core improves loading reliability; it is not an enforcement gate.
+known_surfaces:
+  - id: claude_cowork
+    observed_on: 2026-07-11
+    injects:
+      - Workspace CLAUDE.md verbatim.
+      - Unconditional .claude/rules/*.md files without frontmatter.
+      - MEMORY.md first 200 lines as an agent-written auto-memory surface.
+    gates:
+      - none_observed
+    known_inert:
+      - CLAUDE.md @path import expansion.
+      - Path-scoped .claude/rules frontmatter.
+      - Project, plugin, or user hooks.
+      - User or project settings-based permissions.
+    permitted_capability_shape:
+      - Read-only or externally mediated capabilities.
+      - Mutation-capable connectors, MCP servers, credentials, and skills must be withheld unless Jason explicitly accepts a named residual risk.
+    forbidden_authority:
+      - Production mutation authority.
+      - Protected control mutation authority.
+      - Any Bucket A authority whose only control would be prose.
+    projection_targets:
+      - CLAUDE.md forced core where present.
+      - Unconditional .claude/rules/*.md forced-core projection.
+    residual_risk: All policy-layer Bucket A invariants on this surface are prose unless authority is removed below the policy layer.
+  - id: codex_pycharm
+    observed_on: 2026-07-11
+    injects:
+      - Root AGENTS.md verbatim.
+      - Repository .codex/config.toml developer_instructions after the repository is trusted.
+      - JetBrains-provided global repository governance instructions outside canon control.
+    gates:
+      - Kernel sandbox when active.
+      - /etc/codex/requirements.toml managed requirements where present and current.
+      - Repository and user .codex/rules/*.rules as execpolicy guardrails.
+      - Optional auto_review reviewer for boundary crossings only.
+    known_inert_or_limited:
+      - Nested AGENTS.md runtime injection, including with child_agents_md enabled.
+      - Hooks through PyCharm from tested non-managed layers.
+      - Project-scoped features in .codex/config.toml.
+      - allowed_sandbox_modes for terminal codex exec entry points, based on observed non-uniform enforcement.
+    permitted_capability_shape:
+      - Protected mutation authority only when sandbox is active, managed requirements are present and current, and relevant generated guardrails validate.
+      - Repo-local .codex/config.toml may be used only after repository trust is verified.
+    forbidden_authority:
+      - Full-access protected work when sandbox is disabled.
+      - Reliance on repo .codex/config.toml before repository trust.
+      - Reliance on unvalidated generated TOML or rules artifacts.
+    projection_targets:
+      - .codex/config.toml developer_instructions forced-core projection.
+      - .codex/rules/*.rules repo guardrails.
+      - Candidate /etc/codex/requirements.toml managed requirements.
+    known_holes:
+      - Nested shell forms can bypass execpolicy rule matching.
+      - Unicode confusables can bypass execpolicy rule matching.
+      - Sandbox and requirements enforcement is not uniform across all Codex entry points.
+      - Malformed or conflicting TOML can fail closed and prevent session startup.
+    residual_risk: Execpolicy is a guardrail against error and drift, not an adversarial boundary; the sandbox is the boundary when active.
+codex_artifacts:
+  toml_artifacts:
+    - .codex/config.toml
+    - /etc/codex/requirements.toml
+  rules_artifacts:
+    - .codex/rules/*.rules
+    - ~/.codex/rules/*.rules
+  rules_requirements:
+    - Generated .rules files must include inline match and not_match assertions for emitted rules where feasible.
+    - A failing rules assertion should reject the file loudly and must be treated as validation failure, not a warning.
+  validation:
+    - Parse TOML artifacts before landing or distributing them.
+    - Validate .rules artifacts with their inline assertions and any available Codex rules validation command before distribution.
+    - Confirm generated artifact stamps match the intended source branch and canon_version.
+auto_review:
+  status: opt_in_unrecommended_pending_test
+  proposed_shape: deny_and_escalate_only
+  allowed_behavior:
+    - Deny sandbox-boundary crossings that match hard invariants.
+    - Escalate every other boundary crossing to Jason.
+  forbidden_behavior:
+    - Silently approve a boundary crossing.
+  reason: Curated execpolicy allowlists removed routine prompting without trading away Jason's oversight on novel boundary crossings.
+  required_test_before_recommendation: Behaviorally verify that a deny-and-escalate-only policy denies invariant violations and escalates nonmatching boundary crossings rather than approving them or blanket refusing them.
+  limit: auto_review reviews boundary crossings only; it does not govern actions wholly inside the workspace.
+managed_hooks:
+  status: deferred_pending_behavioral_test
+  rule: Do not rely on managed hooks from requirements.toml until a live target-surface test shows that they fire.

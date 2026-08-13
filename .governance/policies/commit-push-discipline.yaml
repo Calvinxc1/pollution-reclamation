@@ -1,0 +1,24 @@
+id: commit_push_discipline
+status: ratified
+scope: coding_agents
+summary: Explicit permission required for commits and pushes.
+bucket: A_hard_invariants
+rules:
+  - Do not commit unless Jason explicitly asks for a commit.
+  - Do not push unless Jason explicitly asks for a push.
+  - Treat save this, write this, update the file, and similar wording as file operations, not commit permission.
+  - When authorized to use version control, act only within the repository or workspace boundary for the underlying authorized work.
+  - Before committing, summarize the intended commit contents and verify unrelated working-tree changes are not included.
+  - Before pushing, summarize the target remote and branch and name any expected CI or CD consequences.
+  - Do not force-push, rewrite shared history, delete recovery history, push to an untrusted or newly configured remote, or commit secrets unless Jason gives explicit task-specific instructions and the governing policy permits the operation.
+  - Do not commit unrelated user changes without first understanding ownership and whether the changes belong to the current task.
+  - Surface version-control details when they affect a problem, recovery option, conflict, failed push, uncertain repository ownership, cross-agent ownership boundary, or non-routine operation.
+  - Before pull-request, branch, tag, release, or forge-backed Git mutations, identify the repository, system of record, intended operation, base and head or affected ref, expected CI or CD consequences, and explicit authorization for that operation.
+  - For forge, pull-request, branch, issue, release, deployment, or branch-protection operations, do not emulate the required connector action with raw Git, local file changes, manual state changes, another connector, or a different operation path unless Jason explicitly authorizes that bypass after the required path and limitation are named.
+  - For pull-request operations, discover and use the forge's PR endpoint for merge, close, reopen, update, reviewer, or status changes when the repository workflow requires PR semantics.
+  - Before a PR merge or close, verify the PR number, base branch, head branch, current state, mergeability or remaining diff when inspectable, and relevant validation or check state; after mutation, verify the resulting forge state rather than relying only on local Git.
+  - If the required forge operation is unavailable, undiscovered, unauthorized, or ambiguous, stop and ask Jason before using raw Git or another path that would bypass PR or forge audit semantics.
+enforcement_points:
+  - Branch protection on protected release branches enforces no direct-push substitution and no force-push where configured.
+  - Forge PR APIs enforce PR merge and close state when agents use the system-of-record operation.
+  - Pre-receive secret scanning enforces the no-secret commit and push invariant where installed.

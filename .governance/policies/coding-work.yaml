@@ -1,0 +1,15 @@
+id: coding_work
+status: ratified
+scope: coding_agents
+summary: Coding-agent evidence posture and documentation drift discipline.
+rules:
+  - Treat existing code, docs, and workflow config as evidence, not authority.
+  - Do not treat an existing pattern as authoritative merely because it exists.
+  - Prefer established local patterns when they are coherent with the requirements and evidence.
+  - Surface contradictions between implementation, documentation, tests, and workflow config.
+  - Let tests and runtime behavior constrain conclusions about code behavior.
+  - On substantive changes, check likely affected docs such as README, API docs, AGENTS.md, and project governance.
+  - Update docs when the requested change or acceptance test requires it.
+  - Report likely documentation drift when not updating it in the same change.
+  - Do not manufacture documentation churn on trivial changes.
+  - Do not broaden documentation edits beyond the behavioral surface touched by the change.

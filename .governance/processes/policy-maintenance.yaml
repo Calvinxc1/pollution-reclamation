@@ -1,0 +1,43 @@
+id: policy_maintenance
+status: ratified
+when: [policy_edit]
+bucket: B_outcome_plus_bounds
+summary: Outcome and bounds for maintaining ratified governance.
+outcome: Governance changes land on the owning layer, preserve ratification clarity, keep consumers able to load a complete contract, and report distribution state without pretending unpublished work is operational.
+rules:
+  - Jason is the sole ratifier for governance policy.
+  - Keep the uniform repo operating governance under `.governance`, and keep branch, kind, version, status, and generalized lab governance metadata under `lab-governance` where that tree exists.
+  - Keep `.governance` byte-identical across every branch in this repository. Any ratified `.governance` change must be propagated to every branch before the change is called complete.
+  - Treat committed active files under governance policy and process directories as ratified by placement.
+  - Keep draft proposals outside active policy and process directories until Jason ratifies them.
+  - Classify the owning layer before editing: policy-line trunk-general, kind-specific, repo-local, bookkeeping, or propagation-only.
+  - Preserve the active governance policy line. In the enforcement-redesign policy line, policy-line trunk means `enforcement-redesign/trunk/main`, not `baseline/trunk/main`.
+  - General all-agent rules, live-room rules, governance initialization, generalized templates, connector boundaries, inter-agent communication boundaries, and lab-wide process changes belong on the policy-line trunk unless Jason scopes them narrower.
+  - Kind-specific rules belong on that kind branch and are not trunk policy unless separately promoted.
+  - When a change touches the policy that governs that change, keep the governing policy aligned in the same change.
+  - Before editing governed policy-product files, compare the owning layer to the current branch and branch descriptors under `lab-governance`; switch to the owning branch or create the ratified version branch before editing.
+  - When a change alters the consumed governance contract, bump the relevant `canon_version`; use major for governance-model changes, minor for additive behavior, and patch for clarifications.
+  - A high-stakes recurring policy failure must be answered with a hard invariant, cheaper default path, or detector; a prose-only fix is incomplete unless Jason accepts it as tracked debt.
+  - Branch distribution is not complete until the intended child branches have received the change or an explicit skipped-propagation follow-up names the branch and reason.
+  - Report governance state using stage labels: drafted, ratified, committed locally, pushed to source, propagated to child branches, consumed by target workspaces.
+  - Do not call locally committed but unpushed governance operationally distributed.
+  - Do not use commit SHA, branch tip, file timestamp, or deployment state as a substitute for `canon_version`.
+  - Remove obsolete operative policy from active governance rather than carrying deprecated active files.
+  - Keep README, routing, branch descriptors, branch status, status templates, and canon-version logs aligned with structural or version changes.
+validation_bounds:
+  - YAML syntax validates for every changed governance YAML file.
+  - Changed governance files have no merge conflict markers.
+  - Task-map and kind-route references resolve to existing files.
+  - Active policy and process files are reachable by intended routes or documented as intentionally unrouted.
+  - The `.governance` trees match byte-for-byte across every branch when `.governance` changes.
+  - Branch descriptors under `lab-governance` match the branch and `canon_version`.
+  - Canon-version-log entries include previous version, parent version when applicable, bump level, date, summary, and provenance.
+  - Duplicated `.governance` and `lab-governance` files are intentionally aligned or their drift is reported.
+completion_evidence:
+  - Owning layer and branch used.
+  - Ratification basis.
+  - Files changed and enforcement bucket impact.
+  - Canon-version impact.
+  - Validation results.
+  - Propagation branches and commits, or explicit skipped follow-up.
+  - Distribution stage reached.

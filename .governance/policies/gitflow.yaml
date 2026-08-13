@@ -1,0 +1,61 @@
+id: gitflow
+status: ratified
+scope: coding_agents
+summary: Branch roles and GitFlow release/hotfix outcome invariants for coding agents.
+branch_roles:
+  trunk: Stable integration branch for ratified work.
+  feature: Isolated implementation branch for a scoped change.
+  release: Stabilization branch for a planned release when the project uses release branches.
+  hotfix: Urgent correction branch from the production baseline when the project uses hotfix branches.
+deployment_policy:
+  bucket: B_outcome_plus_bounds
+  outcome: A release reaches a target branch tested, gated, tagged, and synced back through the forge pull request path.
+  runbook: .governance/runbooks/gitflow-deployment.yaml
+  supporting_template: .governance/templates/gitflow-pr-head-guard.yaml
+  invariants:
+    - This deployment runbook and the hotfix runbook are the only sanctioned ways an agent may change a protected target branch.
+    - The agent never modifies the repo deployment configuration without Jason's explicit confirmation.
+    - A release reaches a target branch only through the forge pull request path, using the connector merge.
+    - A target branch merge is gated by branch protection requiring all required status checks to pass.
+    - Persistent origin and target branches never originate a pull request.
+    - The sync of the target branch back into the origin branch is always a local git merge and push, never a pull request.
+    - Error autonomy is zoned; on the release branch the agent may fix and retry, and from the merge onward the agent stops and reports.
+hotfix_policy:
+  bucket: B_outcome_plus_bounds
+  outcome: A specific verified bug is fixed on the production target branch, tested, gated, tagged, and synced back through the forge pull request path.
+  runbook: .governance/runbooks/gitflow-hotfix.yaml
+  supporting_template: .governance/templates/gitflow-pr-head-guard.yaml
+  invariants:
+    - This hotfix runbook and the deployment runbook are the only sanctioned ways an agent may change a protected target branch.
+    - The agent never modifies the repo deployment configuration without Jason's explicit confirmation.
+    - A hotfix reaches the target branch only through the forge pull request path, using the connector merge.
+    - The target merge is gated by branch protection requiring all required status checks to pass and requiring the hotfix branch to be up to date with the target before merge.
+    - Persistent branches never originate a pull request.
+    - The sync of the target back into the origin is always a local git merge and push, never a pull request.
+    - Error autonomy is zoned; on the hotfix branch the agent may fix and retry, and from the merge onward the agent stops and reports.
+    - A hotfix is opened only for a specific verified bug that requires a code change, and its resolution is the entire scope of the change.
+gitflow_repo_standards:
+  - Every GitFlow repo has a target branch gate requiring all required checks to pass and requiring the pull request branch to be up to date with the target before merge.
+  - Every GitFlow repo has a pull request guard workflow that fails a required check when the head branch is a persistent origin or target branch.
+deployment_configuration_authority:
+  authoritative_items:
+    - origin and target branches
+    - release type
+    - test gate
+    - post deployment verification list
+  rule: Repo deployment configuration is authoritative and agent read only; the agent may change it only with Jason's explicit confirmation.
+rules:
+  - Follow the repository's declared GitFlow model when one exists.
+  - If a new coding-agent repository has no declared branch model, default to GitFlow unless Jason declares a different model.
+  - Document the default integration branch and branch roles in repo-local governance or project documentation when initializing branch semantics.
+  - Ask Jason before applying the default when repository state, existing remote branches, deployment consequences, or project history conflict with the default.
+  - Use conventional commits when committing is explicitly requested and the repository has no conflicting convention.
+  - Keep commits scoped to one coherent change.
+  - Follow the repository's declared versioning scheme.
+  - When the repository uses Semantic Versioning, classify release impact as major, minor, or patch before changing version numbers.
+  - Do not change version numbers outside release scope or without explicit release or versioning authorization.
+  - Ask Jason when release impact or versioning level is unclear.
+  - Update changelog material when the repository convention requires it or when user-facing release behavior changes.
+  - Do not manufacture changelog churn for internal-only or trivial changes.
+  - Run GitFlow deployments only through the deployment runbook.
+  - Run GitFlow hotfixes only through the hotfix runbook.
