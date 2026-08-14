@@ -1,0 +1,31 @@
+name: Changelog Format
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, edited]
+
+jobs:
+  validate-changelog:
+    name: Validate changelog.txt against the Factorio changelog spec
+    runs-on: factorio-headless
+
+    steps:
+      - name: Check out repository
+        env:
+          CHECKOUT_REF: ${{ github.event.pull_request.head.sha || github.sha }}
+          CHECKOUT_REPOSITORY: ${{ github.repository }}
+          GITEA_SERVER_URL: ${{ github.server_url }}
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "$GITEA_SERVER_URL/$CHECKOUT_REPOSITORY.git"
+          GIT_CONFIG_COUNT=1 \
+          GIT_CONFIG_KEY_0=http.extraHeader \
+          GIT_CONFIG_VALUE_0="Authorization: token $GITEA_TOKEN" \
+            git fetch --no-tags --depth=1 origin "$CHECKOUT_REF"
+          git checkout --force FETCH_HEAD
+
+      - name: Validate changelog.txt
+        run: ./scripts/validate-changelog.py src/changelog.txt

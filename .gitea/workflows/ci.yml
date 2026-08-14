@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, dev]
+    types: [opened, reopened, synchronize, edited]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate Factorio mod
+    runs-on: factorio-headless
+    env:
+      FACTORIO_BIN: /opt/factorio/bin/x64/factorio
+
+    steps:
+      - name: Check out repository
+        env:
+          CHECKOUT_REF: ${{ github.event.pull_request.head.sha || github.sha }}
+          CHECKOUT_REPOSITORY: ${{ github.repository }}
+          GITEA_SERVER_URL: ${{ github.server_url }}
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+        run: |
+          set -euo pipefail
+          git --version
+          git init .
+          git remote add origin "$GITEA_SERVER_URL/$CHECKOUT_REPOSITORY.git"
+          GIT_CONFIG_COUNT=1 \
+          GIT_CONFIG_KEY_0=http.extraHeader \
+          GIT_CONFIG_VALUE_0="Authorization: token $GITEA_TOKEN" \
+            git fetch --no-tags --depth=1 origin "$CHECKOUT_REF"
+          git checkout --force FETCH_HEAD
+          git rev-parse HEAD
+
+      - name: Verify validation environment
+        run: |
+          set -eux
+          git --version
+          bash --version
+          python3 --version
+          python3 -c "import yaml; print('pyyaml available')"
+          luac -v
+          rg --version
+          file "$FACTORIO_BIN"
+          "$FACTORIO_BIN" --version
+
+      - name: Prepare temporary Factorio mods directory
+        run: |
+          mods_dir="${RUNNER_TEMP:-/tmp}/factorio-mods"
+          mod_name="$(python3 -c 'import json; print(json.load(open("src/info.json", encoding="utf-8"))["name"])')"
+          rm -f "$mods_dir/$mod_name"
+          mkdir -p "$mods_dir"
+          ln -s "$PWD/src" "$mods_dir/$mod_name"
+          echo "FACTORIO_MODS_DIR=$mods_dir" >> "$GITHUB_ENV"
+
+      - name: Validate mod
+        env:
+          PR_REQUIRE_FACTORIO: "1"
+        run: ./scripts/validate.sh
+
+      - name: Download and validate declared dependency mod list
+        env:
+          FACTORIO_MOD_PORTAL_USERNAME: ${{ secrets.FACTORIO_MOD_PORTAL_USERNAME }}
+          FACTORIO_MOD_PORTAL_TOKEN: ${{ secrets.FACTORIO_MOD_PORTAL_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${FACTORIO_MOD_PORTAL_USERNAME:-}" || -z "${FACTORIO_MOD_PORTAL_TOKEN:-}" ]]; then
+            echo "FACTORIO_MOD_PORTAL_USERNAME and FACTORIO_MOD_PORTAL_TOKEN must both be set to validate the full Factorio mod list." >&2
+            exit 1
+          fi
+          temp_base="${RUNNER_TEMP:-/tmp}"
+          mods_dir="$(mktemp -d "$temp_base/factorio-dependency-mods.XXXXXX")"
+          trap 'rm -rf -- "$mods_dir"' EXIT
+          ./scripts/download-factorio-mods.py \
+            --mods-dir "$mods_dir" \
+            --from-info src/info.json
+          mod_name="$(python3 -c 'import json; print(json.load(open("src/info.json", encoding="utf-8"))["name"])')"
+          ln -s "$PWD/src" "$mods_dir/$mod_name"
+          FACTORIO_MODS_DIR="$mods_dir" PR_REQUIRE_FACTORIO=1 ./scripts/factorio-validate.sh

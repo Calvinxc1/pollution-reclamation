@@ -1,0 +1,295 @@
+name: Main Validation and Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  releases: write
+
+jobs:
+  deploy:
+    name: Validate main and release on version bump
+    runs-on: factorio-headless
+    env:
+      FACTORIO_BIN: /opt/factorio/bin/x64/factorio
+      CHECKOUT_REPOSITORY: ${{ github.repository }}
+      GITEA_SERVER_URL: ${{ github.server_url }}
+      GITHUB_RELEASE_REPOSITORY: Calvinxc1/pollution-reclamation
+
+    steps:
+      - name: Check out repository
+        env:
+          CHECKOUT_REF: ${{ github.sha }}
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+        run: |
+          set -euxo pipefail
+          git --version
+          git init .
+          git remote add origin "$GITEA_SERVER_URL/$CHECKOUT_REPOSITORY.git"
+          GIT_CONFIG_COUNT=1 \
+          GIT_CONFIG_KEY_0=http.extraHeader \
+          GIT_CONFIG_VALUE_0="Authorization: token $GITEA_TOKEN" \
+            git fetch --no-tags --depth=2 origin "$CHECKOUT_REF"
+          git checkout --force FETCH_HEAD
+          git rev-parse HEAD
+
+      - name: Verify validation and release environment
+        run: |
+          set -eux
+          git --version
+          bash --version
+          python3 --version
+          python3 -c "import yaml; print('pyyaml available')"
+          luac -v
+          rg --version
+          file "$FACTORIO_BIN"
+          "$FACTORIO_BIN" --version
+
+      - name: Prepare temporary Factorio mods directory
+        run: |
+          mods_dir="${RUNNER_TEMP:-/tmp}/factorio-mods"
+          mod_name="$(python3 -c 'import json; print(json.load(open("src/info.json", encoding="utf-8"))["name"])')"
+          rm -f "$mods_dir/$mod_name"
+          mkdir -p "$mods_dir"
+          ln -s "$PWD/src" "$mods_dir/$mod_name"
+          echo "FACTORIO_MODS_DIR=$mods_dir" >> "$GITHUB_ENV"
+
+      - name: Validate mod
+        env:
+          PR_REQUIRE_FACTORIO: "1"
+        run: ./scripts/validate.sh
+
+      - name: Detect release gate
+        run: |
+          set -euo pipefail
+          mod_name="$(python3 -c 'import json; print(json.load(open("src/info.json", encoding="utf-8"))["name"])')"
+          current_version="$(python3 -c 'import json; print(json.load(open("src/info.json", encoding="utf-8"))["version"])')"
+          previous_version="$(
+            git show HEAD^:src/info.json 2>/dev/null \
+              | python3 -c 'import json, sys; print(json.load(sys.stdin)["version"])' \
+              || true
+          )"
+          release_target="$(git rev-parse HEAD)"
+
+          echo "Current version:  $current_version"
+          echo "Previous version: ${previous_version:-<none>}"
+
+          github_release_exists=0
+          if python3 - "$GITHUB_RELEASE_REPOSITORY" "v$current_version" <<'PY'
+          import sys
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+
+          repo, tag = sys.argv[1], sys.argv[2]
+          encoded_tag = urllib.parse.quote(tag, safe="")
+          url = f"https://api.github.com/repos/{repo}/releases/tags/{encoded_tag}"
+          try:
+              with urllib.request.urlopen(url, timeout=30):
+                  pass
+          except urllib.error.HTTPError as error:
+              if error.code == 404:
+                  raise SystemExit(1)
+              raise
+          PY
+          then
+            github_release_exists=1
+          fi
+
+          factorio_release_exists=0
+          if python3 - "$mod_name" "$current_version" <<'PY'
+          import json
+          import re
+          import sys
+          import urllib.error
+          import urllib.request
+
+          mod_name, version = sys.argv[1], sys.argv[2]
+          url = f"https://mods.factorio.com/api/mods/{mod_name}"
+          headers = {"User-Agent": "pollution-reclamation-ci"}
+          release_found = False
+          try:
+              request = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  data = json.load(response)
+              release_found = any(
+                  release.get("version") == version
+                  for release in data.get("releases", [])
+              )
+          except urllib.error.HTTPError as error:
+              if error.code != 404:
+                  raise
+
+          if release_found:
+              raise SystemExit(0)
+
+          page_url = f"https://mods.factorio.com/mod/{mod_name}"
+          try:
+              request = urllib.request.Request(page_url, headers=headers)
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  page = response.read().decode("utf-8", errors="replace")
+          except urllib.error.HTTPError as error:
+              if error.code != 404:
+                  raise
+              raise SystemExit(1)
+
+          if re.search(rf">\s*{re.escape(version)}\s*<", page):
+              raise SystemExit(0)
+          raise SystemExit(1)
+          PY
+          then
+            factorio_release_exists=1
+          fi
+
+          echo "GitHub release exists: $github_release_exists"
+          echo "Factorio Mod Portal release exists: $factorio_release_exists"
+
+          deploy_mod=0
+          publish_github_release=0
+          publish_factorio_portal=0
+          version_changed=0
+
+          if [[ -z "$previous_version" || "$current_version" != "$previous_version" ]]; then
+            echo "Version changed; release enabled."
+            deploy_mod=1
+            version_changed=1
+            if [[ "$github_release_exists" != "1" ]]; then
+              publish_github_release=1
+            fi
+            if [[ "$factorio_release_exists" != "1" ]]; then
+              publish_factorio_portal=1
+            fi
+          else
+            missing_public_release=0
+            if [[ "$github_release_exists" != "1" || "$factorio_release_exists" != "1" ]]; then
+              missing_public_release=1
+            fi
+
+            release_tag_sha="$(git ls-remote --tags origin "v$current_version" | awk '{print $1}' | head -n 1)"
+            if [[ "$missing_public_release" == "1" && -n "$release_tag_sha" ]]; then
+              echo "Version did not change, but public release publication is incomplete; retrying missing destinations."
+              deploy_mod=1
+              release_target="$release_tag_sha"
+              if [[ "$github_release_exists" != "1" ]]; then
+                publish_github_release=1
+              fi
+              if [[ "$factorio_release_exists" != "1" ]]; then
+                publish_factorio_portal=1
+              fi
+            else
+              echo "Version did not change and public releases are complete; validating main without publishing."
+            fi
+          fi
+
+          echo "DEPLOY_MOD=$deploy_mod" >> "$GITHUB_ENV"
+          echo "PUBLISH_GITHUB_RELEASE=$publish_github_release" >> "$GITHUB_ENV"
+          echo "PUBLISH_FACTORIO_PORTAL=$publish_factorio_portal" >> "$GITHUB_ENV"
+          echo "VERSION_CHANGED=$version_changed" >> "$GITHUB_ENV"
+          echo "RELEASE_TARGET=$release_target" >> "$GITHUB_ENV"
+          echo "MOD_NAME=$mod_name" >> "$GITHUB_ENV"
+          echo "PREVIOUS_MOD_VERSION=$previous_version" >> "$GITHUB_ENV"
+          echo "MOD_VERSION=$current_version" >> "$GITHUB_ENV"
+
+      - name: Package mod
+        run: |
+          set -euo pipefail
+          if [[ "${DEPLOY_MOD:-0}" != "1" ]]; then
+            exit 0
+          fi
+
+          package_path="$(./scripts/package.sh)"
+          echo "PACKAGE_PATH=$package_path" >> "$GITHUB_ENV"
+          test -f "$package_path"
+          echo "Packaged $package_path"
+
+      - name: Create Gitea release
+        env:
+          GITEA_RELEASE_TOKEN: ${{ secrets.GITEA_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ "${DEPLOY_MOD:-0}" != "1" ]]; then
+            exit 0
+          fi
+
+          if [[ -z "${GITEA_RELEASE_TOKEN:-}" ]]; then
+            echo "GITEA_RELEASE_TOKEN secret is required for release creation." >&2
+            exit 1
+          fi
+
+          ./scripts/create-gitea-release.py \
+            --server-url "$GITEA_SERVER_URL" \
+            --repo "$CHECKOUT_REPOSITORY" \
+            --tag "v$MOD_VERSION" \
+            --target "$RELEASE_TARGET" \
+            --title "$MOD_NAME $MOD_VERSION" \
+            --body-file src/changelog.txt \
+            --asset "$PACKAGE_PATH"
+
+      - name: Create GitHub release
+        env:
+          GH_RELEASE_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ "${PUBLISH_GITHUB_RELEASE:-0}" != "1" ]]; then
+            exit 0
+          fi
+
+          if [[ -z "${GH_RELEASE_TOKEN:-}" ]]; then
+            echo "GH_RELEASE_TOKEN secret is required for GitHub release creation." >&2
+            exit 1
+          fi
+
+          ./scripts/create-github-release.py \
+            --repo "$GITHUB_RELEASE_REPOSITORY" \
+            --tag "v$MOD_VERSION" \
+            --target "$RELEASE_TARGET" \
+            --title "$MOD_NAME $MOD_VERSION" \
+            --body-file src/changelog.txt \
+            --asset "$PACKAGE_PATH"
+
+      - name: Upload to Factorio Mod Portal
+        env:
+          # A Mod Portal API key (factorio.com/profile, "ModPortal: Upload
+          # Mods" permission) -- NOT the same credential as
+          # FACTORIO_MOD_PORTAL_TOKEN in ci.yml, which is the download-only
+          # username+token service-token pair. The upload API (v2) only
+          # accepts a scoped API key as a bearer token.
+          FACTORIO_MOD_PORTAL_API_KEY: ${{ secrets.FACTORIO_MOD_PORTAL_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [[ "${PUBLISH_FACTORIO_PORTAL:-0}" != "1" ]]; then
+            exit 0
+          fi
+
+          if [[ -z "${FACTORIO_MOD_PORTAL_API_KEY:-}" ]]; then
+            echo "FACTORIO_MOD_PORTAL_API_KEY secret is required for Mod Portal upload." >&2
+            exit 1
+          fi
+
+          ./scripts/upload-factorio-mod-portal.py \
+            --mod-name "$MOD_NAME" \
+            --asset "$PACKAGE_PATH"
+
+      - name: Post Discord release changelog
+        env:
+          DISCORD_RELEASE_WEBHOOK_URL: ${{ secrets.DISCORD_RELEASE_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          if [[ "${VERSION_CHANGED:-0}" != "1" ]]; then
+            exit 0
+          fi
+
+          if [[ -z "${DISCORD_RELEASE_WEBHOOK_URL:-}" ]]; then
+            echo "DISCORD_RELEASE_WEBHOOK_URL secret is required for release changelog posting." >&2
+            exit 1
+          fi
+
+          mod_title="$(python3 -c 'import json; print(json.load(open("src/info.json", encoding="utf-8"))["title"])')"
+          ./scripts/post-discord-release.py \
+            --mod-name "$MOD_NAME" \
+            --mod-title "$mod_title" \
+            --previous-version "${PREVIOUS_MOD_VERSION:-}" \
+            --version "$MOD_VERSION" \
+            --changelog-file src/changelog.txt

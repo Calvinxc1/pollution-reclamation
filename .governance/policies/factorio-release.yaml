@@ -1,0 +1,43 @@
+id: factorio_release
+status: ratified
+scope: factorio_modding_agents
+summary: Factorio changelog, packaging, staged Gitflow adoption, release, and mod portal boundary rules.
+ownership_models:
+  internal_mod: Locally developed Factorio mod governed by the staged internal release workflow.
+  upstream_fork: Fork, continuation, or externally sourced mod that requires a repo-local fork/upstream process before using internal-mod workflow assumptions.
+  custom: Repo-local workflow explicitly declared in loaded local governance.
+internal_gitflow_stages:
+  seed: "Only `main` exists; ordinary work, version changes, changelog updates, and releases happen on `main`."
+  dev_promotion: "`main` and `dev` exist; ordinary work happens on `dev`, then promotes to `main` by the repo's declared direct merge, pull request, or manual path."
+  release_branching: "Releases are cut from `dev` as `release/<version>` or explicitly approved non-version release branches, then merge to protected `main`; CI/CD gates, branch protection, and hotfix flow are active or being made active."
+  full_gitflow: "Feature branches start from `dev`, merge back to `dev`, release branches cut from `dev`, release branches merge to `main`, and `main` syncs back to `dev` after release."
+rules:
+  - Before branch or release work, read the workspace's loaded local Factorio workflow/status record and identify ownership model, current internal Gitflow stage when applicable, active branch roles, release path, CI/CD status, branch protection status, hotfix status, changelog handling, and declared deviations.
+  - Do not advance a workspace to a later internal Gitflow stage unless Jason explicitly approves that stage transition for that repository.
+  - Do not assume an upstream fork, continuation, externally sourced mod, or custom workflow follows the internal staged release path unless loaded local governance says so.
+  - In `seed`, do not invent `dev`, feature, release, or hotfix branches without explicit stage-transition approval.
+  - In `dev_promotion`, do ordinary work on `dev` and promote to `main` only through the repo's declared promotion path; record whether promotion is direct, pull request based, or manual.
+  - In `release_branching`, cut versioned releases from `dev` as `release/<version>` branches and merge or pull-request those branches into `main`; use purpose-named release branches for non-version releases only when the release does not change mod/game files and Jason or repo-local governance explicitly allows that path.
+  - In `full_gitflow`, start feature work from `dev`, merge feature branches back to `dev`, cut release branches from `dev`, merge release branches to `main`, and then sync `main` back to `dev`.
+  - Once a repo reaches `release_branching`, `main` should be protected according to the repo's available Gitea controls, and hotfixes should use `hotfix/<version-or-topic>` branches from `main` unless local governance declares a different hotfix path.
+  - Hotfixes that merge to `main` must be synced back to `dev`; when an active release branch exists, evaluate whether the hotfix must also be merged or cherry-picked there.
+  - Do not use recurring `dev` to `main` pull requests as the normal release mechanism for repos at `release_branching` or later; use release branches so each release has a distinct head branch and does not reuse the same base/head pair.
+  - Post-release `main` to `dev` sync is mandatory for repos at `release_branching` or `full_gitflow`; CI/CD may perform the sync only when the repo has validated that automation, otherwise the agent must perform or explicitly queue the sync before calling release work complete.
+  - If automated post-release sync conflicts or fails, report release closeout as incomplete and leave a named follow-up owner; do not continue ordinary new feature work on `dev` until sync is resolved or Jason explicitly waives it.
+  - Update changelog or release notes when user-visible gameplay, dependency, metadata, compatibility, locale, migration, or release-relevant behavior changes.
+  - Follow the workspace's changelog format, including Factorio mod portal `changelog.txt` format when that is the repo convention.
+  - For internal-mod feature or dev work, preserve release-note obligations before merging by either using the repo's local changelog-fragment or pending-notes mechanism, or by recording in the merge summary that there is no player/release-visible changelog impact or naming the intended changelog bullet and category.
+  - Do not casually edit a future top version entry in Factorio-format `changelog.txt` from ordinary feature work unless the repo has an established pending-changelog convention that permits it.
+  - For every version bump, ensure the top Factorio-format changelog entry matches the metadata version from `info.json` or `src/info.json` before release merge.
+  - Changelog entries for releases should distinguish player-visible mod changes, compatibility or migration risks, and packaging or release changes relevant to public consumers; omit internal-only implementation detail unless it changes release behavior.
+  - Do not publish, tag, package, upload to the mod portal, or create release artifacts unless Jason explicitly requests release work.
+  - Treat release packaging, mod portal publication, deployment to installed mods, and changes that can affect user saves as externally consequential.
+  - Treat `main` as the release authority only at the stage where the repo declares `main` release authority; earlier stages follow the loaded local release path.
+  - Prefer CI/CD for repeatable release validation, packaging, deployment, and post-release sync when the repo has implemented and validated those gates.
+  - Feature and `dev` validation must not publish public release artifacts unless Jason explicitly approves a repo-specific exception.
+  - "Release deployment and partial release recovery must be idempotent: detect existing local, Gitea, GitHub, mod portal, or other public artifacts; reuse, replace, or skip artifacts according to the repo's declared release process; and retry missing destinations without unrelated release changes or artificial version bumps."
+  - Custom Gitea Actions secrets must not use reserved `GITHUB_` or `GITEA_` prefixes, and release logs must not expose tokens, `.env` values, or credentials.
+  - Preserve upstream or fork changelog and README tone when the workspace local governance identifies an upstream style source.
+  - Do not change dependency lower bounds, supported Factorio version, mod name, prototype names, or migration behavior without checking compatibility intent and release impact.
+  - Report whether release-impacting files such as `info.json`, changelog, README, locale, migrations, and packaging scripts were touched.
+  - Report the repo's ownership model, Gitflow stage, release branch or promotion path used, CI/CD gate result, post-release sync result, and any unresolved deviation or recovery follow-up when closing release work.

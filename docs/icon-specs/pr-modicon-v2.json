@@ -1,0 +1,64 @@
+{
+  "short_description": "A precise, technical flat vector game mod icon. A hexagonal ring of bronze conduit segments with visible rivets encircles a central filtration core. All six hub fittings are present and complete; one conduit segment, the one between the lower-left hub and the bottom hub, is absent, leaving a clean empty gap between two intact hubs. Those two hubs are lit, and chartreuse particulate is drawn from them inward to the core. Set on a deep dark navy field inside a thin rounded-square border.",
+  "objects": [
+    {
+      "description": "A hexagonal ring of five thick bronze conduit segments, oriented with one vertex at top centre and one vertex at bottom centre. Each segment is a crisp straight bar with precisely mitred ends, a narrow pale silver highlight along its upper edge, a thin muted teal inlay stripe running its full length, and two small evenly spaced bronze rivet heads near each end. Exactly one segment is absent: the one that would span between the lower-left hub and the bottom hub. That span is completely empty, with no stub, fragment or partial bar. Both hubs at either end of that empty span remain fully present and fully drawn.",
+      "location": "center, forming a ring around the core",
+      "relationship": "The structural chassis enclosing the central core.",
+      "relative_size": "large within frame",
+      "shape_and_color": "Hexagonal ring of straight bars, muted antique bronze with pale silver edge highlight and desaturated teal inlay stripe.",
+      "texture": "Flat solid fill, matte, no gradient and no metallic reflection.",
+      "appearance_details": "Thin crisp dark outlines of even weight. Sharp precise mitred joints. Small circular rivet heads as flat discs. Engineered and technical. The single empty span is clean negative space between two complete hubs.",
+      "number_of_objects": 5,
+      "orientation": "Vertex at top centre, vertex at bottom centre, flat vertical sides left and right. The one empty span sits on the lower-left edge of the hexagon."
+    },
+    {
+      "description": "Six circular hub fittings, one at each vertex of the hexagon. All six are complete, whole, fully drawn circles: none is partial, cropped, broken or floating. Each is three tight concentric bronze rings around a small dark centre, with four tiny rivet heads spaced evenly around the outer ring, and a short stubby bronze connector nub projecting inward from the hub toward the centre of the hexagon, like an intake receiver port. Exactly two hubs are lit and emit a soft chartreuse halo: the lower-left hub and the bottom hub, the pair at either end of the empty span. The other four hubs are plain unlit bronze with no glow at all.",
+      "location": "at the six vertices of the hexagonal ring",
+      "relationship": "Join the conduit segments; the two lit ones mark the open connection port.",
+      "relative_size": "small",
+      "shape_and_color": "Concentric circular rings, muted bronze; two of them lit chartreuse, the other four unlit bronze.",
+      "texture": "Flat solid fill, matte.",
+      "appearance_details": "Precise concentric geometry, thin even dark outlines, small flat rivet discs, and one short inward-pointing connector nub per hub. All six hubs are whole and identical in construction; only the lighting differs between them.",
+      "number_of_objects": 6,
+      "orientation": "Flat, facing forward."
+    },
+    {
+      "description": "A central circular filtration core built from concentric bronze rings with a narrow radial vent pattern, enclosing a small solid teal centre. Compact and precisely engineered, noticeably smaller than the hexagon so clear dark space separates it from the ring.",
+      "location": "exact centre of the hexagon",
+      "relationship": "The hero element the incoming particulate flows toward.",
+      "relative_size": "medium, roughly one third the width of the hexagon",
+      "shape_and_color": "Circular concentric rings, muted bronze with a desaturated teal centre.",
+      "texture": "Flat solid fill, matte.",
+      "appearance_details": "Tight concentric bands, fine radial slots, thin even dark outline. Restrained and mechanical.",
+      "orientation": "Flat, facing forward."
+    },
+    {
+      "description": "Two narrow tapering ribbons of sickly chartreuse particulate. One begins at the inward connector nub of the lower-left hub and one begins at the inward connector nub of the bottom hub. Both travel inward across the empty dark space and converge on the central filtration core, with a few small scattered dots along their length. Drawn as clean flat shapes with straight controlled edges rather than loose organic swirls.",
+      "location": "from the lower-left hub and the bottom hub, converging inward on the core",
+      "relationship": "The pollution being drawn in for processing.",
+      "relative_size": "small to medium",
+      "shape_and_color": "Narrow tapering ribbons, desaturated sickly chartreuse.",
+      "texture": "Flat solid fill.",
+      "appearance_details": "Controlled geometric taper, thin dark outlines, sparse scattered dots. Restrained, not billowing.",
+      "number_of_objects": 2,
+      "orientation": "Two ribbons angling inward from the lower-left hub and the bottom hub toward the centre."
+    }
+  ],
+  "background_setting": "A solid uniform very dark desaturated navy field with no texture, no gradient and no backing panel behind the artwork. A single thin pale grey rounded-square border sits just inside the canvas edge.",
+  "lighting": {
+    "conditions": "No environmental lighting. Illumination exists only as the localized glow of the two lit hub fittings and the teal core centre.",
+    "direction": "None. The artwork is flat and evenly lit.",
+    "shadows": "No shadows, no ambient occlusion, no cast shadows anywhere."
+  },
+  "aesthetics": {
+    "composition": "Centred and symmetrical, the hexagon dominating the frame with generous dark space between the ring and the central core.",
+    "color_scheme": "Restrained and muted. Antique bronze, desaturated teal, pale silver and sickly chartreuse against deep dark navy. Low saturation throughout, no bright or candy colors.",
+    "mood_atmosphere": "Technical, engineered, precise, industrial and restrained.",
+    "aesthetic_score": "very high",
+    "preference_score": "very high"
+  },
+  "style_medium": "flat vector illustration",
+  "artistic_style": "precise technical flat vector, sharp clean linework, streamlined and engineered, minimal and restrained, thin even outlines, absolutely not cartoonish, not chunky, not playful",
+  "context": "A mod icon belonging to an established family of icons that share one identical hexagonal bronze chassis, where only the mechanism inside the ring changes between mods."
+}

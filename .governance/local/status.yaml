@@ -1,0 +1,28 @@
+schema: local_governance_status
+schema_version: 1
+canonical_agent_name: Pollution Reclamation Factorio Modding Agent
+agent_kind: factorio_modding_agent
+active_governance_branch: enforcement-redesign/factorio-modding-agent/main
+current_active_canon_version: enforcement-redesign/factorio-modding-agent/main
+current_generalized_canon_version: enforcement-redesign/coding-agent/main
+source_repository_or_path: gitea.infra.newedenhomestead.net:ai-projects/ai-governance.git
+governance_source_branch: enforcement-redesign/factorio-modding-agent/main
+governance_source_commit: 52fea21c13f8953bf126284706bf4c3111d32a50
+runtime_surface: claude_code_cli
+runtime_surface_gate_state: workspace_write_user_approval_for_escalation
+granted_capability_authority: local_workspace_write_with_explicit_user_authorization
+repository_trust_state: no_repo_codex_config_present
+managed_requirements_state: not_present
+projection_state: not_present
+code_authority: factorio_mod_workspace_changes_with_explicit_user_authorization
+last_verified_at: 2026-08-13
+agent_declared_status: current
+notes: >
+  Governance tree instantiated 2026-08-13, mirroring the canon at
+  enforcement-redesign/factorio-modding-agent/main commit 52fea21c13f8953bf126284706bf4c3111d32a50
+  as already adopted by advanced-fluid-infrastructure, advanced-power-infrastructure, and
+  advanced-energy-grid. This repository was previously a minimal reconstruction of the released
+  KrastorioAirPurifier mod (README, LICENSE, .gitignore, and an uncommitted src/ tree only) with no
+  governance, CI, or release automation. Full parity was requested by Jason on 2026-08-13 after
+  KrastorioAirPurifier's original author (Tarckmhog) turned out to have no public source repository
+  or other contact channel to submit a Factorio 2.1 compatibility PR to.

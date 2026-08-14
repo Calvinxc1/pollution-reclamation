@@ -1,0 +1,14 @@
+id: workflow_auditability
+status: ratified
+scope: all_agents
+summary: Durable status capture, autonomous settled-record writes, and audit-defect reporting.
+rules:
+  - Capture durable knowledge into the owning folder or system of record when the work closes.
+  - Agents may record routine status updates and already-settled decisions into local project documents, knowledge maps, or relevant work trackers without a separate pre-approval when the write only records facts already settled in the current conversation or durable tracker.
+  - After any autonomous status or settled-decision write, report what was written and where.
+  - This standing cue does not authorize new decisions, reinterpretation of unsettled decisions, governance or policy edits, external side effects, irreversible actions, or writes outside the agent's authorized boundary.
+  - Version-control autonomy is kind-specific or local policy, not a policy-line trunk default. Channel-trunk guardrails do not by themselves authorize routine autonomous commits or pushes.
+  - Do not treat cowork or desktop version-control autonomy as permission to push the ai-governance repository; governance repository pushes require explicit user authorization and this repository's governance-maintenance process.
+  - When an agent mutates durable state through the wrong tool, connector, branch, or workflow path, remediation should preserve the correct content state and record the audit defect unless reversal is needed for safety, correctness, deployment control, contractual workflow semantics, or Jason explicitly chooses state reconstruction.
+  - Audit-defect records should name the expected path, actual path, affected object, resulting state, verification source, and why the chosen remediation preserves or reconstructs state.
+  - Where a kind or local policy makes routine version control an invisible recovery mechanism, the policy must explicitly state any exemption from normal pre-action or post-action reporting and must scope that exemption to the version-control action class.

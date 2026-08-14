@@ -1,0 +1,29 @@
+name: Pull Request Head Guard
+
+"on":
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
+
+jobs:
+  reject-persistent-head:
+    name: Reject persistent PR head
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail when head is an origin or target branch
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          PERSISTENT_BRANCHES: "dev main"
+        run: |
+          set -eu
+          for branch in ${PERSISTENT_BRANCHES}; do
+            if [ "${HEAD_REF}" = "${branch}" ]; then
+              echo "Persistent branch '${HEAD_REF}' must not originate a pull request."
+              echo "Use a release/* or hotfix/* branch and leave this pull request for Jason to diagnose."
+              exit 1
+            fi
+          done
+          echo "Pull request head '${HEAD_REF}' is not a persistent origin or target branch."
