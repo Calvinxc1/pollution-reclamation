@@ -1,0 +1,64 @@
+{
+  "short_description": "A precise technical flat vector game mod icon. Six complete circular bronze hub discs sit at the six points of a hexagon. Bronze tube segments form an open arc that runs continuously from the lower-left hub up the left side, across the top, and down the right side, ending at the bottom hub, leaving the lower-left span between the bottom hub and the lower-left hub as plain open navy. A small filtration core floats alone at the centre, surrounded by clear empty navy on every side. Two chartreuse ribbons attach to the lower-left hub and the bottom hub.",
+  "objects": [
+    {
+      "description": "Bronze conduit tube segments forming an open arc, not a closed loop. Starting at the lower-left hub the arc runs up the left edge, across the upper-left edge, over the top point, down the upper-right edge, down the right edge, along the lower-right edge, and terminates at the bottom hub. The single span between the bottom hub and the lower-left hub is plain open navy with only background there. Each segment is a smooth rounded tube bar with softly rounded ends, a narrow pale silver highlight along its upper edge, a thin muted teal inlay stripe down its length, and small bronze rivet heads near each end.",
+      "location": "center, forming a ring around the core",
+      "relationship": "The structural chassis enclosing the central core.",
+      "relative_size": "large within frame",
+      "shape_and_color": "Rounded tube bars forming five hexagon edges, warm copper bronze with pale silver top highlight and desaturated teal inlay stripe.",
+      "texture": "Flat solid fill, matte, no gradient and no metallic reflection.",
+      "appearance_details": "Smooth rounded tube profile with gently rounded ends. Thin crisp dark outlines of even weight. Small circular rivet heads as flat discs. Engineered and technical.",
+      "number_of_objects": 5,
+      "orientation": "An open arc spanning five sixths of a hexagon, with both free ends terminating at the bottom hub and the lower-left hub. The lower-left span is open navy."
+    },
+    {
+      "description": "Six solid closed circular bronze hub discs, one at each of the six points of the hexagon. Every hub is a complete filled circle with an unbroken rim: three tight concentric bronze rings around a small filled centre, four tiny rivet heads around the outer ring, and one very short stubby bronze connector nub projecting a small distance inward. Each nub is stubby and truncated, extending only about one fifth of the way toward the middle and stopping in open navy space. Exactly two hubs have a glowing chartreuse centre: the two hubs sitting at either end of the open lower-left span, namely the hub at the very bottom point of the hexagon and the hub at the lower-left point. Those two are the only lit hubs and they sit directly beside the open span, one at each of its ends. The remaining four hubs, at the top point, the upper-left point, the upper-right point and the lower-right point, all have plain warm bronze centres.",
+      "location": "at the six vertices of the hexagonal ring",
+      "relationship": "Join the conduit segments; the two lit ones mark the open connection port.",
+      "relative_size": "small",
+      "shape_and_color": "Six solid closed circular discs of warm copper bronze; four plain, two with glowing chartreuse centres.",
+      "texture": "Flat solid fill, matte.",
+      "appearance_details": "Every hub is a complete filled circle with an unbroken outer rim. Each connector nub is very short and blunt, floating free at its inner end in open navy. Wide clear navy separates the ring of hubs from the core.",
+      "number_of_objects": 6,
+      "orientation": "Flat, facing forward."
+    },
+    {
+      "description": "A small circular filtration core floating alone at the exact centre, isolated in open navy with a wide clear margin of empty background on all sides. Built from concentric bronze rings with a fine radial vent pattern inside its own outer rim, enclosing a small solid teal centre. Its outer rim is smooth and closed all the way around.",
+      "location": "exact centre of the hexagon",
+      "relationship": "The hero element the incoming particulate flows toward.",
+      "relative_size": "small, roughly one quarter the width of the hexagon, isolated with generous empty space around it",
+      "shape_and_color": "Circular concentric rings, warm copper bronze with a desaturated teal centre.",
+      "texture": "Flat solid fill, matte.",
+      "appearance_details": "Tight concentric bands and fine radial slots contained entirely inside one smooth closed solid outer rim. Free floating and self contained, with nothing drawn around it.",
+      "orientation": "Flat, facing forward."
+    },
+    {
+      "description": "Two soft irregular ribbons of sickly chartreuse polluted haze with gently curving organic edges and scattered speckled dots. They attach to the two hubs sitting at either end of the open lower-left span, namely the hub at the very bottom point of the hexagon and the hub at the lower-left point. One ribbon touches the hub at the very bottom point of the hexagon and the other touches the hub at the lower-left point, and both drift loosely inward across the open navy toward the core. The two ribbons emerge from either side of the open lower-left span and no haze appears anywhere else in the image.",
+      "location": "attached to the bottom point hub and the lower-left point hub, on either side of the open span, drifting inward",
+      "relationship": "The pollution being drawn in for processing.",
+      "relative_size": "small to medium",
+      "shape_and_color": "Soft curving irregular ribbons of murky sickly chartreuse haze with speckled dots.",
+      "texture": "Flat solid fill.",
+      "appearance_details": "Loose organic curving forms with soft irregular edges and scattered speckles, clearly attached where they meet the lower-left hub and the bottom hub.",
+      "number_of_objects": 2,
+      "orientation": "Two ribbons angling inward from the lower-left hub and the bottom hub toward the centre."
+    }
+  ],
+  "background_setting": "A deep dark desaturated navy field filling the entire canvas from edge to edge with no texture and no gradient. A single thin pale grey rounded-square keyline is drawn inset within that navy field, with navy visible on both sides of the keyline, inside it and outside it out to the canvas edge.",
+  "lighting": {
+    "conditions": "No environmental lighting. Illumination exists only as the localized glow of the two lit hub fittings and the teal core centre.",
+    "direction": "None. The artwork is flat and evenly lit.",
+    "shadows": "No shadows, no ambient occlusion, no cast shadows anywhere."
+  },
+  "aesthetics": {
+    "composition": "Centred and symmetrical. A wide band of clear empty navy separates the ring of hubs from the small isolated core at the centre. The lower-left span of the hexagon is open navy.",
+    "color_scheme": "Restrained and muted. Warm copper bronze, desaturated teal, pale silver and sickly chartreuse against deep dark navy. Low saturation, no candy colours.",
+    "mood_atmosphere": "Technical, engineered, precise, industrial and restrained.",
+    "aesthetic_score": "very high",
+    "preference_score": "very high"
+  },
+  "style_medium": "flat vector illustration",
+  "artistic_style": "precise technical flat vector, sharp clean linework, streamlined and engineered, minimal and restrained, thin even outlines, absolutely not cartoonish, not chunky, not playful",
+  "context": "A mod icon belonging to an established family of icons that share one identical hexagonal bronze chassis, where only the mechanism inside the ring changes between mods."
+}

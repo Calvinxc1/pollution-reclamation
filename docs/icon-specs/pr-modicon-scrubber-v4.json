@@ -1,0 +1,93 @@
+{
+  "prompt": "A hexagonal arrangement of exactly six bronze hub discs at the six corners of a hexagon, with straight bronze bars along five of the six sides. The sixth side, at the lower left between the bottom hub and the lower-left hub, is a wide open gateway of plain navy with no bar across it, and chartreuse pollution pours inward through that gateway. A tall floating scrubber vessel at the centre with flat angular chartreuse haze masses entering inlets on its left and right. Exactly six hubs, six corners, hexagonal.",
+  "negative_prompt": "seven hubs, eight hubs, octagon, round ring, circular arrangement, bar across the gateway, closed hexagon, six bars, trees, bushes, foliage, plants, leaves, base platform, pedestal, stand, floor, elements outside the frame, cartoonish, saturated, glossy, 3D render, text, letters, watermark",
+  "aspect_ratio": "1:1",
+  "seed_returned": 155243492,
+  "structured_prompt": {
+    "short_description": "A precise technical flat vector game mod icon. Exactly six bronze hub discs sit at the six corners of a hexagon, with straight bronze bars along five of the six sides. The sixth side at the lower left is a wide open gateway of plain navy, and chartreuse pollution pours inward through it. A tall floating scrubber vessel at the centre takes flat angular chartreuse haze into inlets on its left and right, and emits clean teal squares from its cap.",
+    "objects": [
+      {
+        "description": "Exactly six bronze hub discs positioned at the six corners of a hexagon, one corner at top centre and one at bottom centre. There are six and only six hubs. Every hub is a complete filled circle with an unbroken rim: three concentric bronze rings around a small filled centre, four tiny rivet heads around the outer ring, and one very short stubby bronze connector nub projecting a small distance inward and stopping in open navy. Four hubs are plain warm bronze. The lower-left hub and the bottom hub each have a glowing chartreuse centre.",
+        "location": "at the six corners of a hexagon",
+        "relationship": "The six anchor points of the hexagonal chassis.",
+        "relative_size": "small",
+        "shape_and_color": "Six closed bronze discs, four plain, two with chartreuse centres.",
+        "texture": "Flat solid fill, matte.",
+        "appearance_details": "Exactly six hubs, no more and no fewer, each a complete filled circle with an unbroken rim, thin even dark outlines, and a short blunt inward nub.",
+        "number_of_objects": 6,
+        "orientation": "Arranged at the six corners of a hexagon with a corner at top centre and a corner at bottom centre."
+      },
+      {
+        "description": "Straight bronze bars running along five of the six sides of the hexagon: the upper-left side, the upper-right side, the right side, the lower-right side, and the left side. Each bar is a straight rounded tube with a pale silver highlight along its upper edge, a thin muted teal inlay stripe, and small bronze rivet heads near each end. The bars give the arrangement clear straight hexagonal edges with sharp corners at the hubs.",
+        "location": "along five sides of the hexagon",
+        "relationship": "The structural chassis linking the hubs.",
+        "relative_size": "large within frame",
+        "shape_and_color": "Five straight rounded bronze bars, warm copper bronze with pale silver highlight and teal inlay stripe.",
+        "texture": "Flat solid fill, matte.",
+        "appearance_details": "Straight rounded tube bars with thin crisp dark outlines and flat rivet discs, forming straight hexagonal edges.",
+        "number_of_objects": 5,
+        "orientation": "Along the upper-left, upper-right, right, lower-right and left sides of the hexagon."
+      },
+      {
+        "description": "The lower-left side of the hexagon, between the bottom hub and the lower-left hub, is a wide open gateway of plain dark navy background with nothing built across it. Through this gateway a broad band of sickly chartreuse pollution pours inward from outside toward the centre, widening as it enters. The pollution band stays entirely within the picture.",
+        "location": "the lower-left side of the hexagon",
+        "relationship": "The intake gateway where pollution enters.",
+        "relative_size": "a wide clear entrance on one side",
+        "shape_and_color": "Plain navy opening with a broad chartreuse pollution band flowing through it.",
+        "texture": "Flat solid fill.",
+        "appearance_details": "An unobstructed opening with only flowing chartreuse pollution crossing it, contained within the frame.",
+        "number_of_objects": 1,
+        "orientation": "Opening at the lower left, pollution flowing inward toward the centre."
+      },
+      {
+        "description": "A tall upright scrubber vessel floating at the exact centre with open navy beneath it. A narrow rounded-rectangle vessel, taller than wide, flat outlined in warm bronze with a thin dark outline, with several evenly spaced thin horizontal teal tray lines across its interior and a small bronze cap on top. Its lower edge is a plain rounded end floating in navy. A short bronze inlet nozzle projects from its left side and another from its right side.",
+        "location": "exact centre, floating",
+        "relationship": "The processing vessel.",
+        "relative_size": "medium, tall and narrow, clear navy all around and beneath it",
+        "shape_and_color": "Tall narrow rounded rectangle in warm bronze with horizontal teal tray lines.",
+        "texture": "Flat solid fill, matte.",
+        "appearance_details": "Flat outlined vessel, horizontal tray lines, cap on top, one inlet nozzle each side, plain rounded lower edge floating free.",
+        "number_of_objects": 1,
+        "orientation": "Upright and floating."
+      },
+      {
+        "description": "Two flat angular masses of sickly chartreuse industrial haze, one to the left of the vessel and one to the right, at roughly its vertical middle. Each is a hard-edged geometric wedge shape speckled with darker chartreuse square dots, tapering into a stream that enters the inlet nozzle on that side. They are angular geometric haze, not soft round shapes.",
+        "location": "one mass left of the vessel, one right of the vessel",
+        "relationship": "Polluted air being pulled into the scrubber from both sides.",
+        "relative_size": "medium",
+        "shape_and_color": "Hard-edged angular chartreuse wedges speckled with square dots.",
+        "texture": "Flat solid fill.",
+        "appearance_details": "Angular geometric wedge masses with straight facets, narrowing into the inlet nozzles, clearly directed inward.",
+        "number_of_objects": 2,
+        "orientation": "Left mass flowing rightward, right mass flowing leftward, both into the vessel."
+      },
+      {
+        "description": "Three or four small clean teal squares rising in a single straight vertical line directly above the cap of the vessel.",
+        "location": "directly above the cap",
+        "relationship": "Clean output leaving the top.",
+        "relative_size": "small",
+        "shape_and_color": "Small teal squares.",
+        "texture": "Flat solid fill.",
+        "appearance_details": "Discrete evenly spaced squares ascending in one straight vertical line.",
+        "number_of_objects": 1,
+        "orientation": "Rising vertically."
+      }
+    ],
+    "background_setting": "A deep dark desaturated navy field filling the canvas edge to edge with no texture. A single thin pale grey rounded-square keyline is drawn inset within the navy, with navy on both sides of it. All artwork sits fully inside the keyline.",
+    "lighting": {
+      "conditions": "No environmental lighting; only the localized glow of the two lit hubs.",
+      "direction": "None. Flat and evenly lit.",
+      "shadows": "No shadows anywhere."
+    },
+    "aesthetics": {
+      "composition": "Centred. A hexagonal chassis of six hubs and five bars, standing open on its lower-left side where pollution enters, with a floating vessel at the centre flanked by an angular haze mass on each side. Everything fits within the frame.",
+      "color_scheme": "Restrained and muted. Warm copper bronze, desaturated teal, pale silver and sickly chartreuse against deep dark navy.",
+      "mood_atmosphere": "Technical, engineered, industrial.",
+      "aesthetic_score": "very high",
+      "preference_score": "very high"
+    },
+    "style_medium": "flat vector illustration",
+    "artistic_style": "precise technical flat vector, sharp clean linework, diagrammatic and mechanical, thin even outlines, not cartoonish, not chunky",
+    "context": "A mod icon in a family whose interiors are always flat schematic mechanisms rather than rendered objects."
+  }
+}
