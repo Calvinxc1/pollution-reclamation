@@ -61,7 +61,7 @@ post_release_main_to_dev_sync:
 ci_cd_release_gates:
   validation: Pull-request CI validates release branches into main; main push workflow validates main.
   packaging: Main push workflow packages only when release publication is enabled.
-  publishing: Main push workflow publishes Gitea and GitHub releases on src/info.json version bumps. Factorio Mod Portal upload and Discord announcement are not wired in yet; see docs/release-process.md.
+  publishing: Main push workflow publishes Gitea releases, GitHub releases, Factorio Mod Portal uploads, and Discord announcements on src/info.json version bumps, at parity with the sibling advanced-* mods; see docs/release-process.md.
   post_release_sync: Manual; no validated automation currently records main-to-dev sync.
 changelog_process:
   format: Factorio mod portal changelog in src/changelog.txt.
@@ -75,8 +75,7 @@ validation_available:
   factorio_load: true
 declared_deviations:
   - Post-release main-to-dev sync is manual until automation is implemented and validated.
-  - GitHub mirror repository Calvinxc1/pollution-reclamation does not exist yet; create it before the deploy workflow's GitHub release step can succeed.
-  - Factorio Mod Portal upload and Discord release announcement are not wired into deploy.yml yet. KrastorioAirPurifier is already taken on the portal, so this mod needs its own listing before that step is meaningful.
+  - Factorio Mod Portal listing for pollution-reclamation is not yet confirmed to exist. KrastorioAirPurifier is already taken on the portal by a different author, so this mod needs its own listing; the upload step in deploy.yml is wired and will run on the next version bump regardless, and will simply fail that one destination (Gitea and GitHub releases still succeed independently) if the listing is missing.
   - main branch protection is not yet enabled on Gitea for this repository, unlike advanced-fluid-infrastructure.
 workspace_specific_rules:
   - Start ordinary implementation branches from dev as feature/<topic>.
@@ -90,10 +89,10 @@ migration_notes:
   - Full GitFlow, governance, CI, and release automation were instantiated on 2026-08-13 to bring this repository to parity with advanced-energy-grid, advanced-fluid-infrastructure, and advanced-power-infrastructure, at Jason's request.
   - Repository was previously an uncommitted reconstruction of the released KrastorioAirPurifier 1.2.2 mod with no CI, governance, or release automation.
   - Renamed from KrastorioAirPurifier to Pollution Reclamation (slug pollution-reclamation) because the original name is already published on the Factorio Mod Portal by a different author with no reachable contact channel.
+  - Factorio Mod Portal upload and Discord release announcement steps were added to deploy.yml on 2026-08-13, bringing release automation to full parity with the sibling advanced-* mods, once the GitHub mirror repository and its access token existed. ci.yml's cross-mod family validation step (unique to advanced-fluid-infrastructure, which validates against advanced-energy-grid, advanced-power-infrastructure, and RampantArsenalFork) was deliberately not copied, since this mod has no declared dependency relationship with that family to validate.
 last_stage_reviewed_at: 2026-08-13T00:00:00-07:00
 known_gaps:
   - Post-release main-to-dev sync is manual until automation is implemented and validated.
-  - GitHub mirror repository does not exist yet.
-  - Factorio Mod Portal listing does not exist yet.
+  - Factorio Mod Portal listing existence is unconfirmed.
   - main branch protection is not yet enabled.
 notes: This local workflow file is the repo-specific source of truth for GitFlow stage and branch roles.

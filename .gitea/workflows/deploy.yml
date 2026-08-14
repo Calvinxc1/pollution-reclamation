@@ -98,10 +98,57 @@ jobs:
             github_release_exists=1
           fi
 
+          factorio_release_exists=0
+          if python3 - "$mod_name" "$current_version" <<'PY'
+          import json
+          import re
+          import sys
+          import urllib.error
+          import urllib.request
+
+          mod_name, version = sys.argv[1], sys.argv[2]
+          url = f"https://mods.factorio.com/api/mods/{mod_name}"
+          headers = {"User-Agent": "pollution-reclamation-ci"}
+          release_found = False
+          try:
+              request = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  data = json.load(response)
+              release_found = any(
+                  release.get("version") == version
+                  for release in data.get("releases", [])
+              )
+          except urllib.error.HTTPError as error:
+              if error.code != 404:
+                  raise
+
+          if release_found:
+              raise SystemExit(0)
+
+          page_url = f"https://mods.factorio.com/mod/{mod_name}"
+          try:
+              request = urllib.request.Request(page_url, headers=headers)
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  page = response.read().decode("utf-8", errors="replace")
+          except urllib.error.HTTPError as error:
+              if error.code != 404:
+                  raise
+              raise SystemExit(1)
+
+          if re.search(rf">\s*{re.escape(version)}\s*<", page):
+              raise SystemExit(0)
+          raise SystemExit(1)
+          PY
+          then
+            factorio_release_exists=1
+          fi
+
           echo "GitHub release exists: $github_release_exists"
+          echo "Factorio Mod Portal release exists: $factorio_release_exists"
 
           deploy_mod=0
           publish_github_release=0
+          publish_factorio_portal=0
           version_changed=0
 
           if [[ -z "$previous_version" || "$current_version" != "$previous_version" ]]; then
@@ -111,20 +158,34 @@ jobs:
             if [[ "$github_release_exists" != "1" ]]; then
               publish_github_release=1
             fi
+            if [[ "$factorio_release_exists" != "1" ]]; then
+              publish_factorio_portal=1
+            fi
           else
+            missing_public_release=0
+            if [[ "$github_release_exists" != "1" || "$factorio_release_exists" != "1" ]]; then
+              missing_public_release=1
+            fi
+
             release_tag_sha="$(git ls-remote --tags origin "v$current_version" | awk '{print $1}' | head -n 1)"
-            if [[ "$github_release_exists" != "1" && -n "$release_tag_sha" ]]; then
-              echo "Version did not change, but the GitHub release is missing; retrying."
+            if [[ "$missing_public_release" == "1" && -n "$release_tag_sha" ]]; then
+              echo "Version did not change, but public release publication is incomplete; retrying missing destinations."
               deploy_mod=1
               release_target="$release_tag_sha"
-              publish_github_release=1
+              if [[ "$github_release_exists" != "1" ]]; then
+                publish_github_release=1
+              fi
+              if [[ "$factorio_release_exists" != "1" ]]; then
+                publish_factorio_portal=1
+              fi
             else
-              echo "Version did not change and the GitHub release is complete; validating main without publishing."
+              echo "Version did not change and public releases are complete; validating main without publishing."
             fi
           fi
 
           echo "DEPLOY_MOD=$deploy_mod" >> "$GITHUB_ENV"
           echo "PUBLISH_GITHUB_RELEASE=$publish_github_release" >> "$GITHUB_ENV"
+          echo "PUBLISH_FACTORIO_PORTAL=$publish_factorio_portal" >> "$GITHUB_ENV"
           echo "VERSION_CHANGED=$version_changed" >> "$GITHUB_ENV"
           echo "RELEASE_TARGET=$release_target" >> "$GITHUB_ENV"
           echo "MOD_NAME=$mod_name" >> "$GITHUB_ENV"
@@ -188,8 +249,47 @@ jobs:
             --body-file src/changelog.txt \
             --asset "$PACKAGE_PATH"
 
-      # Factorio Mod Portal upload and Discord release announcement are not
-      # wired in yet: this mod has no Mod Portal listing of its own to
-      # publish to (KrastorioAirPurifier is already taken). See
-      # docs/release-process.md "Factorio Mod Portal Status" for how to add
-      # these steps back once a listing exists.
+      - name: Upload to Factorio Mod Portal
+        env:
+          # A Mod Portal API key (factorio.com/profile, "ModPortal: Upload
+          # Mods" permission) -- NOT the same credential as
+          # FACTORIO_MOD_PORTAL_TOKEN in ci.yml, which is the download-only
+          # username+token service-token pair. The upload API (v2) only
+          # accepts a scoped API key as a bearer token.
+          FACTORIO_MOD_PORTAL_API_KEY: ${{ secrets.FACTORIO_MOD_PORTAL_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [[ "${PUBLISH_FACTORIO_PORTAL:-0}" != "1" ]]; then
+            exit 0
+          fi
+
+          if [[ -z "${FACTORIO_MOD_PORTAL_API_KEY:-}" ]]; then
+            echo "FACTORIO_MOD_PORTAL_API_KEY secret is required for Mod Portal upload." >&2
+            exit 1
+          fi
+
+          ./scripts/upload-factorio-mod-portal.py \
+            --mod-name "$MOD_NAME" \
+            --asset "$PACKAGE_PATH"
+
+      - name: Post Discord release changelog
+        env:
+          DISCORD_RELEASE_WEBHOOK_URL: ${{ secrets.DISCORD_RELEASE_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          if [[ "${VERSION_CHANGED:-0}" != "1" ]]; then
+            exit 0
+          fi
+
+          if [[ -z "${DISCORD_RELEASE_WEBHOOK_URL:-}" ]]; then
+            echo "DISCORD_RELEASE_WEBHOOK_URL secret is required for release changelog posting." >&2
+            exit 1
+          fi
+
+          mod_title="$(python3 -c 'import json; print(json.load(open("src/info.json", encoding="utf-8"))["title"])')"
+          ./scripts/post-discord-release.py \
+            --mod-name "$MOD_NAME" \
+            --mod-title "$mod_title" \
+            --previous-version "${PREVIOUS_MOD_VERSION:-}" \
+            --version "$MOD_VERSION" \
+            --changelog-file src/changelog.txt
