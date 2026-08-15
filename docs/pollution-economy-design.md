@@ -1,10 +1,14 @@
 # Pollution Economy: Design Notes
 
-Status: **working design doc.** Nothing here is committed to implementation. Sections are
-marked as *decided*, *leaning*, or *open* so the settled parts can be told apart from the
-parts still being argued about. Captures discussion from 2026-08-13 plus the mechanical
-research behind it, so the trade-offs are written down before any recipes get balanced
-around them.
+Status: **working design doc.** Sections are marked as *decided*, *leaning*, or *open* so
+the settled parts can be told apart from the parts still being argued about. Captures
+discussion from 2026-08-13 plus the mechanical research behind it, so the trade-offs are
+written down before any recipes get balanced around them.
+
+**Tier-1 intake and outflow have since been built.** See
+[tier-1-implementation-status.md](tier-1-implementation-status.md) for what actually
+exists, the tuned numbers, and what's still deliberately temporary. Everything else in
+this document remains unimplemented design.
 
 ## Premise
 
@@ -372,8 +376,12 @@ Negative-emission machine running a recipe that outputs the fluid.
 ### Option B — Script-gated recipe, threshold toggle (recommended)
 
 Same prototype as A, plus a `control.lua` that periodically reads
-`get_pollution(entity.position)` and sets `entity.active` against a threshold, tuned so a
-full craft's absorption is actually backed by pollution present in the chunk.
+`get_pollution(entity.position)` and sets `entity.disabled_by_script` against a threshold,
+tuned so a full craft's absorption is actually backed by pollution present in the chunk.
+(`LuaEntity.active` is read-only, computed from `disabled_by_script` among other causes —
+confirmed against the Factorio 2.1 runtime API while implementing tier 1. Setting `active`
+directly would error or no-op; `disabled_by_script` is the actual lever, and `active` reads
+back `false` as a side effect of setting it.)
 
 - **Pros:** the engine does the hard part — absorption accounting, the zero floor, spatial
   distribution. The script makes one yes/no decision. Negative emissions only apply while

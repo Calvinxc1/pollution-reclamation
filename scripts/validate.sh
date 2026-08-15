@@ -42,4 +42,22 @@ while IFS= read -r file; do
   luac -p "$file"
 done < <(rg --files -g '*.lua' src tests/fixtures)
 
+# Files under src/control/ are meant to be pure and dependency-injected (no
+# direct game/storage/script access) so the same file can load both inside
+# Factorio and under a plain Lua interpreter for testing. This is a
+# mechanical backstop for that convention: a stray reference wouldn't fail
+# at load time, since Lua doesn't resolve globals until they're read, only
+# the first time that exact code path executes -- which local tests might
+# never hit.
+while IFS= read -r file; do
+  if grep -n 'game\.\|storage\.\|script\.' "$file"; then
+    echo "error: $file references a Factorio-only global (game./storage./script.) -- files under src/control/ are meant to stay pure, see the header comment in that file" >&2
+    exit 1
+  fi
+done < <(rg --files -g '*.lua' src/control)
+
+for test_file in tests/lua/*_test.lua; do
+  lua "$test_file"
+done
+
 ./scripts/factorio-validate.sh
