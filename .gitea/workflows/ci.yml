@@ -8,7 +8,7 @@ on:
 
 jobs:
   validate:
-    name: Validate Factorio mod
+    name: "Gate: Validate Factorio mod"
     runs-on: factorio-headless
     env:
       FACTORIO_BIN: /opt/factorio/bin/x64/factorio
