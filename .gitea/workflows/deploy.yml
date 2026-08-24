@@ -76,23 +76,33 @@ jobs:
           echo "Current version:  $current_version"
           echo "Previous version: ${previous_version:-<none>}"
 
+          # A release that exists but carries no asset is not a published release.
+          # A partial failure between creating the release and uploading the zip
+          # used to leave an assetless release that this gate then treated as
+          # complete, permanently skipping the GitHub step on every re-run.
           github_release_exists=0
-          if python3 - "$GITHUB_RELEASE_REPOSITORY" "v$current_version" <<'PY'
+          if python3 - "$GITHUB_RELEASE_REPOSITORY" "v$current_version" "${mod_name}_${current_version}.zip" <<'PY'
+          import json
           import sys
           import urllib.error
           import urllib.parse
           import urllib.request
 
-          repo, tag = sys.argv[1], sys.argv[2]
+          repo, tag, asset_name = sys.argv[1], sys.argv[2], sys.argv[3]
           encoded_tag = urllib.parse.quote(tag, safe="")
           url = f"https://api.github.com/repos/{repo}/releases/tags/{encoded_tag}"
           try:
-              with urllib.request.urlopen(url, timeout=30):
-                  pass
+              with urllib.request.urlopen(url, timeout=30) as response:
+                  release = json.load(response)
           except urllib.error.HTTPError as error:
               if error.code == 404:
                   raise SystemExit(1)
               raise
+
+          assets = release.get("assets") or []
+          if not any(asset.get("name") == asset_name for asset in assets):
+              print(f"GitHub release {tag} exists but {asset_name} is not attached; treating as incomplete.")
+              raise SystemExit(1)
           PY
           then
             github_release_exists=1
@@ -107,7 +117,7 @@ jobs:
           import urllib.request
 
           mod_name, version = sys.argv[1], sys.argv[2]
-          url = f"https://mods.factorio.com/api/mods/{mod_name}"
+          url = f"https://mods.factorio.com/api/mods/{mod_name}/full"
           headers = {"User-Agent": "pollution-reclamation-ci"}
           release_found = False
           try:
@@ -125,18 +135,6 @@ jobs:
           if release_found:
               raise SystemExit(0)
 
-          page_url = f"https://mods.factorio.com/mod/{mod_name}"
-          try:
-              request = urllib.request.Request(page_url, headers=headers)
-              with urllib.request.urlopen(request, timeout=30) as response:
-                  page = response.read().decode("utf-8", errors="replace")
-          except urllib.error.HTTPError as error:
-              if error.code != 404:
-                  raise
-              raise SystemExit(1)
-
-          if re.search(rf">\s*{re.escape(version)}\s*<", page):
-              raise SystemExit(0)
           raise SystemExit(1)
           PY
           then
