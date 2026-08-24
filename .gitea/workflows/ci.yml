@@ -58,6 +58,11 @@ jobs:
           PR_REQUIRE_FACTORIO: "1"
         run: ./scripts/validate.sh
 
+      - name: Validate mod without Space Age
+        env:
+          PR_REQUIRE_FACTORIO: "1"
+        run: ./scripts/factorio-validate-base-game.sh
+
       - name: Download and validate declared dependency mod list
         env:
           FACTORIO_MOD_PORTAL_USERNAME: ${{ secrets.FACTORIO_MOD_PORTAL_USERNAME }}
