@@ -2,12 +2,12 @@ name: Changelog Format
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, dev]
     types: [opened, reopened, synchronize, edited]
 
 jobs:
   validate-changelog:
-    name: Validate changelog.txt against the Factorio changelog spec
+    name: "Gate: Validate changelog.txt against the Factorio changelog spec"
     runs-on: factorio-headless
 
     steps:
