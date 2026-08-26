@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 2026.08.25
+  Bugfixes:
+    - Stopped registering the Gleba spore efficiency startup setting when Space Age is absent. Its only consumer was already gated on Space Age, so a base-game player was shown a setting naming a planet they do not have, wired to nothing.
+---------------------------------------------------------------------------------------------------
 Version: 0.1.0
 Date: 2026.08.13
   Changes:

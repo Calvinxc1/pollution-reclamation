@@ -7,7 +7,7 @@ on:
 
 jobs:
   validate-changelog:
-    name: Validate changelog.txt against the Factorio changelog spec
+    name: "Gate: Validate changelog.txt against the Factorio changelog spec"
     runs-on: factorio-headless
 
     steps:
