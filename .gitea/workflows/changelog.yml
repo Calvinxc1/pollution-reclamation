@@ -2,7 +2,7 @@ name: Changelog Format
 
 on:
   pull_request:
-    branches: [main, dev]
+    branches: [main]
     types: [opened, reopened, synchronize, edited]
 
 jobs:
