@@ -13,8 +13,3 @@ require("__pollution-reclamation__/prototypes/items/pollution-outflow")
 require("__pollution-reclamation__/prototypes/recipes/recipes")
 require("__pollution-reclamation__/prototypes/recipes/recipes-category")
 require("__pollution-reclamation__/prototypes/technology/technologies")
-
------------------------------------------------------------
--- -- TEMPORARY: remove before this mod ships a real release
------------------------------------------------------------
-require("__pollution-reclamation__/prototypes/diagnostic-overrides")
