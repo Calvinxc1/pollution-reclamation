@@ -58,21 +58,36 @@ outflow.crafting_categories = { "pr_pollution-outflow-category" }
 outflow.collision_box = { { -0.7, -0.7 }, { 0.7, 0.7 } }
 outflow.selection_box = { { -0.85, -0.85 }, { 0.85, 0.85 } }
 
--- Outflow only ever consumes fluid, so it keeps only chemical-plant's first
--- input fluid box and drops the other three entirely. See
--- pollution-intake-building.lua for why the connection position is
--- chemical-plant's own {-1, -1} scaled by FOOTPRINT_SCALE, not an arbitrary
--- centered point or its unscaled tile-edge value.
+-- One input for captured pollution and one output for the water it was
+-- carried in, the reverse of intake. Same corner layout as intake --
+-- fluid in at the north-west, fluid out at the south-east -- and see
+-- pollution-intake-building.lua for why the connection positions are
+-- chemical-plant's own offsets scaled by FOOTPRINT_SCALE, not arbitrary
+-- centered points or their unscaled tile-edge values.
 outflow.fluid_boxes = {
   {
     production_type = "input",
     pipe_covers = data.raw["assembling-machine"]["chemical-plant"].fluid_boxes[1].pipe_covers,
     volume = 1000,
+    filter = "pr_captured-pollution",
     pipe_connections = {
       {
         flow_direction = "input",
         direction = defines.direction.north,
         position = { -1 * FOOTPRINT_SCALE, -1 * FOOTPRINT_SCALE },
+      },
+    },
+  },
+  {
+    production_type = "output",
+    pipe_covers = data.raw["assembling-machine"]["chemical-plant"].fluid_boxes[3].pipe_covers,
+    volume = 100,
+    filter = "water",
+    pipe_connections = {
+      {
+        flow_direction = "output",
+        direction = defines.direction.south,
+        position = { 1 * FOOTPRINT_SCALE, 1 * FOOTPRINT_SCALE },
       },
     },
   },

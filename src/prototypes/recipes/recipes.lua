@@ -222,15 +222,17 @@ if polutionFilterIngredients ~= nil then
           subgroup = "raw-material",
           order = "zz[pollution-capture]",
         },
-        -- Empty results is likewise a fully supported "pure sink" recipe
-        -- shape. With no product, icon/subgroup can't be inherited and are
-        -- non-optional here -- both set explicitly below.
-        --
         -- Same 10:1 fluid-to-atmosphere exchange rate as capture (see
         -- above), so the two sides of the loop stay volume-matched at the
         -- new scale before emissions_multiplier makes venting lossy: this
         -- building only ever emits while it has real captured fluid to
         -- consume, never for free.
+        --
+        -- Most of the water comes back out: 8 per 10 captured pollution
+        -- consumed (2/s against 2.5/s in). A capture/vent loop can pipe it
+        -- back to the intakes, but loses a fifth of its water per pass and
+        -- needs topping up. Icon and subgroup are still set explicitly, so
+        -- the recipe doesn't show up as plain water.
         {
           type = "recipe",
           name = "pr_pollution-venting",
@@ -244,15 +246,15 @@ if polutionFilterIngredients ~= nil then
           ingredients = {
             { type = "fluid", name = "pr_captured-pollution", amount = 10 },
           },
-          results = {},
+          results = {
+            { type = "fluid", name = "water", amount = 8 },
+          },
           -- Deliberately lossy round trip per the design doc's biter-aggro
           -- risk mitigation: venting releases more pollution than the fluid
-          -- it consumed represents. Same lever already proven on
-          -- pr_air-cleaning-2 above (there used to speed up scrubbing,
-          -- here used to inflate emissions instead).
+          -- it consumed represents.
           --
-          -- 10% tax: boiling the water back off to re-release the pollution
-          -- is its own energy-hungry, inefficient process, so venting emits
+          -- 10% tax: stripping the pollution back out of the water to
+          -- release it is its own inefficient process, so venting emits
           -- more than was captured. Against intake's -15/min this yields
           -- +16.5/min -- 150 vs 165 in fluid-equivalent terms, at the 1
           -- atmospheric : 10 fluid exchange rate used throughout.

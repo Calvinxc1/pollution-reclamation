@@ -16,7 +16,8 @@ A complete, playable capture/vent loop, verified running in a real save:
 - **`pr_pollution-intake`** draws ambient pollution from its chunk, consumes water as
   the scrubbing medium, and outputs `pr_captured-pollution` fluid.
 - **`pr_pollution-outflow`** consumes that fluid and vents it back into the atmosphere
-  wherever it's placed, relocating the biter aggression it attracts.
+  wherever it's placed, relocating the biter aggression it attracts. It returns most
+  of the water, so the loop can be mostly closed.
 - **`control.lua`** gates intake on real ambient pollution, so it can't manufacture
   fluid out of clean air.
 
@@ -36,6 +37,7 @@ All first-pass, all deliberately adjustable. The exchange rate is the important 
 | Intake fluid output | 10 per 4s craft = **150/min** at full uptime |
 | Intake water consumption | 10 per craft = **150/min**, 1:1 with pollution produced |
 | Outflow fluid consumption | 10 per 4s craft = **150/min** |
+| Outflow water output | 8 per craft = **120/min**, 80% of the water the intake used |
 | Outflow atmospheric emission | `+15/min` base x `1.1` recipe multiplier = **+16.5/min** |
 | control.lua pollution threshold | 10 (chunk pollution below this disables the intake) |
 | control.lua entities per tick | 4 |
@@ -47,6 +49,10 @@ Two derived figures worth keeping in mind:
   pollution is its own inefficient, energy-hungry process. This is the design doc's
   "lossy round trip" biter-aggro mitigation, and the ratio reads identically in both
   scales since 1 atmospheric = 10 fluid.
+- **Water is mostly returned.** The outflow gives back 80% of the water the intake
+  used, so a capture/vent loop can pipe it back to the intakes but loses a fifth per
+  pass and needs 30/min of fresh water per intake. Added 2026-09-19; before that the
+  outflow destroyed all of it.
 - **Tank fill time.** One intake at full uptime fills a vanilla 25,000-capacity storage
   tank in **~2h47m**. Jason confirmed this feels right. Real-world time will be longer
   whenever the threshold gate takes the building offline.
@@ -120,6 +126,8 @@ Things that were genuinely fixed rather than left sloppy, worth not regressing:
   arbitrary centered points.
 - **Connector placement on intake:** water in at the north-west corner, pollution out at
   the south-east -- diagonally opposite, so the two pipe runs don't crowd each other.
+  Outflow uses the same corners in reverse roles: pollution in at the north-west, water
+  out at the south-east.
 
 A search of every `assembling-machine`/`furnace` with fluid boxes across all ~90
 installed mods (via `factorio --dump-data`) found **no 2x2 fluid-handling crafting
