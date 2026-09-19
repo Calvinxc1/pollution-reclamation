@@ -123,6 +123,22 @@ Therefore:
 Both read as early-fiddly and late-controlled, through opposite mechanics, with investment
 parity preserved.
 
+### Pollution sensor
+
+**Decided 2026-09-19, and built.** A cheap red-science building that reads the pollution
+in the chunk it stands in, and shows nothing else. It sits deliberately *before* the
+economy in the tree, so a player can survey chunks before deciding where condensers are
+worth building, and can see why a crowded chunk's condensers have stopped.
+
+It is tracked by the same `control.lua` state as the condensers, with a `sensor` role, so
+the number it displays is read through the same helpers that decide whether condensers
+run: the readout cannot drift from the rule. Sensors are excluded from a chunk's
+condenser population, since they absorb nothing.
+
+**Open.** Later sensor tiers. The tracking already knows a chunk's condenser count and
+what that chunk must hold to run them, and a circuit-network output is the other obvious
+direction; neither is built, and tier 1 stays one number on purpose.
+
 ### Intake building
 
 The tier-1 intake building is named the **pollution condenser** (`pr_pollution-condenser`)

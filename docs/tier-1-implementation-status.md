@@ -69,6 +69,13 @@ survey chunks before deciding where condensers are worth building.
   own "No power" status rather than leaving a stale number on screen.
 - **`pr_pollution-sensing`** unlocks it: 50 automation science at 15s, after `automation`.
   The recipe costs 5 iron plates and 2 electronic circuits.
+- **Sensors share the condensers' check budget.** `control.lua` visits
+  `ENTITIES_PER_TICK` tracked entities per tick across both kinds, so a sensor refreshes
+  once per lap of the whole tracked table: with 400 tracked entities that's about 1.7
+  seconds. Fine for a readout, and it keeps the runtime cost flat no matter how many are
+  built, but it does mean sensors slightly slow how often each condenser is re-checked.
+  The gate itself no longer depends on that cadence for correctness -- see the chunk
+  population rule below.
 - **It reuses the condenser's own gate code.** The sensor is tracked in the same table
   with a `sensor` role, so the number it displays is read through the same helpers that
   decide whether condensers run, and the readout cannot drift from the rule. Sensors are
@@ -215,6 +222,8 @@ errors, and it caught two during this session that nothing else would have.
   disposable nozzle fed by pipe; nothing beyond tier 1 is built).
 - The rest of the processing branch. Its first piece, pollution filtering with filter
   restoration, is built; see the design doc.
+- Later pollution sensor tiers: showing a chunk's condenser count and what it must hold
+  to run them (the tracking already knows both), and a circuit-network output.
 - Whether the mod's GitHub mirror should be made public (currently private, while
   `docs/release-process.md` describes it as the public mirror).
 
