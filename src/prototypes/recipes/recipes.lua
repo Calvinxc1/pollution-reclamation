@@ -93,7 +93,7 @@ data:extend({
           name = "pr_pollution-filter-restoration",
           categories = { "chemistry" },
           icon = "__pollution-reclamation__/graphics/icons/recipes/pollution-filter-restoration.png",
-          icon_size = 128,
+          icon_size = 64,
           energy_required = 60,
           enabled = false,
           ingredients = {
