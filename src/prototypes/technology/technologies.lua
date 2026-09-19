@@ -127,11 +127,11 @@ if airPurificationPrerequisites ~= nil then
         },
         {
           type = "unlock-recipe",
-          recipe = "pr_pollution-capture",
+          recipe = "pr_pollution-condensing",
         },
         {
           type = "unlock-recipe",
-          recipe = "pr_pollution-venting",
+          recipe = "pr_pollution-vaporizing",
         },
       },
       prerequisites = { "fluid-handling" },

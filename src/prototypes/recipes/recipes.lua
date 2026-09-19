@@ -205,7 +205,7 @@ if polutionFilterIngredients ~= nil then
         -- and matches how real wet scrubbers actually capture particulates.
         {
           type = "recipe",
-          name = "pr_pollution-capture",
+          name = "pr_pollution-condensing",
           categories = { "pr_pollution-condenser-category" },
           icon = "__pollution-reclamation__/graphics/icons/fluids/polluted-water.png",
           icon_size = 64,
@@ -220,9 +220,9 @@ if polutionFilterIngredients ~= nil then
             { type = "fluid", name = "pr_polluted-water", amount = 10 },
           },
           subgroup = "raw-material",
-          order = "zz[pollution-capture]",
+          order = "zz[pollution-condensing]",
         },
-        -- Same 10:1 fluid-to-atmosphere exchange rate as capture (see
+        -- Same 10:1 fluid-to-atmosphere exchange rate as condensing (see
         -- above), so the two sides of the loop stay volume-matched at the
         -- new scale before emissions_multiplier makes venting lossy: this
         -- building only ever emits while it has real captured fluid to
@@ -236,7 +236,7 @@ if polutionFilterIngredients ~= nil then
         -- explicitly below.
         {
           type = "recipe",
-          name = "pr_pollution-venting",
+          name = "pr_pollution-vaporizing",
           categories = { "pr_pollution-vaporizer-category" },
           icon = "__pollution-reclamation__/graphics/icons/fluids/polluted-water.png",
           icon_size = 64,
@@ -259,7 +259,7 @@ if polutionFilterIngredients ~= nil then
           -- atmospheric : 10 fluid exchange rate used throughout.
           emissions_multiplier = 1.1,
           subgroup = "raw-material",
-          order = "zz[pollution-venting]",
+          order = "zz[pollution-vaporizing]",
         }
   })
 end

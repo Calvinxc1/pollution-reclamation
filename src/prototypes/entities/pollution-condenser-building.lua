@@ -59,7 +59,7 @@ condenser.name = "pr_pollution-condenser"
 condenser.icon = "__base__/graphics/icons/chemical-plant.png"
 condenser.minable.result = "pr_pollution-condenser"
 condenser.fast_replaceable_group = nil
-condenser.fixed_recipe = "pr_pollution-capture"
+condenser.fixed_recipe = "pr_pollution-condensing"
 condenser.crafting_categories = { "pr_pollution-condenser-category" }
 
 -- 2x2 footprint (same shape vanilla stone-furnace uses for its own 2x2
@@ -67,7 +67,7 @@ condenser.crafting_categories = { "pr_pollution-condenser-category" }
 condenser.collision_box = { { -0.7, -0.7 }, { 0.7, 0.7 } }
 condenser.selection_box = { { -0.85, -0.85 }, { 0.85, 0.85 } }
 
--- Two fluid boxes: water in (the scrubbing medium -- see pr_pollution-capture,
+-- Two fluid boxes: water in (the scrubbing medium -- see pr_pollution-condensing,
 -- which consumes water 1:1 with the polluted water it produces), polluted
 -- water out. Chemical-plant's other two boxes are dropped; leaving them in
 -- place would ship a building with dangling, functionless pipe connections.

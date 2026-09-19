@@ -50,7 +50,7 @@ vaporizer.name = "pr_pollution-vaporizer"
 vaporizer.icon = "__base__/graphics/icons/chemical-plant.png"
 vaporizer.minable.result = "pr_pollution-vaporizer"
 vaporizer.fast_replaceable_group = nil
-vaporizer.fixed_recipe = "pr_pollution-venting"
+vaporizer.fixed_recipe = "pr_pollution-vaporizing"
 vaporizer.crafting_categories = { "pr_pollution-vaporizer-category" }
 
 -- 2x2 footprint, same shape as condenser, replacing chemical-plant's native
@@ -86,7 +86,7 @@ vaporizer.fluid_boxes = {
 -- pollute()-based scripting needed until a later, directional tier.
 --
 -- Base rate matches condenser's nominal 15/min; the process recipe's own
--- emissions_multiplier (see pr_pollution-venting in recipes.lua) pushes the
+-- emissions_multiplier (see pr_pollution-vaporizing in recipes.lua) pushes the
 -- effective vent rate above that, making the round trip deliberately lossy
 -- per the design doc's biter-aggro risk mitigation. First-pass constant.
 vaporizer.energy_source = {
