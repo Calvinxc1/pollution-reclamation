@@ -9,6 +9,7 @@ This mod continues an independent line of [KrastorioAirPurifier](https://mods.fa
 ## Requirements
 
 - Factorio 2.1.
+- English only for now. Translations from fluent speakers are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md#translations).
 - Space Age is optional. The mod adjusts filter recipes and adds Gleba spore filtering when Space Age is active, and works without it.
 
 ## Features

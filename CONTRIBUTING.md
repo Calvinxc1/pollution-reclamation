@@ -24,6 +24,12 @@ Pollution Reclamation owns the air purifier building, pollution filter items and
 
 Keep changes focused on that scope. Compatibility fixes are welcome when they preserve the mod's existing recipes and progression and do not move unrelated gameplay systems into this repository.
 
+## Translations
+
+The mod ships in English only for now. Versions 0.1.x also shipped a French translation, but that came in with the source reconstructed from the released KrastorioAirPurifier mod, which itself descends from Krastorio 2. Nobody maintaining this repository speaks French, so that text couldn't be checked, and it could not have been kept accurate as names and descriptions changed. It was removed rather than shipped unverified.
+
+Translations are welcome from people fluent in the language. Add a `src/locale/<language-code>/strings.cfg` that mirrors the keys in `src/locale/en/strings.cfg`, and open a pull request against `dev`. Please say in the pull request that you are fluent in the language, since the maintainers can't review the wording themselves.
+
 ## AI-Assisted Contributions
 
 This repository permits AI-assisted work. Contributions should still be reviewed, tested, and explained like any other change.
