@@ -25,8 +25,8 @@ data:extend({
         -------------
         -- AIR PURIFICATION
         -------------
-        -- Pipe-fed: the filter traps pollution that intakes already pulled out
-        -- of the air, and the water the intake used to capture it comes back
+        -- Pipe-fed: the filter traps pollution that condensers already pulled
+        -- out of the air, and the water the condenser used to capture it comes back
         -- out. It no longer touches the atmosphere directly; the only
         -- pollution involved is what the assembler itself emits while running.
         --
@@ -37,7 +37,7 @@ data:extend({
         --
         -- Base rate at crafting speed 1.0: 75 polluted water per 60s, a
         -- tenth of the old building's 75 atmospheric units per minute at the
-        -- 1 atmospheric : 10 fluid exchange rate. One intake (150/min) feeds
+        -- 1 atmospheric : 10 fluid exchange rate. One condenser (150/min) feeds
         -- two of these.
         {
           type = "recipe",
