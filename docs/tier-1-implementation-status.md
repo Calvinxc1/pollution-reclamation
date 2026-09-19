@@ -40,7 +40,7 @@ All first-pass, all deliberately adjustable. The exchange rate is the important 
 | Condenser water consumption | 10 per craft = **150/min**, 1:1 with pollution produced |
 | Vaporizer fluid consumption | 10 per 4s craft = **150/min** |
 | Vaporizer atmospheric emission | `+15/min` base x `1.1` recipe multiplier = **+16.5/min** |
-| control.lua pollution threshold | 10 (chunk pollution below this disables the condenser) |
+| control.lua pollution threshold | 10 per condenser sharing the chunk: a chunk needs `10 x condensers in it` or none of them run |
 | control.lua entities per tick | 4 |
 
 Two derived figures worth keeping in mind:
@@ -189,7 +189,17 @@ Found in the 2026-09-19 doc review.
   with spores at 240 on a real Gleba surface the condenser stays disabled and makes
   nothing, while a Nauvis condenser runs. This is a guard only; Gleba's own mechanic
   stays deferred.
-- **Grouped condensers outrun their chunk (not fixed).** Each condenser compares its chunk against a fixed
-  threshold of 10 without counting the other condensers in that chunk. Negative emissions
-  stop at zero, so enough condensers in one thin chunk keep producing fluid the chunk
-  can't back.
+- **Grouped condensers outran their chunk (fixed 2026-09-19).** Each condenser used to
+  compare its chunk against a flat threshold of 10, ignoring the others drawing on the
+  same pool. Since the gate only re-checks a slice of condensers per tick, a crowded
+  chunk could empty between one condenser's checks; absorption then stops at zero while
+  the recipes keep running, producing fluid no removed pollution backs. **Measured** with
+  225 condensers packed into one chunk holding 60 pollution: 71.8 units' worth of fluid
+  came from 56 removed, about 29% unbacked.
+
+  The threshold is now per condenser sharing the chunk, all or nothing: a chunk must hold
+  `threshold x condensers in that chunk` before any of them run. All-or-nothing needs no
+  arbitration between condensers in a chunk and no rotation to stay fair, and crowding a
+  chunk is what the design wants to discourage. Re-measured after the fix: the same dense
+  block produced 25.0 against 25.7 removed, and a normal field of one condenser per chunk
+  still runs at its full 150 fluid/min each.
