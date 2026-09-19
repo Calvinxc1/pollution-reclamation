@@ -267,12 +267,24 @@ sulfur.
   ties cleaning to a working oil and sulfur line, which is what keeps purifying from
   being early-game.
 
+**Tech placement.**
+
+- **Filter and purifier tech (green): decided.** Prerequisites are `pr_pollution-economy`
+  and `plastics`. `pr_pollution-economy` already follows `fluid-handling`, and `plastics`
+  ensures the filter, which needs plastic bar, can be crafted when it unlocks. That puts
+  it mid-to-late in green science, after oil processing. Intakes and outflows arrive well
+  before it, so for that stretch captured pollution can only be vented or stored.
+  Cost is not set; around 300 red + green at 30s would sit just above
+  `pr_pollution-economy`'s 250.
+- **Filter cleaning tech (blue): leaning.** Prerequisites are the green filter tech and
+  `chemical-science-pack`, which already brings `sulfur-processing` for the acid.
+
 **Deferred: extraction processes.** Recovering materials from used filters becomes its
 own later branch of the tech tree rather than a byproduct of cleaning. To be built out
 with the rest of the tech tree.
 
-**Open.** The technology tree itself: which technologies unlock these recipes, their
-costs, and their prerequisites. The improved filter tier and its cleaning recipe: its old recipe worked by tripling the building's
+**Open.** Technology costs, and the rest of the tech tree beyond the two techs above.
+The improved filter tier and its cleaning recipe: its old recipe worked by tripling the building's
 negative emissions, which means nothing once pollution arrives by pipe. Also open: the
 exact `emissions_multiplier` and the migration
 for purifiers already placed in 0.1.x saves. Spore filtering on the old purifier goes
