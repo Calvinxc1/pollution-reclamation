@@ -17,7 +17,7 @@ data:extend({
       type = "technology",
       name = "pr_pollution-filtering",
       mod = "pollution-reclamation",
-      icon = "__pollution-reclamation__/graphics/technologies/air-purifier.png",
+      icon = "__pollution-reclamation__/graphics/technologies/pollution-filtering.png",
       icon_size = 256,
       icon_mipmaps = 4,
       effects = {
@@ -86,7 +86,7 @@ data:extend({
       type = "technology",
       name = "pr_pollution-control",
       mod = "pollution-reclamation",
-      icon = "__pollution-reclamation__/graphics/technologies/air-purifier.png",
+      icon = "__pollution-reclamation__/graphics/technologies/pollution-control.png",
       icon_size = 256,
       icon_mipmaps = 4,
       effects = {
