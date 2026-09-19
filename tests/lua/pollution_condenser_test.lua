@@ -1,5 +1,5 @@
--- Unit tests for src/control/pollution-intake.lua's pure gating logic.
--- Run with: lua tests/lua/pollution_intake_test.lua (from the repo root;
+-- Unit tests for src/control/pollution-condenser.lua's pure gating logic.
+-- Run with: lua tests/lua/pollution_condenser_test.lua (from the repo root;
 -- also works with lua5.1/lua5.4, see scripts/validate.sh).
 --
 -- Deliberately tests order-independent invariants only -- never a specific
@@ -7,10 +7,10 @@
 -- insertion-order-based reimplementation that no stock Lua interpreter
 -- reproduces, so pinning an exact sequence here would just encode this
 -- interpreter's incidental hash order as if it were spec. See the comments
--- in pollution-intake.lua for the full reasoning.
+-- in pollution-condenser.lua for the full reasoning.
 
 local script_dir = (arg and arg[0] and arg[0]:match("(.*/)")) or "./"
-local module = dofile(script_dir .. "../../src/control/pollution-intake.lua")
+local module = dofile(script_dir .. "../../src/control/pollution-condenser.lua")
 
 local failures = 0
 local function check(name, condition)
@@ -53,8 +53,8 @@ do
   check("entity below threshold gets disabled", cold.disabled_by_script == true)
 end
 
--- Test: only surfaces whose pollutant is `pollution` can run an intake.
--- Gleba reports spores through get_pollution, which the intake can't absorb.
+-- Test: only surfaces whose pollutant is `pollution` can run a condenser.
+-- Gleba reports spores through get_pollution, which the condenser can't absorb.
 do
   local state = module.new_state()
   local nauvis = make_entity(50)

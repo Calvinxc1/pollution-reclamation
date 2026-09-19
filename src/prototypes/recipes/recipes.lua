@@ -157,7 +157,7 @@ if polutionFilterIngredients ~= nil then
         -------------
         {
           type = "recipe",
-          name = "pr_pollution-intake",
+          name = "pr_pollution-condenser",
           energy_required = 5,
           enabled = false,
           ingredients = {
@@ -165,7 +165,7 @@ if polutionFilterIngredients ~= nil then
             { type = "item", name = "iron-gear-wheel", amount = 4 },
             { type = "item", name = "pipe", amount = 2 },
           },
-          results = { { type = "item", name = "pr_pollution-intake", amount = 1 } },
+          results = { { type = "item", name = "pr_pollution-condenser", amount = 1 } },
         },
         {
           type = "recipe",
@@ -184,13 +184,13 @@ if polutionFilterIngredients ~= nil then
         -- POLLUTION ECONOMY: PROCESS
         -------------
         -- Zero ingredients is a fully supported recipe shape (not a
-        -- placeholder-needs-something case) -- intake has nothing for a
+        -- placeholder-needs-something case) -- condenser has nothing for a
         -- player to insert, gated purely by ambient pollution via
         -- control.lua rather than by a consumable.
         --
         -- Fluid/atmosphere exchange rate: 1 unit of atmospheric pollution
         -- (the -15/min removed by the entity's emissions_per_minute, see
-        -- pollution-intake-building.lua) is represented by 10 units of
+        -- pollution-condenser-building.lua) is represented by 10 units of
         -- polluted water, so the fluid reads as genuinely bulky
         -- rather than a tidy 1:1 bottling. 10 fluid / 4s = 150/min at
         -- continuous uptime; actual throughput is lower whenever
@@ -199,14 +199,14 @@ if polutionFilterIngredients ~= nil then
         --
         -- Water is the scrubbing medium, consumed 1:1 with the captured
         -- pollution produced (10 water -> 10 polluted water). This is
-        -- what gives intake a real consumable cost -- before it, a built and
-        -- powered intake ran free forever. It also extends the water-as-
+        -- what gives condenser a real consumable cost -- before it, a built and
+        -- powered condenser ran free forever. It also extends the water-as-
         -- cleaning-agent logic the filter-restore recipes above already use,
         -- and matches how real wet scrubbers actually capture particulates.
         {
           type = "recipe",
           name = "pr_pollution-capture",
-          categories = { "pr_pollution-intake-category" },
+          categories = { "pr_pollution-condenser-category" },
           icon = "__pollution-reclamation__/graphics/icons/fluids/polluted-water.png",
           icon_size = 64,
           energy_required = 4,
@@ -254,7 +254,7 @@ if polutionFilterIngredients ~= nil then
           --
           -- 10% tax: evaporating the water off to release the pollution is
           -- its own inefficient process, so venting emits
-          -- more than was captured. Against intake's -15/min this yields
+          -- more than was captured. Against condenser's -15/min this yields
           -- +16.5/min -- 150 vs 165 in fluid-equivalent terms, at the 1
           -- atmospheric : 10 fluid exchange rate used throughout.
           emissions_multiplier = 1.1,

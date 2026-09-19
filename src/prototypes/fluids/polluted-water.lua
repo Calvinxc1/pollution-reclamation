@@ -1,5 +1,5 @@
 -- Polluted water: ambient pollution scrubbed out of the air into water by the
--- pollution intake. The icon is a
+-- pollution condenser. The icon is a
 -- grimy take on vanilla water's droplet, in the same 64px, four-mipmap layout;
 -- the colours are sampled from it.
 data:extend({

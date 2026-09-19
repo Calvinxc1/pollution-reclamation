@@ -53,19 +53,19 @@ local function adjust_graphics(node, tint, scale_factor)
   end
 end
 
-local intake = util.table.deepcopy(data.raw["assembling-machine"]["chemical-plant"])
+local condenser = util.table.deepcopy(data.raw["assembling-machine"]["chemical-plant"])
 
-intake.name = "pr_pollution-intake"
-intake.icon = "__base__/graphics/icons/chemical-plant.png"
-intake.minable.result = "pr_pollution-intake"
-intake.fast_replaceable_group = nil
-intake.fixed_recipe = "pr_pollution-capture"
-intake.crafting_categories = { "pr_pollution-intake-category" }
+condenser.name = "pr_pollution-condenser"
+condenser.icon = "__base__/graphics/icons/chemical-plant.png"
+condenser.minable.result = "pr_pollution-condenser"
+condenser.fast_replaceable_group = nil
+condenser.fixed_recipe = "pr_pollution-capture"
+condenser.crafting_categories = { "pr_pollution-condenser-category" }
 
 -- 2x2 footprint (same shape vanilla stone-furnace uses for its own 2x2
 -- building), replacing chemical-plant's native 3x3 collision/selection box.
-intake.collision_box = { { -0.7, -0.7 }, { 0.7, 0.7 } }
-intake.selection_box = { { -0.85, -0.85 }, { 0.85, 0.85 } }
+condenser.collision_box = { { -0.7, -0.7 }, { 0.7, 0.7 } }
+condenser.selection_box = { { -0.85, -0.85 }, { 0.85, 0.85 } }
 
 -- Two fluid boxes: water in (the scrubbing medium -- see pr_pollution-capture,
 -- which consumes water 1:1 with the polluted water it produces), polluted
@@ -93,8 +93,8 @@ intake.selection_box = { { -0.85, -0.85 }, { 0.85, 0.85 } }
 -- Water input and pollution output sit at diagonally opposite corners --
 -- water in at the north-west, pollution out at the south-east -- so the two
 -- pipe runs stay as far apart as a 2x2 footprint allows and don't crowd each
--- other in a spread-out intake field.
-intake.fluid_boxes = {
+-- other in a spread-out condenser field.
+condenser.fluid_boxes = {
   {
     production_type = "input",
     pipe_covers = data.raw["assembling-machine"]["chemical-plant"].fluid_boxes[1].pipe_covers,
@@ -132,13 +132,13 @@ intake.fluid_boxes = {
 --
 -- -15/min matches the design doc's stated tier-1 target. First-pass
 -- constant; expect this to move once the loop gets playtested.
-intake.energy_source = {
+condenser.energy_source = {
   type = "electric",
   usage_priority = "secondary-input",
   emissions_per_minute = { pollution = -15 },
 }
-intake.energy_usage = "75kW"
+condenser.energy_usage = "75kW"
 
-adjust_graphics(intake.graphics_set, { r = 0.55, g = 0.75, b = 0.25, a = 1 }, FOOTPRINT_SCALE)
+adjust_graphics(condenser.graphics_set, { r = 0.55, g = 0.75, b = 0.25, a = 1 }, FOOTPRINT_SCALE)
 
-data:extend({ intake })
+data:extend({ condenser })

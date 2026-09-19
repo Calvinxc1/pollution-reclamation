@@ -1,4 +1,4 @@
-# Tier-1 intake and vaporizer: implementation status
+# Tier-1 condenser and vaporizer: implementation status
 
 Working notes for the first implementation pass at the pollution economy's tier-1
 buildings, from the 2026-08-14 session. Companion to
@@ -13,16 +13,17 @@ air purifier rework first) happens on its own feature branches off `dev`.
 
 A complete, playable capture/vent loop, verified running in a real save:
 
-- **`pr_pollution-intake`** draws ambient pollution from its chunk, consumes water as
-  the scrubbing medium, and outputs `pr_polluted-water` fluid.
+- **`pr_pollution-condenser`** ("Pollution condenser", the tier-1 intake building)
+  draws ambient pollution from its chunk, consumes water as the scrubbing medium, and
+  outputs `pr_polluted-water` fluid.
 - **`pr_pollution-vaporizer`** ("Pollution vaporizer", the tier-1 outflow building)
   consumes that fluid and vents it back into the atmosphere
   wherever it's placed, relocating the biter aggression it attracts. It evaporates the
   water along with the pollution.
-- **`control.lua`** gates intake on real ambient pollution, so it can't manufacture
+- **`control.lua`** gates condenser on real ambient pollution, so it can't manufacture
   fluid out of clean air.
 
-Confirmed working in-game: the loop runs, fluid is produced, and intakes register in
+Confirmed working in-game: the loop runs, fluid is produced, and condensers register in
 the global pollution statistics as genuine consumers. Confirmed *not* easily visible:
 per-chunk reduction on the pollution overlay, since the rates are small relative to
 typical base output. That's expected, not a bug.
@@ -34,26 +35,26 @@ All first-pass, all deliberately adjustable. The exchange rate is the important 
 | Quantity | Value |
 | --- | --- |
 | Atmosphere-to-fluid exchange rate | **1 atmospheric unit = 10 fluid units** |
-| Intake atmospheric absorption | `-15/min` (entity `emissions_per_minute`) |
-| Intake fluid output | 10 per 4s craft = **150/min** at full uptime |
-| Intake water consumption | 10 per craft = **150/min**, 1:1 with pollution produced |
+| Condenser atmospheric absorption | `-15/min` (entity `emissions_per_minute`) |
+| Condenser fluid output | 10 per 4s craft = **150/min** at full uptime |
+| Condenser water consumption | 10 per craft = **150/min**, 1:1 with pollution produced |
 | Vaporizer fluid consumption | 10 per 4s craft = **150/min** |
 | Vaporizer atmospheric emission | `+15/min` base x `1.1` recipe multiplier = **+16.5/min** |
-| control.lua pollution threshold | 10 (chunk pollution below this disables the intake) |
+| control.lua pollution threshold | 10 (chunk pollution below this disables the condenser) |
 | control.lua entities per tick | 4 |
 
 Two derived figures worth keeping in mind:
 
-- **The 10% venting tax.** The vaporizer releases more than intake captured (150 in vs. 165
+- **The 10% venting tax.** The vaporizer releases more tha condenser captured (150 in vs. 165
   out, in fluid-equivalent terms) because boiling the water back off to re-release the
   pollution is its own inefficient, energy-hungry process. This is the design doc's
   "lossy round trip" biter-aggro mitigation, and the ratio reads identically in both
   scales since 1 atmospheric = 10 fluid.
 - **Water is not returned.** The vaporizer evaporates the polluted water into the air,
-  water and all, so every intake needs a steady 150/min of fresh water. A water return
+  water and all, so every condenser needs a steady 150/min of fresh water. A water return
   was tried on 2026-09-19 and taken back out the same day: a straight outflow comes
   first, and closing the water loop is left for later.
-- **Tank fill time.** One intake at full uptime fills a vanilla 25,000-capacity storage
+- **Tank fill time.** One condenser at full uptime fills a vanilla 25,000-capacity storage
   tank in **~2h47m**. Jason confirmed this feels right. Real-world time will be longer
   whenever the threshold gate takes the building offline.
 
@@ -74,17 +75,17 @@ that a player should get a complete loop or none of it.
 
 - **`src/control.lua`** is a thin entrypoint only, per governance. It wires Factorio
   events and owns `.valid` filtering of tracked entities.
-- **`src/control/pollution-intake.lua`** holds the real logic and is deliberately pure
+- **`src/control/pollution-condenser.lua`** holds the real logic and is deliberately pure
   and dependency-injected -- no `game`/`storage`/`script` access anywhere in it. That's
   what lets the same file load both inside Factorio and under a plain Lua interpreter
   for testing. `scripts/validate.sh` enforces this mechanically with a grep guard,
   because a stray global reference wouldn't fail at load time, only when that exact
   code path first executes.
-- **Entity tracking** covers all nine ways an intake can appear or disappear (including
+- **Entity tracking** covers all nine ways a condenser can appear or disappear (including
   `on_entity_died` for biter destruction, which is easy to miss since it isn't mining).
-  Incomplete coverage here would let a real intake run permanently ungated -- exactly
+  Incomplete coverage here would let a real condenser run permanently ungated -- exactly
   the exploit `control.lua` exists to prevent.
-- **`tests/lua/pollution_intake_test.lua`** tests order-independent invariants only,
+- **`tests/lua/pollution_condenser_test.lua`** tests order-independent invariants only,
   never a specific traversal sequence. Factorio's `pairs()`/`next()` is a deterministic
   insertion-order reimplementation that no stock Lua interpreter reproduces, so
   asserting an exact order would just encode the local interpreter's incidental hash
@@ -110,7 +111,7 @@ in-save testing is needed again, recreate it locally and keep it out of commits.
 
 ## Placeholder art
 
-Both buildings are re-tinted, rescaled copies of vanilla `chemical-plant` (intake green,
+Both buildings are re-tinted, rescaled copies of vanilla `chemical-plant` (condenser green,
 vaporizer orange). Jason's stated bar for now is functional visibility, not looks.
 
 Things that were genuinely fixed rather than left sloppy, worth not regressing:
@@ -124,7 +125,7 @@ Things that were genuinely fixed rather than left sloppy, worth not regressing:
   edge (a real load error, caught by the Factorio load-check). Positions scale
   chemical-plant's own genuinely off-center connector positions rather than using
   arbitrary centered points.
-- **Connector placement on intake:** water in at the north-west corner, pollution out at
+- **Connector placement on condenser:** water in at the north-west corner, pollution out at
   the south-east -- diagonally opposite, so the two pipe runs don't crowd each other.
 
 A search of every `assembling-machine`/`furnace` with fluid boxes across all ~90
@@ -137,10 +138,13 @@ The fluid has real art: `src/graphics/icons/fluids/polluted-water.png`, a grimy
 version of vanilla water's droplet in the same 120x64 four-mipmap strip, cut from a
 supplied image whose four droplets were drawn per mipmap size. The fluid was
 introduced as `pr_captured-pollution` ("Captured pollution") and renamed to
-`pr_polluted-water` ("Polluted water") on 2026-09-19, before it ever shipped.
+`pr_polluted-water` ("Polluted water") on 2026-09-19, before it ever shipped. The
+buildings were renamed the same day, also before shipping: `pr_pollution-intake`
+became `pr_pollution-condenser` and `pr_pollution-outflow` became
+`pr_pollution-vaporizer`.
 
-Concept art for the eventual real intake building is archived in
-[concept-art/pollution-intake/](concept-art/pollution-intake), with
+Concept art for the eventual real condenser building is archived in
+[concept-art/pollution-condenser/](concept-art/pollution-condenser), with
 `chatgpt-concept-02.png` as the current primary reference and an in-progress 3D model
 being built from it outside this repo.
 
@@ -163,7 +167,7 @@ errors, and it caught two during this session that nothing else would have.
 
 ## Open, not yet decided
 
-- Tier counts for intake, outflow, and processing families -- all still unspecified.
+- Tier counts for the intake, outflow, and processing families -- all still unspecified.
 - Whether balance constants should graduate from hardcoded Lua values into startup
   settings once playtested.
 - Outflow's progression past tier 1 (the design doc's preferred endpoint is a remote,
@@ -177,15 +181,15 @@ errors, and it caught two during this session that nothing else would have.
 
 Found in the 2026-09-19 doc review.
 
-- **Spore surfaces bypassed the gate (fixed 2026-09-19).** The intake absorbs
+- **Spore surfaces bypassed the gate (fixed 2026-09-19).** The condenser absorbs
   `pollution` only, but `get_pollution()` returns the surface's own pollutant, which is
-  spores on Gleba, so an intake there passed the threshold on spores and made polluted
+  spores on Gleba, so a condenser there passed the threshold on spores and made polluted
   water for free. The gate now also requires the surface's `pollutant_type` to be
   `pollution`, which also covers planets with no pollutant. Checked in a headless run:
-  with spores at 240 on a real Gleba surface the intake stays disabled and makes
-  nothing, while a Nauvis intake runs. This is a guard only; Gleba's own mechanic
+  with spores at 240 on a real Gleba surface the condenser stays disabled and makes
+  nothing, while a Nauvis condenser runs. This is a guard only; Gleba's own mechanic
   stays deferred.
-- **Grouped intakes outrun their chunk (not fixed).** Each intake compares its chunk against a fixed
-  threshold of 10 without counting the other intakes in that chunk. Negative emissions
-  stop at zero, so enough intakes in one thin chunk keep producing fluid the chunk
+- **Grouped condensers outrun their chunk (not fixed).** Each condenser compares its chunk against a fixed
+  threshold of 10 without counting the other condensers in that chunk. Negative emissions
+  stop at zero, so enough condensers in one thin chunk keep producing fluid the chunk
   can't back.

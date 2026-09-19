@@ -5,7 +5,7 @@ data:extend({
     },
     {
       type = "recipe-category",
-      name = "pr_pollution-intake-category",
+      name = "pr_pollution-condenser-category",
     },
     {
       type = "recipe-category",

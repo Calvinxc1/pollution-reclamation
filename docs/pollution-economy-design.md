@@ -124,6 +124,10 @@ parity preserved.
 
 ### Intake building
 
+The tier-1 intake building is named the **pollution condenser** (`pr_pollution-condenser`)
+in game. "Intake" remains the name for the building family and its tech branch in this
+doc.
+
 Upgrade axes available, beyond raw throughput: activation threshold (how thin the air can
 get before it stops), extraction efficiency at low concentration, chunk reach, footprint,
 power draw, and filter consumption.

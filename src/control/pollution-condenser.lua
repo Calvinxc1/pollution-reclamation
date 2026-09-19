@@ -1,4 +1,4 @@
--- Pure gating logic for pr_pollution-intake buildings: a rolling `next()`
+-- Pure gating logic for pr_pollution-condenser buildings: a rolling `next()`
 -- cursor over a tracked-entities table, visiting a small slice per tick and
 -- toggling each entity offline when its chunk doesn't have enough ambient
 -- pollution to back a real craft.
@@ -7,7 +7,7 @@
 -- `storage`, or `script`. `state`, `surface`, `threshold`, and `slice_count`
 -- are always passed in explicitly. That's what lets this exact file load
 -- two different ways with no contradiction between them: from real
--- Factorio via `require("__pollution-reclamation__/control/pollution-intake")`,
+-- Factorio via `require("__pollution-reclamation__/control/pollution-condenser")`,
 -- and from the plain-Lua test runner via `dofile(...)`.
 --
 -- Trust boundary: this module does not check entity validity. The adapter
@@ -61,10 +61,10 @@ end
 -- reimplementation that no stock Lua interpreter reproduces, so callers
 -- (and tests) should only rely on "every entity gets visited eventually",
 -- never on a specific sequence.
--- The intake only absorbs `pollution` (its emissions_per_minute names no
+-- The condenser only absorbs `pollution` (its emissions_per_minute names no
 -- other pollutant), but get_pollution() reports whatever pollutant the
 -- surface uses: spores on Gleba, nothing at all on Vulcanus, Fulgora, or
--- Aquilo. Without this check an intake on Gleba would pass the threshold on
+-- Aquilo. Without this check a condenser on Gleba would pass the threshold on
 -- spores, absorb nothing, and make polluted water for free. The pollution
 -- economy is Nauvis-only by design; Gleba gets its own mechanic later.
 function M.can_capture(entity, threshold)
