@@ -241,14 +241,39 @@ scrubbing" recipe above: captured pollution fluid plus a filter produces a used 
   scale the machine's with `emissions_multiplier`. At 1.0, Assembler 2 emits 3/min
   against 7.5/min removed, so the clean-recipe invariant above holds. What it emits goes
   back into the air for intakes to capture again.
-- **Tech: blue science.** The recipe is unlocked by a chemical-science technology, not
-  the old red and green one.
 - **Filters stay the consumable,** which settles the filter-role question in the risks
-  section. Filter recipe requirements are still to be discussed.
+  section.
 
-**Open.** The improved filter tier: its old recipe worked by tripling the building's
+### Filters and filter cleaning
+
+**Decided 2026-09-19.** Filters and the purifier recipe unlock at green science.
+Cleaning used filters unlocks separately at blue science. Until then filters are
+single-use, so early purifying is paid for in fresh filters, and used filters pile up
+until the player reaches oil and sulfur.
+
+- **Filter recipe:** 2 coal, 2 iron plate, 1 steel plate, 2 plastic bar, with or without
+  Space Age. The old base-game version without plastic is dropped.
+- **Cleaning recipe (`pr_restore-used-pollution-filter`):** `chemistry` category, so it
+  runs in a chemical plant only.
+
+  | | Value |
+  | --- | --- |
+  | Cycle (`energy_required`) | 60s |
+  | In | 1 used pollution filter + 20 sulfuric acid |
+  | Out | 1 pollution filter, no byproduct |
+
+  The old recipe's water input and 50% coal byproduct are gone. Needing sulfuric acid
+  ties cleaning to a working oil and sulfur line, which is what keeps purifying from
+  being early-game.
+
+**Deferred: extraction processes.** Recovering materials from used filters becomes its
+own later branch of the tech tree rather than a byproduct of cleaning. To be built out
+with the rest of the tech tree.
+
+**Open.** The technology tree itself: which technologies unlock these recipes, their
+costs, and their prerequisites. The improved filter tier and its cleaning recipe: its old recipe worked by tripling the building's
 negative emissions, which means nothing once pollution arrives by pipe. Also open: the
-exact `emissions_multiplier`, the technology's cost and prerequisites, and the migration
+exact `emissions_multiplier` and the migration
 for purifiers already placed in 0.1.x saves. Spore filtering on the old purifier goes
 away with it; Gleba gets its own mechanic later.
 
@@ -534,9 +559,10 @@ about *effective* capture, which for intake includes reach, not only per-buildin
 - **Tier counts.** Unspecified for all three families.
 - **Processing tiers past the first.** Unspecified.
 
-## Existing mechanics worth preserving
+## Mechanics inherited from 0.1.x
 
-Verified in the current source:
+Verified in the 0.1.x source. The 2026-09-19 purifier and filter decisions above replace
+all of these; they're kept here as the baseline being changed.
 
 - Basic restore: used filter + 100 water -> filter, plus coal at 50%.
 - Improved restore: used improved filter + 100 water -> improved filter, plus coal at 50%
@@ -545,8 +571,9 @@ Verified in the current source:
   are negative, the improved recipe scrubs roughly three times as fast. The "improved" tier
   is a throughput multiplier on the same building, not a separate machine.
 
-The restore loop is already a mild material source rather than pure cost recovery, which is
-a good foundation for the processing branch.
+The old restore loop was a mild material source rather than pure cost recovery. The new
+cleaning recipe drops that byproduct on purpose; material recovery moves to the deferred
+extraction branch.
 
 ---
 
