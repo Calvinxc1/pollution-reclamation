@@ -61,6 +61,21 @@ end
 -- reimplementation that no stock Lua interpreter reproduces, so callers
 -- (and tests) should only rely on "every entity gets visited eventually",
 -- never on a specific sequence.
+-- The intake only absorbs `pollution` (its emissions_per_minute names no
+-- other pollutant), but get_pollution() reports whatever pollutant the
+-- surface uses: spores on Gleba, nothing at all on Vulcanus, Fulgora, or
+-- Aquilo. Without this check an intake on Gleba would pass the threshold on
+-- spores, absorb nothing, and make polluted water for free. The pollution
+-- economy is Nauvis-only by design; Gleba gets its own mechanic later.
+function M.can_capture(entity, threshold)
+  local surface = entity.surface
+  local pollutant = surface.pollutant_type
+  if not (pollutant and pollutant.name == "pollution") then
+    return false
+  end
+  return surface.get_pollution(entity.position) >= threshold
+end
+
 function M.step(state, threshold, slice_count)
   for _ = 1, slice_count do
     local key = state.cursor
@@ -76,8 +91,7 @@ function M.step(state, threshold, slice_count)
     state.cursor = next(state.entities, key)
 
     if entity then
-      local pollution = entity.surface.get_pollution(entity.position)
-      entity.disabled_by_script = pollution < threshold
+      entity.disabled_by_script = not M.can_capture(entity, threshold)
     end
   end
 

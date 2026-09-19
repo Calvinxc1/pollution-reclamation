@@ -24,11 +24,16 @@ end
 
 -- disabled_by_script starts nil (not false) so tests can tell "visited and
 -- computed false" apart from "never visited, still at its initial value".
-local function make_entity(pollution_level)
+local function make_entity(pollution_level, pollutant_name)
+  if pollutant_name == nil then
+    pollutant_name = "pollution"
+  end
   return {
     position = {},
     disabled_by_script = nil,
     surface = {
+      -- false stands for a surface with no pollutant at all (pollutant_type nil).
+      pollutant_type = pollutant_name and { name = pollutant_name } or nil,
       get_pollution = function(_)
         return pollution_level
       end,
@@ -46,6 +51,22 @@ do
   module.step(state, 10, 2)
   check("entity above threshold stays enabled", hot.disabled_by_script == false)
   check("entity below threshold gets disabled", cold.disabled_by_script == true)
+end
+
+-- Test: only surfaces whose pollutant is `pollution` can run an intake.
+-- Gleba reports spores through get_pollution, which the intake can't absorb.
+do
+  local state = module.new_state()
+  local nauvis = make_entity(50)
+  local gleba = make_entity(50, "spores")
+  local vulcanus = make_entity(50, false)
+  module.add_entity(state, "nauvis", nauvis)
+  module.add_entity(state, "gleba", gleba)
+  module.add_entity(state, "vulcanus", vulcanus)
+  module.step(state, 10, 3)
+  check("pollution surface above threshold stays enabled", nauvis.disabled_by_script == false)
+  check("spore surface is disabled even above threshold", gleba.disabled_by_script == true)
+  check("surface with no pollutant is disabled", vulcanus.disabled_by_script == true)
 end
 
 -- Test: every tracked entity gets visited within one lap.
@@ -82,6 +103,7 @@ do
       position = {},
       disabled_by_script = nil,
       surface = {
+        pollutant_type = { name = "pollution" },
         get_pollution = function()
           visit_counts[key] = visit_counts[key] + 1
           return 20
