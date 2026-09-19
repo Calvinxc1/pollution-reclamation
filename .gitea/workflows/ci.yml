@@ -8,7 +8,7 @@ on:
 
 jobs:
   validate:
-    name: Validate Factorio mod
+    name: "Gate: Validate Factorio mod"
     runs-on: factorio-headless
     env:
       FACTORIO_BIN: /opt/factorio/bin/x64/factorio
@@ -57,6 +57,11 @@ jobs:
         env:
           PR_REQUIRE_FACTORIO: "1"
         run: ./scripts/validate.sh
+
+      - name: Validate mod without Space Age
+        env:
+          PR_REQUIRE_FACTORIO: "1"
+        run: ./scripts/factorio-validate-base-game.sh
 
       - name: Download and validate declared dependency mod list
         env:

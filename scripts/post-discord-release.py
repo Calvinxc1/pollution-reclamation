@@ -11,6 +11,9 @@ from pathlib import Path
 
 DISCORD_DESCRIPTION_LIMIT = 4096
 
+# What is left for the changelog itself once the code fence is wrapped around it.
+CHANGELOG_CHUNK_LIMIT = DISCORD_DESCRIPTION_LIMIT - len("```text\n\n```")
+
 
 class ApiError(RuntimeError):
     def __init__(self, status: int, body: str):
@@ -59,31 +62,117 @@ def extract_changelog_section(changelog: str, version: str) -> str:
 
 
 def changelog_code_block(text: str) -> str:
-    overhead = len("```text\n\n```")
-    limit = DISCORD_DESCRIPTION_LIMIT - overhead
-    if len(text) > limit:
-        fail(
-            "Changelog section is too long for one Discord embed description "
-            f"({len(text)} > {limit} characters)."
-        )
     return f"```text\n{text}\n```"
 
 
-def build_payload(args: argparse.Namespace, section: str) -> dict:
+def split_section(section: str, limit: int = CHANGELOG_CHUNK_LIMIT) -> list:
+    """Split a changelog section into parts that each fit one embed description.
+
+    Splits on category boundaries first -- "  Bugfixes:" and friends -- so a
+    part never begins mid-bullet. A single category larger than the limit is
+    split again on bullet boundaries, and a single bullet larger than the limit
+    is split on lines as a last resort, which is the only case that can break a
+    sentence.
+
+    Discord caps one embed description at 4096 characters and all embeds in a
+    message at 6000 together, so a long section cannot be delivered as several
+    embeds in one message. Each part becomes its own message instead.
+    """
+    if len(section) <= limit:
+        return [section]
+
+    def blocks(text):
+        """Group lines under the category header they belong to."""
+        grouped, current = [], []
+        for line in text.split("\n"):
+            is_header = (
+                line.startswith("  ")
+                and not line.startswith("    ")
+                and line.rstrip().endswith(":")
+            )
+            if is_header and current:
+                grouped.append("\n".join(current))
+                current = []
+            current.append(line)
+        if current:
+            grouped.append("\n".join(current))
+        return grouped
+
+    def split_line(line):
+        """A single line longer than a whole embed. Cut it into limit-sized runs."""
+        return [line[at:at + limit] for at in range(0, len(line), limit)]
+
+    def split_oversized(block):
+        """A category too large on its own: break it on bullets, then on lines."""
+        pieces, current = [], []
+
+        def flush():
+            if current:
+                pieces.append("\n".join(current))
+                current.clear()
+
+        for line in block.split("\n"):
+            if len(line) > limit:
+                flush()
+                pieces.extend(split_line(line))
+                continue
+
+            candidate = "\n".join(current + [line])
+            if current and len(candidate) > limit:
+                flush()
+                current.append(line)
+            else:
+                current.append(line)
+
+        flush()
+        return pieces
+
+    parts, current = [], ""
+    for block in blocks(section):
+        if len(block) > limit:
+            if current:
+                parts.append(current)
+                current = ""
+            parts.extend(split_oversized(block))
+            continue
+
+        candidate = f"{current}\n{block}" if current else block
+        if len(candidate) > limit:
+            parts.append(current)
+            current = block
+        else:
+            current = candidate
+
+    if current:
+        parts.append(current)
+    return parts
+
+
+def build_payloads(args: argparse.Namespace, section: str) -> list:
+    """One payload per message. Long sections are delivered as several."""
     portal_url = args.portal_url or f"https://mods.factorio.com/mod/{args.mod_name}"
     previous_version = args.previous_version or "initial"
-    return {
-        "username": "Pollution Reclamation Releases",
-        "allowed_mentions": {"parse": []},
-        "embeds": [
-            {
-                "title": f"{args.mod_title} {previous_version} -> {args.version}",
-                "url": portal_url,
-                "description": changelog_code_block(section),
-                "color": 3447003,
-            }
-        ],
-    }
+    parts = split_section(section)
+    total = len(parts)
+
+    payloads = []
+    for index, part in enumerate(parts, start=1):
+        title = f"{args.mod_title} {previous_version} -> {args.version}"
+        if total > 1:
+            title = f"{title} ({index}/{total})"
+        payloads.append({
+            "username": "Pollution Reclamation Releases",
+            "allowed_mentions": {"parse": []},
+            "embeds": [
+                {
+                    "title": title,
+                    "url": portal_url,
+                    "description": changelog_code_block(part),
+                    "color": 3447003,
+                }
+            ],
+        })
+    return payloads
 
 
 def post_webhook(webhook_url: str, payload: dict) -> None:
@@ -126,21 +215,33 @@ def main() -> int:
         fail(f"Changelog file not found: {args.changelog_file}")
 
     section = extract_changelog_section(args.changelog_file.read_text(encoding="utf-8"), args.version)
-    payload = build_payload(args, section)
+    payloads = build_payloads(args, section)
 
     if args.dry_run:
-        print(json.dumps(payload, indent=2))
+        print(json.dumps(payloads, indent=2))
         return 0
 
     if not args.webhook_url:
         fail("DISCORD_RELEASE_WEBHOOK_URL is required to post release notes.")
 
-    try:
-        post_webhook(args.webhook_url, payload)
-    except ApiError as error:
-        fail(f"Discord webhook post failed: {error}")
+    # Posted in order and one at a time: Discord does not guarantee ordering
+    # between concurrent webhook posts, and a numbered part arriving out of
+    # sequence is worse than a slow post.
+    for index, payload in enumerate(payloads, start=1):
+        try:
+            post_webhook(args.webhook_url, payload)
+        except ApiError as error:
+            fail(
+                f"Discord webhook post failed on part {index} of {len(payloads)}: {error}"
+            )
 
-    print(f"Posted Discord release changelog for {args.mod_name} {args.version}.")
+    if len(payloads) > 1:
+        print(
+            f"Posted Discord release changelog for {args.mod_name} {args.version} "
+            f"in {len(payloads)} messages."
+        )
+    else:
+        print(f"Posted Discord release changelog for {args.mod_name} {args.version}.")
     return 0
 
 

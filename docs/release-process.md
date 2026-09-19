@@ -12,9 +12,12 @@ Versioning policy is documented in [semantic-versioning.md](semantic-versioning.
 
 ## Factorio Mod Portal Status
 
-Unlike the other New Eden Workshop mods, this mod is not yet published to the Factorio Mod Portal. `KrastorioAirPurifier` is already taken by the mod this repository continues from, so Pollution Reclamation needs its own portal listing under Jason's account before mod portal upload can be enabled here.
-
-`deploy.yml` therefore only creates Gitea and GitHub releases for now. The `upload-factorio-mod-portal.py` and `post-discord-release.py` steps used by the other family mods are not wired into this repository's workflow yet. Add them back, following the [advanced-fluid-infrastructure](https://gitea.infra.newedenhomestead.net/factorio-modding/advanced-fluid-infrastructure) `deploy.yml` as a reference, once a portal listing exists and `FACTORIO_MOD_PORTAL_TOKEN` (and optionally `DISCORD_RELEASE_WEBHOOK_URL`) are configured.
+`KrastorioAirPurifier` is already taken on the portal by the mod this repository continues
+from, so Pollution Reclamation needs its own portal listing under a New Eden Workshop
+account before the first real upload can succeed. **Confirm that listing exists before the
+first version-bump release reaches `main`**, or the Mod Portal Upload step below will fail
+on that release (harmlessly — Gitea and GitHub releases still succeed independently, per
+the per-destination retry behavior described under Main Validation and Release).
 
 ## Branch Model
 
@@ -147,7 +150,7 @@ The Gitea main workflow runs on pushes to `main`.
 
 It always validates the mod. It compares the current `src/info.json` version to the previous `main` version, then packages and publishes the mod only when the version changed.
 
-This means a version bump is the normal deployment trigger. Changes merged to `main` without a version bump are validated but do not create a package, tag, Gitea release, or GitHub release unless the current version already has a local Gitea release and GitHub Releases is missing that version.
+This means a version bump is the normal deployment trigger. Changes merged to `main` without a version bump are validated but do not create a package, tag, Gitea release, GitHub release, or Factorio mod portal upload unless the current version already has a local Gitea release and one of the public release destinations is missing that version.
 
 Expected non-release promotion path:
 
@@ -205,8 +208,6 @@ The workflow target repository is configured as:
 GITHUB_RELEASE_REPOSITORY=Calvinxc1/pollution-reclamation
 ```
 
-**This GitHub mirror repository does not exist yet.** Create it (public, matching the family's mirror pattern) before relying on this step, or `deploy.yml`'s GitHub release step will fail on the first real release.
-
 The upload helper waits for the mirrored commit to become visible on GitHub before creating the release, then attaches the same package zip used for the local Gitea release.
 
 The upload helper is:
@@ -219,8 +220,40 @@ Do not run this helper manually unless intentionally publishing or repairing a G
 
 ## Factorio Mod Portal Upload
 
-Not yet enabled for this repository. See [Factorio Mod Portal Status](#factorio-mod-portal-status) above.
+The same version-bump release path uploads the packaged zip to the Factorio mod portal after the Gitea and GitHub release assets are created.
+
+The workflow requires this repository secret:
+
+```text
+FACTORIO_MOD_PORTAL_API_KEY
+```
+
+This is distinct from `FACTORIO_MOD_PORTAL_USERNAME`/`FACTORIO_MOD_PORTAL_TOKEN` used in `ci.yml`, which is a download-only service-token pair. The upload API (v2) only accepts a scoped API key as a bearer token. The secret value must be a Factorio API key created from the Factorio account profile with `ModPortal: Upload Mods` usage. The upload helper follows the official Factorio mod upload API documented at <https://wiki.factorio.com/Mod_upload_API>.
+
+Mod portal upload is skipped for non-release promotions because the upload step exits when `DEPLOY_MOD` is not `1`, and skipped independently of the GitHub release if a portal release for the current version is already found to exist (see Main Validation and Release above).
+
+The upload helper is:
+
+```sh
+./scripts/upload-factorio-mod-portal.py --mod-name "$MOD_NAME" --asset "$PACKAGE_PATH"
+```
+
+Do not run this helper manually unless intentionally publishing a new mod portal release for the version in `src/info.json`.
 
 ## Discord Release Announcement
 
-Not yet enabled for this repository. See [Factorio Mod Portal Status](#factorio-mod-portal-status) above.
+The version-bump release path posts the matching `src/changelog.txt` section to Discord after release publication steps succeed.
+
+The workflow requires this repository secret:
+
+```text
+DISCORD_RELEASE_WEBHOOK_URL
+```
+
+The announcement helper extracts only the `Version: {version}` section matching `src/info.json` from the Factorio-format changelog, then posts it to Discord through the configured webhook. The Discord message title is the mod name followed by the previous version, `->`, and the new version. The matching changelog section is posted underneath as a `text` code block without truncation.
+
+```sh
+./scripts/post-discord-release.py --mod-name "$MOD_NAME" --mod-title "$mod_title" --previous-version "$PREVIOUS_MOD_VERSION" --version "$MOD_VERSION" --changelog-file src/changelog.txt
+```
+
+The Discord post runs only when the merge to `main` changes the mod version. Release-recovery runs for an already-existing version do not post a new Discord announcement.
