@@ -44,27 +44,27 @@ local function adjust_graphics(node, tint, scale_factor)
   end
 end
 
-local outflow = util.table.deepcopy(data.raw["assembling-machine"]["chemical-plant"])
+local vaporizer = util.table.deepcopy(data.raw["assembling-machine"]["chemical-plant"])
 
-outflow.name = "pr_pollution-outflow"
-outflow.icon = "__base__/graphics/icons/chemical-plant.png"
-outflow.minable.result = "pr_pollution-outflow"
-outflow.fast_replaceable_group = nil
-outflow.fixed_recipe = "pr_pollution-venting"
-outflow.crafting_categories = { "pr_pollution-outflow-category" }
+vaporizer.name = "pr_pollution-vaporizer"
+vaporizer.icon = "__base__/graphics/icons/chemical-plant.png"
+vaporizer.minable.result = "pr_pollution-vaporizer"
+vaporizer.fast_replaceable_group = nil
+vaporizer.fixed_recipe = "pr_pollution-venting"
+vaporizer.crafting_categories = { "pr_pollution-vaporizer-category" }
 
 -- 2x2 footprint, same shape as intake, replacing chemical-plant's native
 -- 3x3 collision/selection box.
-outflow.collision_box = { { -0.7, -0.7 }, { 0.7, 0.7 } }
-outflow.selection_box = { { -0.85, -0.85 }, { 0.85, 0.85 } }
+vaporizer.collision_box = { { -0.7, -0.7 }, { 0.7, 0.7 } }
+vaporizer.selection_box = { { -0.85, -0.85 }, { 0.85, 0.85 } }
 
--- Outflow only ever consumes fluid -- the polluted water is evaporated
+-- The vaporizer only ever consumes fluid -- the polluted water is evaporated
 -- straight into the air -- so it keeps only chemical-plant's first input
 -- fluid box and drops the other three entirely. See
 -- pollution-intake-building.lua for why the connection position is
 -- chemical-plant's own {-1, -1} scaled by FOOTPRINT_SCALE, not an arbitrary
 -- centered point or its unscaled tile-edge value.
-outflow.fluid_boxes = {
+vaporizer.fluid_boxes = {
   {
     production_type = "input",
     pipe_covers = data.raw["assembling-machine"]["chemical-plant"].fluid_boxes[1].pipe_covers,
@@ -89,13 +89,13 @@ outflow.fluid_boxes = {
 -- emissions_multiplier (see pr_pollution-venting in recipes.lua) pushes the
 -- effective vent rate above that, making the round trip deliberately lossy
 -- per the design doc's biter-aggro risk mitigation. First-pass constant.
-outflow.energy_source = {
+vaporizer.energy_source = {
   type = "electric",
   usage_priority = "secondary-input",
   emissions_per_minute = { pollution = 15 },
 }
-outflow.energy_usage = "75kW"
+vaporizer.energy_usage = "75kW"
 
-adjust_graphics(outflow.graphics_set, { r = 0.85, g = 0.4, b = 0.2, a = 1 }, FOOTPRINT_SCALE)
+adjust_graphics(vaporizer.graphics_set, { r = 0.85, g = 0.4, b = 0.2, a = 1 }, FOOTPRINT_SCALE)
 
-data:extend({ outflow })
+data:extend({ vaporizer })

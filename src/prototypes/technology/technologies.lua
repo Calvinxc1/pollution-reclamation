@@ -106,7 +106,7 @@ if airPurificationPrerequisites ~= nil then
     -- Gated on fluid-handling specifically, not just steel-processing/engine
     -- (which fluid-handling already requires transitively): fluid-handling
     -- is what actually unlocks storage-tank and pump. Without it, a player
-    -- could build intake/outflow and connect them with plain pipes (those
+    -- could build the intake and vaporizer and connect them with plain pipes (those
     -- need no research) but couldn't build a tank farm -- one of the three
     -- core sinks in the design doc -- or use pumps for longer runs.
     {
@@ -123,7 +123,7 @@ if airPurificationPrerequisites ~= nil then
         },
         {
           type = "unlock-recipe",
-          recipe = "pr_pollution-outflow",
+          recipe = "pr_pollution-vaporizer",
         },
         {
           type = "unlock-recipe",

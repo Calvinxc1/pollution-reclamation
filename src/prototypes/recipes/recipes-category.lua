@@ -9,6 +9,6 @@ data:extend({
     },
     {
       type = "recipe-category",
-      name = "pr_pollution-outflow-category",
+      name = "pr_pollution-vaporizer-category",
     }
 })

@@ -169,7 +169,7 @@ if polutionFilterIngredients ~= nil then
         },
         {
           type = "recipe",
-          name = "pr_pollution-outflow",
+          name = "pr_pollution-vaporizer",
           energy_required = 5,
           enabled = false,
           ingredients = {
@@ -178,7 +178,7 @@ if polutionFilterIngredients ~= nil then
             { type = "item", name = "pipe", amount = 4 },
             { type = "item", name = "copper-cable", amount = 2 },
           },
-          results = { { type = "item", name = "pr_pollution-outflow", amount = 1 } },
+          results = { { type = "item", name = "pr_pollution-vaporizer", amount = 1 } },
         },
         -------------
         -- POLLUTION ECONOMY: PROCESS
@@ -228,7 +228,8 @@ if polutionFilterIngredients ~= nil then
         -- building only ever emits while it has real captured fluid to
         -- consume, never for free.
         --
-        -- A straight outflow: the polluted water is evaporated into the air,
+        -- The pollution vaporizer is a straight outflow: the polluted
+        -- water is evaporated into the air,
         -- pollution and water together, so nothing comes back out. Empty
         -- results is a fully supported "pure sink" recipe shape; with no
         -- product, icon and subgroup can't be inherited and are set
@@ -236,7 +237,7 @@ if polutionFilterIngredients ~= nil then
         {
           type = "recipe",
           name = "pr_pollution-venting",
-          categories = { "pr_pollution-outflow-category" },
+          categories = { "pr_pollution-vaporizer-category" },
           icon = "__pollution-reclamation__/graphics/icons/fluids/polluted-water.png",
           icon_size = 64,
           energy_required = 4,
