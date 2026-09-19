@@ -137,9 +137,15 @@ the number it displays is read through the same helpers that decide whether cond
 run: the readout cannot drift from the rule. Sensors are excluded from a chunk's
 condenser population, since they absorb nothing.
 
+It reads out two ways: a status line for a player standing beside it, and a circuit
+signal, `signal-P` by default and changeable in its window. That makes it a
+`constant-combinator` underneath, the only type that can put a script-set value on a
+wire, which in turn means it cannot require power. A gauge that works wherever it is
+planted suits a scouting instrument.
+
 **Open.** Later sensor tiers. The tracking already knows a chunk's condenser count and
-what that chunk must hold to run them, and a circuit-network output is the other obvious
-direction; neither is built, and tier 1 stays one number on purpose.
+what that chunk must hold to run them; showing that is the obvious next step, and tier 1
+stays one number on purpose.
 
 ### Intake building
 

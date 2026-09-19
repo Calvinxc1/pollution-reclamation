@@ -1,23 +1,29 @@
--- Placeholder art, like the rest of the mod, but the sensor's own: a squat
--- steel housing on a bolted base plate, blue band, green readout, top intake
--- grille. Rendered outside the repo; the source render is kept in
--- docs/icon-candidates/.
+-- The sensor is built on vanilla's constant-combinator prototype, and that is
+-- a plumbing decision rather than a design one: the constant combinator is the
+-- only entity type in Factorio that can put an arbitrary, script-set value on
+-- a circuit wire. Everything else with a circuit connector either takes input
+-- (lamps, inserters) or reports something fixed like charge or contents.
 --
--- The prototype is still a deep copy of vanilla small-lamp, for its behaviour
--- rather than its looks: a lamp is 1x1, takes power, shows an entity status
--- line, and can be always-on. Only the sprites and power are overridden.
+-- What the player sees is this mod's own sensor: our sprite, our name, one
+-- output signal carrying the chunk's pollution. The only inherited behaviour
+-- is "has a circuit output".
 --
--- The sensor absorbs nothing. It is tracked alongside condensers purely so it
--- reports the same chunk pollution the gate tests, through the same code --
--- see src/control/pollution-condenser.lua.
-local sensor = util.table.deepcopy(data.raw["lamp"]["small-lamp"])
+-- The trade is power: a constant combinator has no energy source, so the
+-- sensor cannot require electricity. It reads wherever it is planted, which
+-- suits a scouting instrument.
+--
+-- The art is placeholder, like the rest of the mod: a squat steel housing on
+-- a bolted base plate, blue band, green readout, top intake grille. The
+-- source render is kept in docs/icon-candidates/.
+local sensor = util.table.deepcopy(data.raw["constant-combinator"]["constant-combinator"])
 
 sensor.name = "pr_pollution-sensor"
-sensor.minable.result = "pr_pollution-sensor"
+sensor.minable = { mining_time = 0.1, result = "pr_pollution-sensor" }
 sensor.fast_replaceable_group = nil
 sensor.next_upgrade = nil
 sensor.icon = "__pollution-reclamation__/graphics/icons/entities/pollution-sensor.png"
 sensor.icon_size = 64
+sensor.icon_draw_specification = nil
 
 -- 64 image pixels at scale 0.5 is 32 screen pixels, one tile wide. The shift
 -- drops the base plate onto the tile instead of centring the whole sprite,
@@ -31,30 +37,25 @@ local picture = {
   shift = util.by_pixel(0, -6),
 }
 
-sensor.picture_off = picture
-sensor.picture_on = util.table.deepcopy(picture)
-
--- No lamp behaviour beyond the prototype base: the sensor is not a light. The
--- readout already glows in the art, so every one of vanilla lamp's lighting
--- fields is cleared, and picture_on is the same sprite as picture_off. The
--- device therefore looks identical powered or not, day or night, instead of
--- washing green the way a coloured lamp would.
-sensor.always_on = true
-sensor.light = nil
-sensor.light_when_colored = nil
-sensor.glow_size = 0
-sensor.glow_color_intensity = 0
-sensor.glow_render_mode = nil
-sensor.signal_to_color_mapping = nil
-sensor.darkness_for_all_lamps_on = nil
-sensor.darkness_for_all_lamps_off = nil
-sensor.energy_usage_per_tick = "500W"
-
--- Trivial but non-zero draw: the reading should go dark when the power does,
--- so an unpowered sensor is honestly blank rather than quietly stale.
-sensor.energy_source = {
-  type = "electric",
-  usage_priority = "secondary-input",
+-- One sprite for all four directions: the device is round and reads the same
+-- from every side, so rotating it changes nothing.
+sensor.sprites = {
+  north = util.table.deepcopy(picture),
+  east = util.table.deepcopy(picture),
+  south = util.table.deepcopy(picture),
+  west = util.table.deepcopy(picture),
 }
+
+-- No blinking activity light: that is combinator furniture, and this is a
+-- gauge. The readout already glows in the art. The sprites are replaced with
+-- empty ones rather than removed, because the prototype requires the LED's
+-- light offsets to exist -- those are kept, pointing at nothing.
+sensor.activity_led_sprites = {
+  north = util.empty_sprite(),
+  east = util.empty_sprite(),
+  south = util.empty_sprite(),
+  west = util.empty_sprite(),
+}
+sensor.activity_led_light = nil
 
 data:extend({ sensor })

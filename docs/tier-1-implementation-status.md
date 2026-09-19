@@ -63,16 +63,25 @@ Two derived figures worth keeping in mind:
 Added 2026-09-19, red science, deliberately ahead of the economy itself so a player can
 survey chunks before deciding where condensers are worth building.
 
-- **`pr_pollution-sensor`** is a 1x1 powered building with its own placeholder art: a
-  squat steel housing on a bolted base plate, blue band, green readout and a top intake
-  grille. The prototype is still a deep copy of vanilla `small-lamp`, for its behaviour
-  (1x1, powered, status line, always-on) rather than its looks; the sprites, power, and
-  all of the lamp's lighting are overridden. Every light, glow and signal-colour field is
-  cleared and `picture_on` is the same sprite as `picture_off`, so the sensor looks
-  identical powered or not, day or night, instead of glowing like a lamp. The world sprite is 96x96 at `scale = 0.5`, so the device is one
-  tile wide, shifted down so the base plate sits on the tile instead of floating. It shows the pollution in its own chunk as an entity status
-  line, and nothing else. Unpowered it clears the reading and falls back to the engine's
-  own "No power" status rather than leaving a stale number on screen.
+- **`pr_pollution-sensor`** is a 1x1 building with its own placeholder art: a squat steel
+  housing on a bolted base plate, blue band, green readout and a top intake grille. The
+  world sprite is 96x96 at `scale = 0.5`, so the device is one tile wide, shifted down so
+  the base plate sits on the tile instead of floating. It shows the pollution in its own
+  chunk two ways: as an entity status line for a player standing next to it, and on its
+  circuit output.
+- **It is a `constant-combinator` underneath, and that is plumbing, not design.** That is
+  the only entity type in Factorio that can put an arbitrary, script-set value on a
+  circuit wire; everything else with a connector either takes input (lamps, inserters) or
+  reports something fixed like charge or contents. The only inherited behaviour is the
+  circuit output: the combinator's activity LED is replaced with empty sprites (its light
+  offsets are mandatory, so they stay, pointing at nothing) and the sprites are ours.
+- **The trade is power.** A constant combinator has no energy source, so the sensor cannot
+  require electricity; it reads wherever it is planted. It was a powered `small-lamp`
+  copy until 2026-09-19, when the circuit output was chosen over the power requirement.
+- **The output signal is the player's.** A fresh sensor outputs on `signal-P`; the player
+  can change it in the sensor's window like any combinator's, and each update rewrites
+  only the slot's value, keeping their signal. An emptied slot is refilled with the
+  default. A surface with no pollutant outputs zero.
 - **`pr_pollution-sensing`** unlocks it: 25 automation science at 15s, after `radar`,
   vanilla's own survey instrument (itself 20). `pr_pollution-control` requires it in turn,
   so a player can always read a chunk before building anything that acts on one.
@@ -91,9 +100,9 @@ survey chunks before deciding where condensers are worth building.
   raise the bar their neighbours have to clear.
 - **One number on purpose.** The tracking also knows how many condensers share the chunk
   and what that chunk needs to run them; showing that is left to a later sensor tier.
-- Verified headless: a powered sensor's reading matched `get_pollution` exactly as
-  pollution rose and fell, an unpowered one showed nothing, and a condenser beside a
-  sensor kept running normally.
+- Verified headless: the reading matched `get_pollution` exactly as pollution rose and
+  fell, a lamp wired to the sensor read the same number off `signal-P` (366, 507, 410),
+  and a condenser beside a sensor kept running normally.
 
 ## Tech placement
 

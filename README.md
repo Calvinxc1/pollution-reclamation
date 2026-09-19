@@ -14,7 +14,7 @@ This mod continues an independent line of [KrastorioAirPurifier](https://mods.fa
 
 ## Features
 
-- A pollution sensor at red science that reads how much pollution sits in the chunk it stands in, so you can survey before you build.
+- A pollution sensor at red science that reads how much pollution sits in the chunk it stands in, so you can survey before you build. It also puts that number on the circuit network, on a signal you choose.
 - A pollution condenser that scrubs pollution out of the air around it into water, producing polluted water. It only runs where the air is actually polluted.
 - A pollution vaporizer that evaporates polluted water into the air wherever it is placed, moving the biter attacks it attracts.
 - Pollution filtering in Assembler 2 and 3, which traps the pollution in polluted water in a pollution filter and returns the water.

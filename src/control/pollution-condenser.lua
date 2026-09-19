@@ -171,25 +171,50 @@ function M.reading(entity)
   }
 end
 
--- Writes the reading onto the entity as a custom status line. An unpowered
--- sensor reports nothing and falls back to the engine's own "No power"
--- status, rather than leaving a stale number on screen.
-function M.report(entity)
-  if (entity.energy or 0) <= 0 then
-    entity.custom_status = nil
-    return nil
+-- The signal a freshly placed sensor outputs on. The player can change it in
+-- the sensor's own GUI, exactly as they would a constant combinator's, and
+-- the update below keeps whatever they chose.
+M.DEFAULT_SIGNAL = { type = "virtual", name = "signal-P", quality = "normal" }
+
+-- Puts `value` on the sensor's circuit output, keeping the player's chosen
+-- signal. The sensor is a constant combinator underneath, so its output is
+-- one logistic section whose first slot we own: we rewrite the slot's count
+-- every update and leave its signal alone. An emptied slot is refilled with
+-- the default signal, so a sensor always reads out something.
+function M.write_signal(entity, value)
+  local behavior = entity.get_or_create_control_behavior()
+  if not behavior then
+    return
   end
+  local section = behavior.get_section(1) or behavior.add_section()
+  if not section then
+    return
+  end
+  local slot = section.get_slot(1)
+  local signal = slot and slot.value or nil
+  if not (signal and signal.name) then
+    signal = M.DEFAULT_SIGNAL
+  end
+  section.set_slot(1, { value = signal, min = value })
+end
+
+-- Writes the reading onto the entity: a custom status line for a player
+-- standing next to it, and the same number on its circuit output.
+function M.report(entity)
   local reading = M.reading(entity)
+  local pollution = math.floor(reading.pollution + 0.5)
   if reading.pollutant == nil then
     entity.custom_status = {
       diode = M.DIODE.yellow,
       label = { "pr-sensor.no-pollutant" },
     }
+    M.write_signal(entity, 0)
   else
     entity.custom_status = {
       diode = M.DIODE.green,
-      label = { "pr-sensor.pollution", tostring(math.floor(reading.pollution + 0.5)) },
+      label = { "pr-sensor.pollution", tostring(pollution) },
     }
+    M.write_signal(entity, pollution)
   end
   return reading
 end

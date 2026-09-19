@@ -30,11 +30,26 @@ local function make_entity(pollution_level, pollutant_name, position)
   if pollutant_name == nil then
     pollutant_name = "pollution"
   end
+  local slots = {}
   return {
     position = position or { x = 0, y = 0 },
     disabled_by_script = nil,
-    -- Sensors only report while powered; condensers ignore this.
-    energy = 100,
+    -- A stand-in for the constant combinator underneath a sensor: one
+    -- section whose first slot the mod owns. Condensers never touch this.
+    -- Factorio's API is called with a dot, not a colon, so these take no
+    -- self and close over the slots table instead.
+    section = { slots = slots },
+    get_or_create_control_behavior = function()
+      return {
+        get_section = function()
+          return {
+            get_slot = function(i) return slots[i] end,
+            set_slot = function(i, filter) slots[i] = filter end,
+          }
+        end,
+        add_section = function() return nil end,
+      }
+    end,
     surface = {
       -- false stands for a surface with no pollutant at all (pollutant_type nil).
       index = 1,
@@ -156,16 +171,38 @@ do
   check("the sensor reports nothing else", #sensor.custom_status.label == 2)
 end
 
--- Test: an unpowered sensor reports nothing rather than a stale number.
+-- Test: the sensor puts its reading on its circuit output, on the default
+-- signal to begin with.
 do
   local state = module.new_state()
   local sensor = make_entity(80)
   module.add_entity(state, "sensor", sensor, "sensor")
   module.step(state, 10, 1)
-  check("a powered sensor reports", sensor.custom_status ~= nil)
-  sensor.energy = 0
+  local slot = sensor.section.slots[1]
+  check("the sensor writes its reading to the circuit output", slot ~= nil and slot.min == 80)
+  check("a fresh sensor defaults to signal-P",
+    slot.value.name == "signal-P" and slot.value.type == "virtual")
+end
+
+-- Test: the player's chosen signal survives the update; only the value moves.
+do
+  local state = module.new_state()
+  local sensor = make_entity(42)
+  module.add_entity(state, "sensor", sensor, "sensor")
+  sensor.section.slots[1] = { value = { type = "item", name = "iron-plate", quality = "normal" }, min = 0 }
   module.step(state, 10, 1)
-  check("an unpowered sensor clears its reading", sensor.custom_status == nil)
+  local slot = sensor.section.slots[1]
+  check("the chosen signal is kept", slot.value.name == "iron-plate")
+  check("the value is updated under it", slot.min == 42)
+end
+
+-- Test: a sensor with no pollutant outputs zero rather than a stale number.
+do
+  local state = module.new_state()
+  local sensor = make_entity(500, false)
+  module.add_entity(state, "sensor", sensor, "sensor")
+  module.step(state, 10, 1)
+  check("a sensor without a pollutant outputs zero", sensor.section.slots[1].min == 0)
 end
 
 -- Test: a sensor on a surface with no pollutant says so rather than reading 0.
