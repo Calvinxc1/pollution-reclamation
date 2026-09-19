@@ -2,7 +2,7 @@ schema: factorio_local_workflow
 schema_version: 1
 mod_name: pollution-reclamation
 canonical_agent_name: Pollution Reclamation Factorio Modding Agent
-workspace_path: /home/jcherry/Documents/git/factorio-mods/k2-air-purifier-recycled
+workspace_path: /home/jcherry/Documents/git/factorio-mods/pollution-reclamation
 metadata_path: src/info.json
 ownership_model: independent_continuation
 upstream_or_fork_source: >
@@ -21,8 +21,8 @@ incompatible_mods:
   - air-filtering
   - Krastorio2
 scope_boundaries:
-  - Owns the air purifier building, pollution filter items, filter recipes, filter restoration, and air purification technologies.
-  - Keep this repository focused on air/pollution filtering. Keep unrelated gameplay systems out unless Jason explicitly approves a scope expansion.
+  - Owns the pollution condenser and pollution vaporizer buildings, the polluted water and solvent fluids, pollution filter items, the pollution filtering and filter restoration recipes, and the pollution technologies.
+  - Keep this repository focused on capturing, relocating, and filtering pollution. Keep unrelated gameplay systems out unless Jason explicitly approves a scope expansion.
 release_target: Factorio 2.1 mod releases. Space Age is optional, not required.
 internal_gitflow_stage: full_gitflow
 branch_roles:
@@ -90,6 +90,7 @@ migration_notes:
   - Repository was previously an uncommitted reconstruction of the released KrastorioAirPurifier 1.2.2 mod with no CI, governance, or release automation.
   - Renamed from KrastorioAirPurifier to Pollution Reclamation (slug pollution-reclamation) because the original name is already published on the Factorio Mod Portal by a different author with no reachable contact channel.
   - Factorio Mod Portal upload and Discord release announcement steps were added to deploy.yml on 2026-08-13, bringing release automation to full parity with the sibling advanced-* mods, once the GitHub mirror repository and its access token existed. ci.yml's cross-mod family validation step (unique to advanced-fluid-infrastructure, which validates against advanced-energy-grid, advanced-power-infrastructure, and RampantArsenalFork) was deliberately not copied, since this mod has no declared dependency relationship with that family to validate.
+  - On 2026-09-19 Jason approved the pollution economy as the mod's scope: the condenser and vaporizer (PR #12), and the air purifier building replaced by pipe-fed pollution filtering with solvent restoration (PR #13). scope_boundaries and workspace_path were updated to match; workspace_path previously pointed at the pre-rename k2-air-purifier-recycled directory.
 last_stage_reviewed_at: 2026-08-13T00:00:00-07:00
 known_gaps:
   - Post-release main-to-dev sync is manual until automation is implemented and validated.
