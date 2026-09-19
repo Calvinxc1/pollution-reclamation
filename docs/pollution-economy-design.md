@@ -260,12 +260,30 @@ sulfur.
   | | Value |
   | --- | --- |
   | Cycle (`energy_required`) | 60s |
-  | In | 1 used pollution filter + 20 sulfuric acid |
+  | In | 1 used pollution filter + 20 solvent |
   | Out | 1 pollution filter, no byproduct |
 
-  The old recipe's water input and 50% coal byproduct are gone. Needing sulfuric acid
-  ties cleaning to a working oil and sulfur line, which is what keeps purifying from
-  being early-game.
+  The old recipe's water input and 50% coal byproduct are gone.
+- **Solvent (`pr_solvent`), a new fluid:** made in a chemical plant.
+
+  | | Value |
+  | --- | --- |
+  | Cycle (`energy_required`) | 12s |
+  | In | 20 sulfuric acid + 10 light oil |
+  | Out | 20 solvent |
+
+  One solvent plant (100/min) supplies exactly five cleaning plants (20/min each).
+  Both recipes run in chemical plants, so the ratio holds at any plant speed unless
+  modules are applied to one side only. Solvent can be barrelled like any ordinary
+  chemical; captured pollution still can't.
+
+  **Why solvent, and why it gates on advanced oil processing.** A used filter is clogged
+  with soot, tar, and unburnt hydrocarbons as well as dust. Acid alone chars that
+  organic sludge and leaves the filter fouled; a light-oil solvent dissolves the tar
+  so the acid can reach the mineral residue underneath. Sulfuric acid is green science,
+  but light oil only appears with advanced oil processing (basic oil processing in 2.x
+  makes petroleum gas only). So the gate follows from the recipe itself and needs no
+  explanation.
 
 **Tech placement.**
 
@@ -276,11 +294,14 @@ sulfur.
   before it, so for that stretch captured pollution can only be vented or stored.
   Cost is not set; around 300 red + green at 30s would sit just above
   `pr_pollution-economy`'s 250.
-- **Filter cleaning tech (blue): leaning.** Prerequisites are the green filter tech and
-  `chemical-science-pack`, which already brings `sulfur-processing` for the acid.
+- **Filter cleaning tech (blue): decided.** Unlocks the solvent and cleaning recipes.
+  Prerequisites are the green filter tech and `advanced-oil-processing`, which brings
+  chemical science and light oil. That puts it in early blue science.
 
 **Deferred: extraction processes.** Recovering materials from used filters becomes its
-own later branch of the tech tree rather than a byproduct of cleaning. To be built out
+own later branch of the tech tree rather than a byproduct of cleaning. Solvent is a
+natural input for that branch, and a "spent solvent" output from cleaning, carrying
+the dissolved tar, is one option for feeding it. To be built out
 with the rest of the tech tree.
 
 **Open.** Technology costs, and the rest of the tech tree beyond the two techs above.
