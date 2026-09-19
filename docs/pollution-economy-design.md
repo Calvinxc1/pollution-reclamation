@@ -7,8 +7,9 @@ trade-offs are written down before any recipes get balanced around them.
 
 **Tier-1 intake and outflow have since been built.** See
 [tier-1-implementation-status.md](tier-1-implementation-status.md) for what actually
-exists and the tuned numbers. The air purifier rework below is decided but not yet
-built. Everything else in this document remains unimplemented design.
+exists and the tuned numbers. The air purifier rework, filters, and filter
+restoration below are built as specified. Everything else in this document remains
+unimplemented design.
 
 ## Premise
 
@@ -84,8 +85,8 @@ neither reads as the "real" track and neither is a trap. They are explicitly *no
 lockstep on mechanics — see below.
 
 **Open.** Exact tier count. Note that a wide throughput band bought purely through
-building tiers is expensive in art, and the mod currently has one inherited building
-sprite. The standard trick is three discrete building tiers for visible progression plus a
+building tiers is expensive in art, and the mod currently has no building art of its own
+(both buildings are re-tinted vanilla chemical plants). The standard trick is three discrete building tiers for visible progression plus a
 multiplier research line to widen the band without new prototypes. Factorio's own
 convention is mostly three tiers.
 
@@ -176,8 +177,9 @@ with steel and engine prereqs; the improved filter was at blue), and
 blue means oil is running, which is also where filter plastic comes from. The gate
 justifies itself.
 
-**Decided.** The first processing recipe is air scrubbing: polluted water plus a
-consumable (filter or similar) produces a solid item. Pollution becomes matter.
+**Decided, and built.** The first processing recipe is filtering: polluted water plus a
+consumable filter produces a solid item, the used filter. Pollution becomes matter. It
+shipped as pollution filtering; see the air purifier rework below.
 
 **Decided, and important.** The processing building **emits pollution while running**. The
 consequences are good:
@@ -205,8 +207,8 @@ is not two buildings but **two recipes in the same building**:
 - **Hot process.** Much higher yield, net-positive on pollution, knowingly making the biter
   situation worse for more material.
 
-Same machine, same input fluid, one decision — the same shape as the restore-versus-reclaim
-fork on the filters. That repetition is a feature: it teaches the mod's central idea twice
+Same machine, same input fluid, one decision — the same shape as the planned
+restore-versus-extract fork on used filters (see the deferred extraction branch below). That repetition is a feature: it teaches the mod's central idea twice
 with the same grammar.
 
 **Caveat on the hot process.** It should emit at a rate that *outruns any realistic capture
@@ -220,12 +222,13 @@ each other at the top of the tree without a hard-wired dependency.
 
 **Decided 2026-09-19.** The inherited air purifier no longer cleans the air. At 75/min per
 building it let a player skip the whole economy: one purifier nearly covers an early
-outpost, and the new intake is five times weaker. Instead the purifier becomes the "air
-scrubbing" recipe above: polluted water plus a filter produces a used filter.
+outpost, and the new intake is five times weaker. Instead the purifier becomes the
+filtering recipe above: polluted water plus a filter produces a used filter.
 
 - **The `pr_air-purifier` building is removed.** The purifier becomes an ordinary
-  `crafting-with-fluid` recipe run in Assembler 2 and 3. Assembler 1 has no fluid
-  connections, so it can't run it.
+  `crafting-with-fluid` recipe run in Assembler 2 and 3, **pollution filtering**
+  (`pr_pollution-filtering`, "Air filtering" / `pr_air-cleaning` in 0.1.x). Assembler 1
+  has no fluid connections, so it can't run it.
 - **Base recipe, at crafting speed 1.0:**
 
   | | Value |
@@ -238,31 +241,36 @@ scrubbing" recipe above: polluted water plus a filter produces a used filter.
   Assembler speed scales it (0.75x on Assembler 2, 1.25x on Assembler 3).
 - **Water comes out, not in.** Assemblers have one fluid input and one fluid output, so
   the recipe can't take water and polluted water together. The intake already uses
-  water 1:1 to capture pollution, so the fluid is effectively dirty water: the purifier
+  water 1:1 to capture pollution, so the fluid is effectively dirty water: filtering
   traps the pollution in the filter and releases the water. That water can only be
-  reused by piping it back to the intakes, never straight back into the purifier, so a
-  closed water loop means building the whole capture loop. At base rates one intake
-  (150 water/min in, 150 fluid/min out) feeds two purifiers, which return 150 water/min.
+  reused by piping it back to the intakes, never straight back into filtering, so a
+  closed water loop means building the whole capture loop. At crafting speed 1.0 one
+  intake (150 water/min in, 150 fluid/min out) feeds two filtering machines, which
+  return 150 water/min; in practice that's about 2.7 Assembler 2s or 1.6 Assembler 3s.
   If the water output backs up, the assembler stops, the same way a full tank stops the
   intake.
 - **The machine pollutes while running.** A recipe can't set its own emissions, only
-  scale the machine's with `emissions_multiplier`. At 1.0, Assembler 2 emits 3/min
-  against 7.5/min removed, so the clean-recipe invariant above holds. What it emits goes
+  scale the machine's with `emissions_multiplier`. At 1.0, Assembler 2 emits 3/min while
+  filtering about 5.6/min of air equivalent (7.5/min at speed 1.0, times its 0.75
+  speed), and Assembler 3 emits 2/min against about 9.4/min, so the clean-recipe
+  invariant above holds. What it emits goes
   back into the air for intakes to capture again.
 - **Filters stay the consumable,** which settles the filter-role question in the risks
   section.
 
-### Filters and filter cleaning
+### Filters and filter restoration
 
-**Decided 2026-09-19.** The filter recipe and the purifier recipe unlock together in one
-green science technology. Cleaning used filters unlocks in a separate blue science
+**Decided 2026-09-19.** The filter recipe and pollution filtering unlock together in one
+green science technology. Restoring used filters unlocks in a separate blue science
 technology. Until then filters are single-use: early purifying is paid for in fresh
 filters, and the player has to put the used ones somewhere until they reach oil and
 sulfur.
 
+- **Name:** shown in game as "Pollution filter" ("Used pollution filter" once spent),
+  renamed from 0.1.x's "Anti-pollution filter". The internal names are unchanged.
 - **Filter recipe:** 2 coal, 2 iron plate, 1 steel plate, 2 plastic bar, with or without
   Space Age. The old base-game version without plastic is dropped.
-- **Cleaning recipe (`pr_restore-used-pollution-filter`):** `chemistry` category, so it
+- **Restoration recipe (`pr_pollution-filter-restoration`):** `chemistry` category, so it
   runs in a chemical plant only.
 
   | | Value |
@@ -280,7 +288,7 @@ sulfur.
   | In | 5 sulfuric acid + 2.5 light oil |
   | Out | 5 solvent |
 
-  One solvent plant (100/min) supplies exactly five cleaning plants (20/min each).
+  One solvent plant (100/min) supplies exactly five restoring plants (20/min each).
   Both recipes run in chemical plants, so the ratio holds at any plant speed unless
   modules are applied to one side only. Solvent can be barrelled like any ordinary
   chemical; polluted water still can't.
@@ -295,33 +303,54 @@ sulfur.
 
 **Tech placement.**
 
-- **Filter and purifier tech (green): decided.** Keeps the existing internal name
-  `pr_air-purification`, so 0.1.x saves that researched it keep it, and is renamed
-  "Air purification" in game. Unlocks the filter and purifier recipes. Costs 300 red +
+- **Filter tech (green): decided.** `pr_pollution-filtering`, "Pollution
+  filtering". Unlocks the filter recipe and the pollution filtering recipe. Costs 300 red +
   green at 30s. Prerequisites are `pr_pollution-control` and `plastics`, for both base
   game and Space Age. `pr_pollution-control` already follows `fluid-handling`, and `plastics`
   ensures the filter, which needs plastic bar, can be crafted when it unlocks. That puts
-  it mid-to-late in green science, after oil processing. Intakes and outflows arrive well
+  it mid-to-late in green science, after oil processing. Condensers and vaporizers arrive well
   before it, so for that stretch polluted water can only be vented or stored.
-- **Filter cleaning tech (blue): decided.** New technology `pr_filter-restoration`,
-  "Filter restoration". Unlocks the solvent and cleaning recipes.
-  Prerequisites are the green filter tech and `advanced-oil-processing`, which brings
-  chemical science and light oil. That puts it in early blue science.
+- **Filter restoration tech (blue): decided.** `pr_pollution-filter-restoration`, "Pollution
+  filter restoration". Unlocks the solvent and restoration recipes. Costs 300 red +
+  green + blue at 30s. Prerequisites are the green filter tech and
+  `advanced-oil-processing`, which brings chemical science and light oil. That puts it
+  in early blue science.
 
 **Deferred: extraction processes.** Recovering materials from used filters becomes its
-own later branch of the tech tree rather than a byproduct of cleaning. Solvent is a
-natural input for that branch, and a "spent solvent" output from cleaning, carrying
+own later branch of the tech tree rather than a byproduct of restoration. Solvent is a
+natural input for that branch, and a "spent solvent" output from restoration, carrying
 the dissolved tar, is one option for feeding it. To be built out
 with the rest of the tech tree.
 
-**Open.** The filter restoration tech's cost, and the rest of the tech tree beyond the
-two techs above. Tech icons: both `pr_air-purification` and `pr_pollution-control` use
-the removed building's image as a placeholder.
-The improved filter tier and its cleaning recipe: its old recipe worked by tripling the building's
-negative emissions, which means nothing once pollution arrives by pipe. Also open: the
-exact `emissions_multiplier` and the migration
-for purifiers already placed in 0.1.x saves. Spore filtering on the old purifier goes
-away with it; Gleba gets its own mechanic later.
+**Decided: the improved filter tier is removed for now.** Its purifier recipe worked by
+tripling the building's negative emissions, which means nothing once pollution arrives
+by pipe. The improved filter, its used form, its three recipes, and
+`pr_improved-pollution-filter` are gone, to be redesigned later as their own piece.
+Spore filtering on the old purifier goes too; Gleba gets its own mechanic later.
+
+**Existing 0.1.x saves.** Measured by loading a save made on the old code: Factorio
+drops the removed building and items on load, and re-syncs recipe unlocks with
+researched technologies by itself, so filter restoration is locked again until
+`pr_pollution-filter-restoration` even where 0.1.x had unlocked it. The one migration
+the mod needs is `src/migrations/pollution-reclamation-renames.json`, which maps the
+0.1.x names that were renamed to follow the naming convention: the tech
+`pr_air-purification` to `pr_pollution-filtering` (so its research carries over), and
+the recipes `pr_air-cleaning` to `pr_pollution-filtering` and
+`pr_restore-used-pollution-filter` to `pr_pollution-filter-restoration`.
+
+**Open.** The rest of the tech tree beyond the two techs above, and pollution
+filtering's exact `emissions_multiplier` (1.0 for now). All art, tech icons included, is
+placeholder; see the art inventory in
+[tier-1-implementation-status.md](tier-1-implementation-status.md#placeholder-art).
+
+**Naming convention (2026-09-19).** Everything is `pr_`-prefixed and named noun first.
+Buildings and the recipes they run pair up: pollution condenser / pollution
+condensing, pollution vaporizer / pollution vaporizing, and pollution filter /
+pollution filtering (run in Assembler 2 and 3). Each tech shares the name of what it
+unlocks: Pollution control (condenser and vaporizer), Pollution filtering, Pollution
+filter restoration. Display names match internal names. "Intake", "outflow", and
+"pollution economy" remain this doc's names for the building families and the system
+as a whole.
 
 ## What processing should produce
 
@@ -466,17 +495,18 @@ implicitly scoped to that surface's pollutant.
 
 Consequences:
 
-- The gating design would carry to Gleba unchanged if used there.
+- Condensers are restricted to surfaces whose pollutant is `pollution`: the gate checks
+  `pollutant_type`, so Gleba and the no-pollutant planets are excluded outright.
 - Three of five planets have no airborne pollutant at all, which is what bounds scope.
 - Spores and pollution are materially different: both set `affects_evolution = true`, but
   spores have `damages_trees = false` and `affects_water_tint = false`.
-- The mod's existing emissions handling is already correct. Declaring
-  `{ pollution = -X, spores = -Y }` and letting the engine apply whichever matches the
-  surface is the right pattern.
+- The condenser's emissions name `pollution` only. (The 0.1.x purifier declared
+  `{ pollution = -X, spores = -Y }` and let the engine apply whichever matched; that
+  building is gone.)
 
-**Remaining verification:** inferred from prototype data rather than documented runtime
-behavior. Confirm in-game on a Gleba save near a spore source with
-`/c game.print(game.player.surface.get_pollution(game.player.position))`.
+**Verified 2026-09-19** in a headless run: on a real Gleba surface, `pollutant_type` is
+`spores` and `get_pollution()` returns the spore level (240 after polluting), confirming
+the per-surface scoping above.
 
 ## Ingestion mechanism: options
 
@@ -488,7 +518,7 @@ Negative-emission machine running a recipe that outputs the fluid.
 - **Cons:** fatally broken per the gating problem. Produces fluid from clean air.
 - **Verdict:** not viable alone.
 
-### Option B — Script-gated recipe, threshold toggle (recommended)
+### Option B — Script-gated recipe, threshold toggle (built)
 
 Same prototype as A, plus a `control.lua` that periodically reads
 `get_pollution(entity.position)` and sets `entity.disabled_by_script` against a threshold,
@@ -502,7 +532,7 @@ back `false` as a side effect of setting it.)
   distribution. The script makes one yes/no decision. Negative emissions only apply while
   actively crafting, so toggling couples absorption and production for free.
 - **Cons:** binary, with no smooth response to a partially polluted chunk.
-- **Verdict:** best foundation. Start here.
+- **Verdict:** best foundation. This is what tier 1 ships.
 
 ### Option C — Script-gated with duty cycling
 
@@ -561,7 +591,7 @@ building, a *single* purifier nearly covers it. Far too strong for the intended 
 ### Target curve
 
 - **Early tier: roughly 15/min per building.** An 80/min outpost needs about six buildings,
-  each drawing power and consuming filters. A genuine commitment, making "reroute my
+  each drawing power and water. A genuine commitment, making "reroute my
   outpost's pollution" a real project.
 - **A modest early main base** (ten boilers, twenty drills, twenty assemblers) runs about
   580/min. At 15/min that is thirty-nine buildings — correctly infeasible.
@@ -583,7 +613,7 @@ about *effective* capture, which for intake includes reach, not only per-buildin
   and let Rampant users get a naturally sharper version.
 - **Sequestration as a degenerate strategy.** Tank farms are legitimate, but confirm the
   land and material cost escalates fast enough to force a decision eventually.
-- **Filter role (resolved 2026-09-19).** Filters are the air purifier recipe's consumable,
+- **Filter role (resolved 2026-09-19).** Filters are pollution filtering's consumable,
   not the intake's. The intake uses water instead.
 - **Biter targeting of scripted emissions is unverified.** The vent idea depends on attack
   waves heading for the pollution source. Engine emissions come from a real entity, but
@@ -596,12 +626,12 @@ about *effective* capture, which for intake includes reach, not only per-buildin
 - **The venting tax is provisional.** Tier 1 ships a 10% tax (`emissions_multiplier =
   1.1`). Whether that is "meaningfully more" enough to stop a single killbox from making
   biters trivial is untested.
-- **Does late game ever solve pollution?** The target curve below ends with four buildings
+- **Does late game ever solve pollution?** The target curve above ends with four buildings
   covering a modest base, "mostly solved." The 2026-09-19 direction is that purifying
   should ease pollution rather than remove it. Decide whether late tiers still reach the
   "mostly solved" end state or a growing base always outpaces capture.
-- **Art budget.** Every building tier needs a sprite set, and the mod has one inherited
-  building sprite today. This constrains tier count more than balance does.
+- **Art budget.** Every building tier needs a sprite set, and the mod has no building art
+  of its own yet. This constrains tier count more than balance does.
 - **Tier counts.** Unspecified for all three families.
 - **Processing tiers past the first.** Unspecified.
 
@@ -618,7 +648,7 @@ all of these; they're kept here as the baseline being changed.
   is a throughput multiplier on the same building, not a separate machine.
 
 The old restore loop was a mild material source rather than pure cost recovery. The new
-cleaning recipe drops that byproduct on purpose; material recovery moves to the deferred
+restoration recipe drops that byproduct on purpose; material recovery moves to the deferred
 extraction branch.
 
 ---

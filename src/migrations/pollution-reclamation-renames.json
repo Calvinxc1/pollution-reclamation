@@ -1,0 +1,11 @@
+{
+  "technology":
+  [
+    ["pr_air-purification", "pr_pollution-filtering"]
+  ],
+  "recipe":
+  [
+    ["pr_air-cleaning", "pr_pollution-filtering"],
+    ["pr_restore-used-pollution-filter", "pr_pollution-filter-restoration"]
+  ]
+}

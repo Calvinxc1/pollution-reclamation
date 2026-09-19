@@ -20,7 +20,7 @@ Versioning rules are documented in [docs/semantic-versioning.md](docs/semantic-v
 
 ## Scope
 
-Pollution Reclamation owns the air purifier building, pollution filter items and recipes, filter restoration, and the air purification technologies for Factorio 2.1.
+Pollution Reclamation owns the pollution condenser and pollution vaporizer buildings, polluted water and solvent fluids, pollution filter items and recipes, filter restoration, and the pollution technologies for Factorio 2.1.
 
 Keep changes focused on that scope. Compatibility fixes are welcome when they preserve the mod's existing recipes and progression and do not move unrelated gameplay systems into this repository.
 
