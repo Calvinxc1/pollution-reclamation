@@ -42,7 +42,7 @@ done
 
 while IFS= read -r file; do
   luac -p "$file"
-done < <(rg --files -g '*.lua' src tests/fixtures)
+done < <(rg --files -g '*.lua' src tests)
 
 # Files under src/control/ are meant to be pure and dependency-injected (no
 # direct game/storage/script access) so the same file can load both inside
