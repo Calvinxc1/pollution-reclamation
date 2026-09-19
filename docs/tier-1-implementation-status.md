@@ -60,7 +60,7 @@ Two derived figures worth keeping in mind:
 
 ## Tech placement
 
-`pr_pollution-economy` is a single root technology unlocking all four recipes (two
+`pr_pollution-control` ("Pollution control") is a single root technology unlocking all four recipes (two
 building recipes, two process recipes) together, per the design doc's "Decided" call
 that a player should get a complete loop or none of it.
 

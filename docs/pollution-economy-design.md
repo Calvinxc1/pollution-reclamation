@@ -298,8 +298,8 @@ sulfur.
 - **Filter and purifier tech (green): decided.** Keeps the existing internal name
   `pr_air-purification`, so 0.1.x saves that researched it keep it, and is renamed
   "Air purification" in game. Unlocks the filter and purifier recipes. Costs 300 red +
-  green at 30s. Prerequisites are `pr_pollution-economy` and `plastics`, for both base
-  game and Space Age. `pr_pollution-economy` already follows `fluid-handling`, and `plastics`
+  green at 30s. Prerequisites are `pr_pollution-control` and `plastics`, for both base
+  game and Space Age. `pr_pollution-control` already follows `fluid-handling`, and `plastics`
   ensures the filter, which needs plastic bar, can be crafted when it unlocks. That puts
   it mid-to-late in green science, after oil processing. Intakes and outflows arrive well
   before it, so for that stretch polluted water can only be vented or stored.
@@ -315,7 +315,7 @@ the dissolved tar, is one option for feeding it. To be built out
 with the rest of the tech tree.
 
 **Open.** The filter restoration tech's cost, and the rest of the tech tree beyond the
-two techs above. Tech icons: both `pr_air-purification` and `pr_pollution-economy` use
+two techs above. Tech icons: both `pr_air-purification` and `pr_pollution-control` use
 the removed building's image as a placeholder.
 The improved filter tier and its cleaning recipe: its old recipe worked by tripling the building's
 negative emissions, which means nothing once pollution arrives by pipe. Also open: the

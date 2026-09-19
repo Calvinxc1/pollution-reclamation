@@ -111,7 +111,7 @@ if airPurificationPrerequisites ~= nil then
     -- core sinks in the design doc -- or use pumps for longer runs.
     {
       type = "technology",
-      name = "pr_pollution-economy",
+      name = "pr_pollution-control",
       mod = "pollution-reclamation",
       icon = "__pollution-reclamation__/graphics/technologies/air-purifier.png",
       icon_size = 256,
