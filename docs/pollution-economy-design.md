@@ -246,10 +246,11 @@ scrubbing" recipe above: captured pollution fluid plus a filter produces a used 
 
 ### Filters and filter cleaning
 
-**Decided 2026-09-19.** Filters and the purifier recipe unlock at green science.
-Cleaning used filters unlocks separately at blue science. Until then filters are
-single-use, so early purifying is paid for in fresh filters, and used filters pile up
-until the player reaches oil and sulfur.
+**Decided 2026-09-19.** The filter recipe and the purifier recipe unlock together in one
+green science technology. Cleaning used filters unlocks in a separate blue science
+technology. Until then filters are single-use: early purifying is paid for in fresh
+filters, and the player has to put the used ones somewhere until they reach oil and
+sulfur.
 
 - **Filter recipe:** 2 coal, 2 iron plate, 1 steel plate, 2 plastic bar, with or without
   Space Age. The old base-game version without plastic is dropped.
