@@ -63,8 +63,12 @@ Two derived figures worth keeping in mind:
 Added 2026-09-19, red science, deliberately ahead of the economy itself so a player can
 survey chunks before deciding where condensers are worth building.
 
-- **`pr_pollution-sensor`** is a 1x1 powered building (placeholder art: a re-tinted
-  vanilla `small-lamp`). It shows the pollution in its own chunk as an entity status
+- **`pr_pollution-sensor`** is a 1x1 powered building with its own placeholder art: a
+  squat steel housing on a bolted base plate, blue band, green readout and a top intake
+  grille. The prototype is still a deep copy of vanilla `small-lamp`, for its behaviour
+  (1x1, powered, status line, always-on) rather than its looks; only the sprites and
+  power are overridden. The world sprite is 96x96 at `scale = 0.5`, so the device is one
+  tile wide, shifted down so the base plate sits on the tile instead of floating. It shows the pollution in its own chunk as an entity status
   line, and nothing else. Unpowered it clears the reading and falls back to the engine's
   own "No power" status rather than leaving a stale number on screen.
 - **`pr_pollution-sensing`** unlocks it: 50 automation science at 15s, after `automation`.
@@ -147,6 +151,7 @@ README says so for players.
 | Asset | Current placeholder |
 | --- | --- |
 | Condenser and vaporizer buildings | re-tinted, rescaled vanilla `chemical-plant` (deferred) |
+| Pollution sensor (building, item, tech) | AI-generated renders of a squat sensor housing |
 | Polluted water, solvent (fluid icons) | AI-generated droplets |
 | Pollution filter, used pollution filter (items) | AI-generated renders of one filter cartridge |
 | Pollution filtering, Pollution filter restoration (recipes) | AI-generated renders |

@@ -79,9 +79,7 @@ data:extend({
       type = "technology",
       name = "pr_pollution-sensing",
       mod = "pollution-reclamation",
-      -- Placeholder art, like everything else in the mod: vanilla's
-      -- circuit-network technology icon, borrowed rather than copied.
-      icon = "__base__/graphics/technology/circuit-network.png",
+      icon = "__pollution-reclamation__/graphics/technologies/pollution-sensing.png",
       icon_size = 256,
       icon_mipmaps = 4,
       effects = {

@@ -2,7 +2,8 @@ data:extend({
   {
     type = "item",
     name = "pr_pollution-sensor",
-    icon = "__base__/graphics/icons/small-lamp.png",
+    icon = "__pollution-reclamation__/graphics/icons/entities/pollution-sensor.png",
+    icon_size = 64,
     subgroup = "circuit-network",
     order = "z[pollution-sensor]",
     place_result = "pr_pollution-sensor",
