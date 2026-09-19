@@ -79,8 +79,6 @@ survey chunks before deciding where condensers are worth building.
 - Verified headless: a powered sensor's reading matched `get_pollution` exactly as
   pollution rose and fell, an unpowered one showed nothing, and a condenser beside a
   sensor kept running normally.
-- **Follow-up:** the README and mod portal text still describe the 0.1.x mod on `dev`;
-  the sensor needs a line there once PR #13's rewrite lands.
 
 ## Tech placement
 
