@@ -33,6 +33,8 @@ local function make_entity(pollution_level, pollutant_name, position)
   return {
     position = position or { x = 0, y = 0 },
     disabled_by_script = nil,
+    -- Sensors only report while powered; condensers ignore this.
+    energy = 100,
     surface = {
       -- false stands for a surface with no pollutant at all (pollutant_type nil).
       index = 1,
@@ -134,6 +136,60 @@ do
   module.add_entity(state, "e", e)
   module.add_entity(state, "e", e)
   check("re-adding a tracked key leaves the population at one", module.chunk_population(state, "e") == 1)
+end
+
+-- Test: a sensor reports the chunk's pollution and nothing else, and is not
+-- counted as a condenser drawing on that chunk.
+do
+  local state = module.new_state()
+  local sensor = make_entity(37.4)
+  local condenser = make_entity(37.4)
+  module.add_entity(state, "sensor", sensor, "sensor")
+  module.add_entity(state, "condenser", condenser)
+  check("a sensor doesn't count toward its chunk's condenser population",
+    module.chunk_population(state, "sensor") == 1)
+  module.step(state, 10, 2)
+  check("the lone condenser still runs beside a sensor", condenser.disabled_by_script == false)
+  check("the sensor is never gated", sensor.disabled_by_script == nil)
+  check("the sensor reports the chunk's rounded pollution",
+    sensor.custom_status ~= nil and sensor.custom_status.label[2] == "37")
+  check("the sensor reports nothing else", #sensor.custom_status.label == 2)
+end
+
+-- Test: an unpowered sensor reports nothing rather than a stale number.
+do
+  local state = module.new_state()
+  local sensor = make_entity(80)
+  module.add_entity(state, "sensor", sensor, "sensor")
+  module.step(state, 10, 1)
+  check("a powered sensor reports", sensor.custom_status ~= nil)
+  sensor.energy = 0
+  module.step(state, 10, 1)
+  check("an unpowered sensor clears its reading", sensor.custom_status == nil)
+end
+
+-- Test: a sensor on a surface with no pollutant says so rather than reading 0.
+do
+  local state = module.new_state()
+  local sensor = make_entity(50, false)
+  module.add_entity(state, "sensor", sensor, "sensor")
+  module.step(state, 10, 1)
+  check("a sensor without a pollutant says so",
+    sensor.custom_status.label[1] == "pr-sensor.no-pollutant")
+end
+
+-- Test: removing a sensor leaves its chunk's condenser count alone.
+do
+  local state = module.new_state()
+  local condensers = {}
+  for i = 1, 3 do
+    condensers[i] = make_entity(30)
+    module.add_entity(state, "c" .. i, condensers[i])
+  end
+  module.add_entity(state, "sensor", make_entity(30), "sensor")
+  module.remove_entity(state, "sensor")
+  check("removing a sensor leaves the condenser population at three",
+    module.chunk_population(state, "c1") == 3)
 end
 
 -- Test: every tracked entity gets visited within one lap.

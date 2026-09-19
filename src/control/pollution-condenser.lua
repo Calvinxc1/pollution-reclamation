@@ -19,6 +19,16 @@
 
 local M = {}
 
+-- defines.entity_status_diode values, injected by control.lua so this file
+-- stays loadable outside Factorio. The defaults are the engine's own
+-- numbering, confirmed in a headless run, and are what the plain-Lua tests
+-- see.
+M.DIODE = { green = 0, red = 1, yellow = 2 }
+
+function M.set_diodes(diodes)
+  M.DIODE = diodes
+end
+
 function M.new_state()
   return {
     entities = {},
@@ -28,6 +38,11 @@ function M.new_state()
     -- fixed for as long as it is tracked and is recorded once, at add time.
     chunk_counts = {},
     entity_chunk = {},
+    -- "condenser" for the buildings the gate switches on and off, "sensor"
+    -- for pollution sensors. Sensors share the tracking so they report the
+    -- very number the gate tests, but they absorb nothing, so they must not
+    -- count toward a chunk's condenser population.
+    roles = {},
   }
 end
 
@@ -45,19 +60,25 @@ function M.chunk_key(entity)
   )
 end
 
-function M.add_entity(state, key, entity)
+function M.add_entity(state, key, entity, role)
+  role = role or "condenser"
   if state.entities[key] == nil then
     local chunk = M.chunk_key(entity)
     state.entity_chunk[key] = chunk
-    state.chunk_counts[chunk] = (state.chunk_counts[chunk] or 0) + 1
+    state.roles[key] = role
+    if role == "condenser" then
+      state.chunk_counts[chunk] = (state.chunk_counts[chunk] or 0) + 1
+    end
   end
   state.entities[key] = entity
 end
 
--- How many tracked condensers share this one's chunk, counting itself.
+-- How many tracked condensers sit in this entity's chunk. For a condenser
+-- that includes itself; for a sensor it's the condensers it is reporting on,
+-- which may be none.
 function M.chunk_population(state, key)
   local chunk = state.entity_chunk[key]
-  return (chunk and state.chunk_counts[chunk]) or 1
+  return (chunk and state.chunk_counts[chunk]) or 0
 end
 
 -- Safe against the classic next()-after-delete pitfall: if the cursor is
@@ -72,10 +93,13 @@ function M.remove_entity(state, key)
   if state.entities[key] ~= nil then
     local chunk = state.entity_chunk[key]
     if chunk then
-      local remaining = (state.chunk_counts[chunk] or 1) - 1
-      state.chunk_counts[chunk] = remaining > 0 and remaining or nil
+      if state.roles[key] ~= "sensor" then
+        local remaining = (state.chunk_counts[chunk] or 1) - 1
+        state.chunk_counts[chunk] = remaining > 0 and remaining or nil
+      end
       state.entity_chunk[key] = nil
     end
+    state.roles[key] = nil
   end
   state.entities[key] = nil
 end
@@ -131,6 +155,45 @@ function M.can_capture(entity, threshold, population)
   return surface.get_pollution(entity.position) >= threshold * (population or 1)
 end
 
+-- What a pollution sensor reports: the same chunk pollution the gate tests,
+-- read through the same helpers, so the number a player sees cannot drift
+-- from the number that decides whether condensers run.
+--
+-- Deliberately pollution and nothing else. The tracking knows how many
+-- condensers share the chunk and what they need, and a later sensor tier may
+-- well show that, but tier 1 is one number.
+function M.reading(entity)
+  local surface = entity.surface
+  local pollutant = surface.pollutant_type
+  return {
+    pollutant = pollutant and pollutant.name or nil,
+    pollution = (pollutant and surface.get_pollution(entity.position)) or 0,
+  }
+end
+
+-- Writes the reading onto the entity as a custom status line. An unpowered
+-- sensor reports nothing and falls back to the engine's own "No power"
+-- status, rather than leaving a stale number on screen.
+function M.report(entity)
+  if (entity.energy or 0) <= 0 then
+    entity.custom_status = nil
+    return nil
+  end
+  local reading = M.reading(entity)
+  if reading.pollutant == nil then
+    entity.custom_status = {
+      diode = M.DIODE.yellow,
+      label = { "pr-sensor.no-pollutant" },
+    }
+  else
+    entity.custom_status = {
+      diode = M.DIODE.green,
+      label = { "pr-sensor.pollution", tostring(math.floor(reading.pollution + 0.5)) },
+    }
+  end
+  return reading
+end
+
 function M.step(state, threshold, slice_count)
   for _ = 1, slice_count do
     local key = state.cursor
@@ -146,8 +209,12 @@ function M.step(state, threshold, slice_count)
     state.cursor = next(state.entities, key)
 
     if entity then
-      local population = M.chunk_population(state, key)
-      entity.disabled_by_script = not M.can_capture(entity, threshold, population)
+      if state.roles[key] == "sensor" then
+        M.report(entity)
+      else
+        local population = M.chunk_population(state, key)
+        entity.disabled_by_script = not M.can_capture(entity, threshold, population)
+      end
     end
   end
 

@@ -97,6 +97,34 @@ if airPurificationPrerequisites ~= nil then
       prerequisites = improvedAirPurificationPrerequisites,
       unit = improvedAirPurificationCosts,
     },
+    -- Red science, before the economy itself: a player can survey chunks and
+    -- decide where condensers are worth building before researching them.
+    -- Gated on `automation` only, the first red-science technology, so the
+    -- sensor is available as early as the science that unlocks it.
+    {
+      type = "technology",
+      name = "pr_pollution-sensing",
+      mod = "pollution-reclamation",
+      -- Placeholder art, like everything else in the mod: vanilla's
+      -- circuit-network technology icon, borrowed rather than copied.
+      icon = "__base__/graphics/technology/circuit-network.png",
+      icon_size = 256,
+      icon_mipmaps = 4,
+      effects = {
+        {
+          type = "unlock-recipe",
+          recipe = "pr_pollution-sensor",
+        },
+      },
+      prerequisites = { "automation" },
+      unit = {
+        count = 50,
+        ingredients = {
+          {"automation-science-pack", 1}
+        },
+        time = 15,
+      },
+    },
     -- Single root technology unlocking both tier-1 pollution-economy
     -- buildings together, per the design doc's explicit "Decided" call: a
     -- player should get a complete, playable capture/vent loop the moment

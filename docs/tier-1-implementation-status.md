@@ -58,6 +58,30 @@ Two derived figures worth keeping in mind:
   tank in **~2h47m**. Jason confirmed this feels right. Real-world time will be longer
   whenever the threshold gate takes the building offline.
 
+## Pollution sensor
+
+Added 2026-09-19, red science, deliberately ahead of the economy itself so a player can
+survey chunks before deciding where condensers are worth building.
+
+- **`pr_pollution-sensor`** is a 1x1 powered building (placeholder art: a re-tinted
+  vanilla `small-lamp`). It shows the pollution in its own chunk as an entity status
+  line, and nothing else. Unpowered it clears the reading and falls back to the engine's
+  own "No power" status rather than leaving a stale number on screen.
+- **`pr_pollution-sensing`** unlocks it: 50 automation science at 15s, after `automation`.
+  The recipe costs 5 iron plates and 2 electronic circuits.
+- **It reuses the condenser's own gate code.** The sensor is tracked in the same table
+  with a `sensor` role, so the number it displays is read through the same helpers that
+  decide whether condensers run, and the readout cannot drift from the rule. Sensors are
+  excluded from a chunk's condenser population, since they absorb nothing and must not
+  raise the bar their neighbours have to clear.
+- **One number on purpose.** The tracking also knows how many condensers share the chunk
+  and what that chunk needs to run them; showing that is left to a later sensor tier.
+- Verified headless: a powered sensor's reading matched `get_pollution` exactly as
+  pollution rose and fell, an unpowered one showed nothing, and a condenser beside a
+  sensor kept running normally.
+- **Follow-up:** the README and mod portal text still describe the 0.1.x mod on `dev`;
+  the sensor needs a line there once PR #13's rewrite lands.
+
 ## Tech placement
 
 `pr_pollution-control` ("Pollution control") is a single root technology unlocking all four recipes (two

@@ -153,6 +153,23 @@ if polutionFilterIngredients ~= nil then
           order = "w3-b[pr_restore-used-pollution-filter]",
         },
         -------------
+        -- POLLUTION SENSOR
+        -------------
+        -- Deliberately cheap and early: the sensor's job is to let a player
+        -- read a chunk's pollution before committing to condensers, and to
+        -- show why a crowded chunk's condensers have stopped.
+        {
+          type = "recipe",
+          name = "pr_pollution-sensor",
+          energy_required = 2,
+          enabled = false,
+          ingredients = {
+            { type = "item", name = "iron-plate", amount = 5 },
+            { type = "item", name = "electronic-circuit", amount = 2 },
+          },
+          results = { { type = "item", name = "pr_pollution-sensor", amount = 1 } },
+        },
+        -------------
         -- POLLUTION ECONOMY: BUILDINGS
         -------------
         {
