@@ -225,8 +225,9 @@ outpost, and the new intake is five times weaker. Instead the purifier becomes t
 scrubbing" recipe above: polluted water plus a filter produces a used filter.
 
 - **The `pr_air-purifier` building is removed.** The purifier becomes an ordinary
-  `crafting-with-fluid` recipe run in Assembler 2 and 3. Assembler 1 has no fluid
-  connections, so it can't run it.
+  `crafting-with-fluid` recipe run in Assembler 2 and 3, **pollution filtering**
+  (`pr_pollution-filtering`, "Air filtering" / `pr_air-cleaning` in 0.1.x). Assembler 1
+  has no fluid connections, so it can't run it.
 - **Base recipe, at crafting speed 1.0:**
 
   | | Value |
@@ -265,7 +266,7 @@ sulfur.
   renamed from 0.1.x's "Anti-pollution filter". The internal names are unchanged.
 - **Filter recipe:** 2 coal, 2 iron plate, 1 steel plate, 2 plastic bar, with or without
   Space Age. The old base-game version without plastic is dropped.
-- **Cleaning recipe (`pr_restore-used-pollution-filter`):** `chemistry` category, so it
+- **Restoration recipe (`pr_pollution-filter-restoration`):** `chemistry` category, so it
   runs in a chemical plant only.
 
   | | Value |
@@ -298,16 +299,15 @@ sulfur.
 
 **Tech placement.**
 
-- **Filter and purifier tech (green): decided.** Keeps the existing internal name
-  `pr_air-purification`, so 0.1.x saves that researched it keep it, and is renamed
-  "Air purification" in game. Unlocks the filter and purifier recipes. Costs 300 red +
+- **Filter and purifier tech (green): decided.** `pr_pollution-filtering`, "Pollution
+  filtering". Unlocks the filter recipe and the pollution filtering recipe. Costs 300 red +
   green at 30s. Prerequisites are `pr_pollution-control` and `plastics`, for both base
   game and Space Age. `pr_pollution-control` already follows `fluid-handling`, and `plastics`
   ensures the filter, which needs plastic bar, can be crafted when it unlocks. That puts
-  it mid-to-late in green science, after oil processing. Intakes and outflows arrive well
+  it mid-to-late in green science, after oil processing. Condensers and vaporizers arrive well
   before it, so for that stretch polluted water can only be vented or stored.
-- **Filter cleaning tech (blue): decided.** New technology `pr_filter-restoration`,
-  "Filter restoration". Unlocks the solvent and cleaning recipes. Costs 300 red +
+- **Filter cleaning tech (blue): decided.** `pr_pollution-filter-restoration`, "Pollution
+  filter restoration". Unlocks the solvent and restoration recipes. Costs 300 red +
   green + blue at 30s. Prerequisites are the green filter tech and
   `advanced-oil-processing`, which brings chemical science and light oil. That puts it
   in early blue science.
@@ -324,15 +324,30 @@ by pipe. The improved filter, its used form, its three recipes, and
 `pr_improved-pollution-filter` are gone, to be redesigned later as their own piece.
 Spore filtering on the old purifier goes too; Gleba gets its own mechanic later.
 
-**Existing 0.1.x saves need no migration script.** Measured by loading a save made on
-the old code: Factorio drops the removed building and items on load, and re-syncs
-recipe unlocks with researched technologies by itself, so filter restoration is
-locked again until `pr_filter-restoration` even where 0.1.x had unlocked it.
+**Existing 0.1.x saves.** Measured by loading a save made on the old code: Factorio
+drops the removed building and items on load, and re-syncs recipe unlocks with
+researched technologies by itself, so filter restoration is locked again until
+`pr_pollution-filter-restoration` even where 0.1.x had unlocked it. The one migration
+the mod needs is `src/migrations/pollution-reclamation-renames.json`, which maps the
+0.1.x names that were renamed to follow the naming convention: the tech
+`pr_air-purification` to `pr_pollution-filtering` (so its research carries over), and
+the recipes `pr_air-cleaning` to `pr_pollution-filtering` and
+`pr_restore-used-pollution-filter` to `pr_pollution-filter-restoration`.
 
 **Open.** The rest of the tech tree beyond the two techs above, and the purifier
-recipe's exact `emissions_multiplier` (1.0 for now). Tech icons: `pr_air-purification`
+recipe's exact `emissions_multiplier` (1.0 for now). Tech icons: `pr_pollution-filtering`
 and `pr_pollution-control` use the removed building's image, and
-`pr_filter-restoration` uses the old improved filter tech's image, as placeholders.
+`pr_pollution-filter-restoration` uses the old improved filter tech's image, as
+placeholders.
+
+**Naming convention (2026-09-19).** Everything is `pr_`-prefixed and named noun first.
+Buildings and the recipes they run pair up: pollution condenser / pollution
+condensing, pollution vaporizer / pollution vaporizing, and pollution filter /
+pollution filtering (run in Assembler 2 and 3). Each tech shares the name of what it
+unlocks: Pollution control (condenser and vaporizer), Pollution filtering, Pollution
+filter restoration. Display names match internal names. "Intake", "outflow", and
+"pollution economy" remain this doc's names for the building families and the system
+as a whole.
 
 ## What processing should produce
 
