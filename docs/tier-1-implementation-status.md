@@ -14,7 +14,7 @@ air purifier rework first) happens on its own feature branches off `dev`.
 A complete, playable capture/vent loop, verified running in a real save:
 
 - **`pr_pollution-intake`** draws ambient pollution from its chunk, consumes water as
-  the scrubbing medium, and outputs `pr_captured-pollution` fluid.
+  the scrubbing medium, and outputs `pr_polluted-water` fluid.
 - **`pr_pollution-outflow`** consumes that fluid and vents it back into the atmosphere
   wherever it's placed, relocating the biter aggression it attracts. It returns most
   of the water, so the loop can be mostly closed.
@@ -135,11 +135,11 @@ machine anywhere** to copy correct proportions from; the smallest is native 3x3.
 pixel alignment isn't achievable with borrowed 3x3 art -- it needs art actually drawn
 for 2x2.
 
-The fluid has real art: `src/graphics/icons/fluids/captured-pollution.png`, a grimy
+The fluid has real art: `src/graphics/icons/fluids/polluted-water.png`, a grimy
 version of vanilla water's droplet in the same 120x64 four-mipmap strip, cut from a
-supplied image whose four droplets were drawn per mipmap size. Since 2026-09-19 the
-fluid is shown in game as **"Polluted water"**; the internal name stays
-`pr_captured-pollution`.
+supplied image whose four droplets were drawn per mipmap size. The fluid was
+introduced as `pr_captured-pollution` ("Captured pollution") and renamed to
+`pr_polluted-water` ("Polluted water") on 2026-09-19, before it ever shipped.
 
 Concept art for the eventual real intake building is archived in
 [concept-art/pollution-intake/](concept-art/pollution-intake), with

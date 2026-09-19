@@ -191,14 +191,14 @@ if polutionFilterIngredients ~= nil then
         -- Fluid/atmosphere exchange rate: 1 unit of atmospheric pollution
         -- (the -15/min removed by the entity's emissions_per_minute, see
         -- pollution-intake-building.lua) is represented by 10 units of
-        -- captured-pollution fluid, so the fluid reads as genuinely bulky
+        -- polluted water, so the fluid reads as genuinely bulky
         -- rather than a tidy 1:1 bottling. 10 fluid / 4s = 150/min at
         -- continuous uptime; actual throughput is lower whenever
         -- control.lua's threshold gate takes the building offline, which is
         -- the intended "early game capture is genuinely gated" feel.
         --
         -- Water is the scrubbing medium, consumed 1:1 with the captured
-        -- pollution produced (10 water -> 10 captured pollution). This is
+        -- pollution produced (10 water -> 10 polluted water). This is
         -- what gives intake a real consumable cost -- before it, a built and
         -- powered intake ran free forever. It also extends the water-as-
         -- cleaning-agent logic the filter-restore recipes above already use,
@@ -207,7 +207,7 @@ if polutionFilterIngredients ~= nil then
           type = "recipe",
           name = "pr_pollution-capture",
           categories = { "pr_pollution-intake-category" },
-          icon = "__pollution-reclamation__/graphics/icons/fluids/captured-pollution.png",
+          icon = "__pollution-reclamation__/graphics/icons/fluids/polluted-water.png",
           icon_size = 64,
           energy_required = 4,
           enabled = false,
@@ -217,7 +217,7 @@ if polutionFilterIngredients ~= nil then
             { type = "fluid", name = "water", amount = 10 },
           },
           results = {
-            { type = "fluid", name = "pr_captured-pollution", amount = 10 },
+            { type = "fluid", name = "pr_polluted-water", amount = 10 },
           },
           subgroup = "raw-material",
           order = "zz[pollution-capture]",
@@ -228,7 +228,7 @@ if polutionFilterIngredients ~= nil then
         -- building only ever emits while it has real captured fluid to
         -- consume, never for free.
         --
-        -- Most of the water comes back out: 8 per 10 captured pollution
+        -- Most of the water comes back out: 8 per 10 polluted water
         -- consumed (2/s against 2.5/s in). A capture/vent loop can pipe it
         -- back to the intakes, but loses a fifth of its water per pass and
         -- needs topping up. Icon and subgroup are still set explicitly, so
@@ -237,14 +237,14 @@ if polutionFilterIngredients ~= nil then
           type = "recipe",
           name = "pr_pollution-venting",
           categories = { "pr_pollution-outflow-category" },
-          icon = "__pollution-reclamation__/graphics/icons/fluids/captured-pollution.png",
+          icon = "__pollution-reclamation__/graphics/icons/fluids/polluted-water.png",
           icon_size = 64,
           energy_required = 4,
           enabled = false,
           hidden = false,
           hide_from_player_crafting = true,
           ingredients = {
-            { type = "fluid", name = "pr_captured-pollution", amount = 10 },
+            { type = "fluid", name = "pr_polluted-water", amount = 10 },
           },
           results = {
             { type = "fluid", name = "water", amount = 8 },

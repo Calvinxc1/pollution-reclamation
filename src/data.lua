@@ -2,7 +2,7 @@
 -- -- INITIALIZATION
 -----------------------------------------------------------
 
-require("__pollution-reclamation__/prototypes/fluids/captured-pollution")
+require("__pollution-reclamation__/prototypes/fluids/polluted-water")
 require("__pollution-reclamation__/prototypes/entities/air-purifier-building")
 require("__pollution-reclamation__/prototypes/entities/pollution-intake-building")
 require("__pollution-reclamation__/prototypes/entities/pollution-outflow-building")

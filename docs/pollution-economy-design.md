@@ -35,7 +35,7 @@ construction.
 
 1. The factory emits pollution. Unavoidable, and scales with how hard you are pushing.
 2. **Intake buildings** scrub ambient pollution and bottle it as a fluid.
-3. The captured pollution fluid has three mutually exclusive sinks:
+3. The captured pollution, now a fluid called polluted water, has three mutually exclusive sinks:
    - **Store it.** Tank farms. Safe, yields nothing, cost grows without bound.
    - **Vent it.** An outflow building with strongly positive emissions. Cheap disposal,
      and it relocates biter aggression to wherever you put it.
@@ -168,7 +168,7 @@ red-plus-green with steel and engine prereqs; the improved filter is already at 
 blue means oil is running, which is also where filter plastic comes from. The gate
 justifies itself.
 
-**Decided.** The first processing recipe is air scrubbing: captured pollution fluid plus a
+**Decided.** The first processing recipe is air scrubbing: polluted water plus a
 consumable (filter or similar) produces a solid item. Pollution becomes matter.
 
 **Decided, and important.** The processing building **emits pollution while running**. The
@@ -213,7 +213,7 @@ each other at the top of the tree without a hard-wired dependency.
 **Decided 2026-09-19.** The inherited air purifier no longer cleans the air. At 75/min per
 building it let a player skip the whole economy: one purifier nearly covers an early
 outpost, and the new intake is five times weaker. Instead the purifier becomes the "air
-scrubbing" recipe above: captured pollution fluid plus a filter produces a used filter.
+scrubbing" recipe above: polluted water plus a filter produces a used filter.
 
 - **The `pr_air-purifier` building is removed.** The purifier becomes an ordinary
   `crafting-with-fluid` recipe run in Assembler 2 and 3. Assembler 1 has no fluid
@@ -223,13 +223,13 @@ scrubbing" recipe above: captured pollution fluid plus a filter produces a used 
   | | Value |
   | --- | --- |
   | Cycle (`energy_required`) | 60s |
-  | In | 75 captured pollution + 1 pollution filter |
+  | In | 75 polluted water + 1 pollution filter |
   | Out | 1 used pollution filter (80% chance) + 75 water |
 
   That's 75 fluid/min, or 7.5/min of air equivalent, a tenth of the old building.
   Assembler speed scales it (0.75x on Assembler 2, 1.25x on Assembler 3).
 - **Water comes out, not in.** Assemblers have one fluid input and one fluid output, so
-  the recipe can't take water and captured pollution together. The intake already uses
+  the recipe can't take water and polluted water together. The intake already uses
   water 1:1 to capture pollution, so the fluid is effectively dirty water: the purifier
   traps the pollution in the filter and releases the water. That water can only be
   reused by piping it back to the intakes, never straight back into the purifier, so a
@@ -275,7 +275,7 @@ sulfur.
   One solvent plant (100/min) supplies exactly five cleaning plants (20/min each).
   Both recipes run in chemical plants, so the ratio holds at any plant speed unless
   modules are applied to one side only. Solvent can be barrelled like any ordinary
-  chemical; captured pollution still can't.
+  chemical; polluted water still can't.
 
   **Why solvent, and why it gates on advanced oil processing.** A used filter is clogged
   with soot, tar, and unburnt hydrocarbons as well as dust. Acid alone chars that
@@ -294,7 +294,7 @@ sulfur.
   game and Space Age. `pr_pollution-economy` already follows `fluid-handling`, and `plastics`
   ensures the filter, which needs plastic bar, can be crafted when it unlocks. That puts
   it mid-to-late in green science, after oil processing. Intakes and outflows arrive well
-  before it, so for that stretch captured pollution can only be vented or stored.
+  before it, so for that stretch polluted water can only be vented or stored.
 - **Filter cleaning tech (blue): decided.** New technology `pr_filter-restoration`,
   "Filter restoration". Unlocks the solvent and cleaning recipes.
   Prerequisites are the green filter tech and `advanced-oil-processing`, which brings
@@ -413,7 +413,7 @@ part is self-limiting and correct.
 
 But the *recipe* is not gated on ambient pollution at all. Nothing in the prototype system
 checks the local pollution cloud before allowing a craft. An intake building running a
-"produce captured pollution fluid" recipe will happily run forever in a pristine chunk,
+"produce polluted water" recipe will happily run forever in a pristine chunk,
 manufacturing feedstock out of clean air.
 
 Left unaddressed, the premise collapses: a player parks a capture field in an untouched
@@ -649,6 +649,6 @@ accepting diffuse, base-wide pressure instead.
 - Whether "leaky pipes" is a distinct prototype, a property of normal pipes carrying the
   spore fluid, or a separate entity.
 - How the planter relates to vanilla Gleba agriculture: replacement, alternative, or upgrade.
-- Whether piped spores are the same fluid concept as Nauvis captured pollution or a wholly
+- Whether piped spores are the same fluid concept as Nauvis polluted water or a wholly
   separate substance.
 - Whether any of the Nauvis processing branch applies to spores at all.

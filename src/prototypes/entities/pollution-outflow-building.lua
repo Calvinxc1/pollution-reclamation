@@ -58,7 +58,7 @@ outflow.crafting_categories = { "pr_pollution-outflow-category" }
 outflow.collision_box = { { -0.7, -0.7 }, { 0.7, 0.7 } }
 outflow.selection_box = { { -0.85, -0.85 }, { 0.85, 0.85 } }
 
--- One input for captured pollution and one output for the water it was
+-- One input for polluted water and one output for the water it was
 -- carried in, the reverse of intake. Same corner layout as intake --
 -- fluid in at the north-west, fluid out at the south-east -- and see
 -- pollution-intake-building.lua for why the connection positions are
@@ -69,7 +69,7 @@ outflow.fluid_boxes = {
     production_type = "input",
     pipe_covers = data.raw["assembling-machine"]["chemical-plant"].fluid_boxes[1].pipe_covers,
     volume = 1000,
-    filter = "pr_captured-pollution",
+    filter = "pr_polluted-water",
     pipe_connections = {
       {
         flow_direction = "input",

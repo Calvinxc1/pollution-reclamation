@@ -68,8 +68,8 @@ intake.collision_box = { { -0.7, -0.7 }, { 0.7, 0.7 } }
 intake.selection_box = { { -0.85, -0.85 }, { 0.85, 0.85 } }
 
 -- Two fluid boxes: water in (the scrubbing medium -- see pr_pollution-capture,
--- which consumes water 1:1 with the captured pollution it produces), captured
--- pollution out. Chemical-plant's other two boxes are dropped; leaving them in
+-- which consumes water 1:1 with the polluted water it produces), polluted
+-- water out. Chemical-plant's other two boxes are dropped; leaving them in
 -- place would ship a building with dangling, functionless pipe connections.
 --
 -- Connection positions must sit strictly inside the collision box, not at
@@ -112,7 +112,7 @@ intake.fluid_boxes = {
     production_type = "output",
     pipe_covers = data.raw["assembling-machine"]["chemical-plant"].fluid_boxes[3].pipe_covers,
     volume = 100,
-    filter = "pr_captured-pollution",
+    filter = "pr_polluted-water",
     pipe_connections = {
       {
         flow_direction = "output",
