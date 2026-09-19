@@ -24,15 +24,18 @@ end
 
 -- disabled_by_script starts nil (not false) so tests can tell "visited and
 -- computed false" apart from "never visited, still at its initial value".
-local function make_entity(pollution_level, pollutant_name)
+-- Entities default to chunk 0,0 of surface 1; pass a position to place one in
+-- another chunk (chunks are 32x32 tiles).
+local function make_entity(pollution_level, pollutant_name, position)
   if pollutant_name == nil then
     pollutant_name = "pollution"
   end
   return {
-    position = {},
+    position = position or { x = 0, y = 0 },
     disabled_by_script = nil,
     surface = {
       -- false stands for a surface with no pollutant at all (pollutant_type nil).
+      index = 1,
       pollutant_type = pollutant_name and { name = pollutant_name } or nil,
       get_pollution = function(_)
         return pollution_level
@@ -69,6 +72,70 @@ do
   check("surface with no pollutant is disabled", vulcanus.disabled_by_script == true)
 end
 
+-- Test: the threshold applies per condenser sharing a chunk, all or nothing.
+-- A lone condenser needs `threshold`; five in one chunk need five times that,
+-- because they all draw on the same per-chunk pollution pool between checks.
+do
+  local state = module.new_state()
+  local crowd = {}
+  for i = 1, 5 do
+    crowd[i] = make_entity(40) -- chunk 0,0; 40 clears 10 each but not 5 x 10
+    module.add_entity(state, "crowd" .. i, crowd[i])
+  end
+  local lone = make_entity(40, "pollution", { x = 100, y = 100 }) -- its own chunk
+  module.add_entity(state, "lone", lone)
+  module.step(state, 10, 6)
+  local crowd_disabled = true
+  for _, e in ipairs(crowd) do
+    if e.disabled_by_script ~= true then crowd_disabled = false end
+  end
+  check("five condensers sharing a chunk are all disabled below 5x threshold", crowd_disabled)
+  check("a condenser alone in its chunk still runs at the same pollution", lone.disabled_by_script == false)
+end
+
+-- Test: the same crowd runs once the chunk holds enough for all of them.
+do
+  local state = module.new_state()
+  local crowd = {}
+  for i = 1, 5 do
+    crowd[i] = make_entity(50) -- exactly 5 x 10
+    module.add_entity(state, "crowd" .. i, crowd[i])
+  end
+  module.step(state, 10, 5)
+  local all_enabled = true
+  for _, e in ipairs(crowd) do
+    if e.disabled_by_script ~= false then all_enabled = false end
+  end
+  check("a chunk holding threshold x population runs all of them", all_enabled)
+end
+
+-- Test: removing condensers frees the chunk's budget for the survivors.
+do
+  local state = module.new_state()
+  local crowd = {}
+  for i = 1, 5 do
+    crowd[i] = make_entity(20)
+    module.add_entity(state, "crowd" .. i, crowd[i])
+  end
+  module.step(state, 10, 5)
+  check("five sharing a chunk with 20 pollution are disabled", crowd[1].disabled_by_script == true)
+  for i = 3, 5 do
+    module.remove_entity(state, "crowd" .. i)
+  end
+  module.step(state, 10, 2)
+  check("after three are removed the remaining two run", crowd[1].disabled_by_script == false and crowd[2].disabled_by_script == false)
+  check("chunk population tracks removals", module.chunk_population(state, "crowd1") == 2)
+end
+
+-- Test: adding the same key twice doesn't double-count the chunk.
+do
+  local state = module.new_state()
+  local e = make_entity(20)
+  module.add_entity(state, "e", e)
+  module.add_entity(state, "e", e)
+  check("re-adding a tracked key leaves the population at one", module.chunk_population(state, "e") == 1)
+end
+
 -- Test: every tracked entity gets visited within one lap.
 do
   local state = module.new_state()
@@ -100,9 +167,10 @@ do
     local key = "e" .. i
     visit_counts[key] = 0
     local e = {
-      position = {},
+      position = { x = 0, y = 0 },
       disabled_by_script = nil,
       surface = {
+        index = 1,
         pollutant_type = { name = "pollution" },
         get_pollution = function()
           visit_counts[key] = visit_counts[key] + 1
