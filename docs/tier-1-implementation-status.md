@@ -3,11 +3,11 @@
 Working notes for the first implementation pass at the pollution economy's tier-1
 buildings, from the 2026-08-14 session. Companion to
 [pollution-economy-design.md](pollution-economy-design.md), which holds the design
-reasoning; this file holds what actually got built, what's tuned to what, and what's
-deliberately still temporary.
+reasoning; this file holds what actually got built and what's tuned to what.
 
-**Branch:** `feature/pollution-economy-design`. **Everything below is uncommitted** in
-the working tree as of writing.
+**Status: final for tier 1** as of 2026-09-19. Built on
+`feature/pollution-economy-design` and merged to `dev` from there. Further work (the
+air purifier rework first) happens on its own feature branches off `dev`.
 
 ## What works
 
@@ -92,20 +92,15 @@ lever is `entity.disabled_by_script`, which `active` reads back as `false` when 
 The doc has been corrected in place; flagging it here too since it would silently break
 the mod's core mechanism if it crept back in.
 
-## Temporary state -- must be undone before any release
+## Diagnostic overrides (removed)
 
-**`src/prototypes/diagnostic-overrides.lua`** exists purely to make the loop testable in
-an active save right now. It:
-
-- enables all four recipes without any research,
-- reduces both building recipes to a single iron plate,
-- switches both buildings to a `void` energy source (no power draw), preserving
-  `emissions_per_minute`.
-
-**To undo:** delete that file and its `require` line at the bottom of `src/data.lua`.
-Nothing else is affected -- it's deliberately isolated as a last-loaded post-processing
-pass so it never tangles with the real definitions. None of its numbers are balance
-decisions; don't let them leak into playtesting notes.
+The in-save testing above used a temporary `src/prototypes/diagnostic-overrides.lua`,
+loaded last from `src/data.lua`. It enabled all four recipes without research, cut both
+building recipes to a single iron plate, and switched both buildings to a `void` energy
+source while keeping `emissions_per_minute`. It was deleted before this work merged to
+`dev`, so the real tech gate, build costs, and power draw are what ship. None of its
+numbers were balance decisions; don't let them leak into playtesting notes. If quick
+in-save testing is needed again, recreate it locally and keep it out of commits.
 
 ## Placeholder art
 
@@ -161,6 +156,23 @@ errors, and it caught two during this session that nothing else would have.
   settings once playtested.
 - Outflow's progression past tier 1 (the design doc's preferred endpoint is a remote,
   disposable nozzle fed by pipe; nothing beyond tier 1 is built).
-- The whole processing branch. Nothing from it exists yet.
+- The whole processing branch. Its first piece, the pipe-fed air purifier, is decided
+  in the design doc and not yet built.
 - Whether the mod's GitHub mirror should be made public (currently private, while
   `docs/release-process.md` describes it as the public mirror).
+
+## Known gaps in tier 1
+
+Found in the 2026-09-19 doc review. Not fixed yet.
+
+- **Spore surfaces bypass the gate.** The intake absorbs `pollution` only, but
+  `get_pollution()` returns the surface's own pollutant, which is spores on Gleba.
+  Nothing restricts where the intake can be placed, so on Gleba it passes the threshold
+  on spores, absorbs nothing, and makes captured fluid for free. Fix by restricting
+  the intake to surfaces whose `pollutant_type` is `pollution`, either through
+  `surface_conditions` or a check in the gate. This is a guard only; Gleba's own
+  mechanic stays deferred.
+- **Grouped intakes outrun their chunk.** Each intake compares its chunk against a fixed
+  threshold of 10 without counting the other intakes in that chunk. Negative emissions
+  stop at zero, so enough intakes in one thin chunk keep producing fluid the chunk
+  can't back.

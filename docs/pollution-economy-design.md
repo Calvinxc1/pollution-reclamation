@@ -2,13 +2,13 @@
 
 Status: **working design doc.** Sections are marked as *decided*, *leaning*, or *open* so
 the settled parts can be told apart from the parts still being argued about. Captures
-discussion from 2026-08-13 plus the mechanical research behind it, so the trade-offs are
-written down before any recipes get balanced around them.
+discussion from 2026-08-13 and 2026-09-19 plus the mechanical research behind it, so the
+trade-offs are written down before any recipes get balanced around them.
 
 **Tier-1 intake and outflow have since been built.** See
 [tier-1-implementation-status.md](tier-1-implementation-status.md) for what actually
-exists, the tuned numbers, and what's still deliberately temporary. Everything else in
-this document remains unimplemented design.
+exists and the tuned numbers. The air purifier rework below is decided but not yet
+built. Everything else in this document remains unimplemented design.
 
 ## Premise
 
@@ -207,6 +207,50 @@ commitment rather than something quietly neutralized. Structurally this is elega
 dirty pairs naturally with having invested in the outflow track, since a player who already
 built a bait site can afford the extra heat. Two independently chosen branches reinforce
 each other at the top of the tree without a hard-wired dependency.
+
+### The air purifier becomes the first processing recipe
+
+**Decided 2026-09-19.** The inherited air purifier no longer cleans the air. At 75/min per
+building it let a player skip the whole economy: one purifier nearly covers an early
+outpost, and the new intake is five times weaker. Instead the purifier becomes the "air
+scrubbing" recipe above: captured pollution fluid plus a filter produces a used filter.
+
+- **The `pr_air-purifier` building is removed.** The purifier becomes an ordinary
+  `crafting-with-fluid` recipe run in Assembler 2 and 3. Assembler 1 has no fluid
+  connections, so it can't run it.
+- **Base recipe, at crafting speed 1.0:**
+
+  | | Value |
+  | --- | --- |
+  | Cycle (`energy_required`) | 60s |
+  | In | 75 captured pollution + 1 pollution filter |
+  | Out | 1 used pollution filter (80% chance) + 75 water |
+
+  That's 75 fluid/min, or 7.5/min of air equivalent, a tenth of the old building.
+  Assembler speed scales it (0.75x on Assembler 2, 1.25x on Assembler 3).
+- **Water comes out, not in.** Assemblers have one fluid input and one fluid output, so
+  the recipe can't take water and captured pollution together. The intake already uses
+  water 1:1 to capture pollution, so the fluid is effectively dirty water: the purifier
+  traps the pollution in the filter and releases the water. That water can only be
+  reused by piping it back to the intakes, never straight back into the purifier, so a
+  closed water loop means building the whole capture loop. At base rates one intake
+  (150 water/min in, 150 fluid/min out) feeds two purifiers, which return 150 water/min.
+  If the water output backs up, the assembler stops, the same way a full tank stops the
+  intake.
+- **The machine pollutes while running.** A recipe can't set its own emissions, only
+  scale the machine's with `emissions_multiplier`. At 1.0, Assembler 2 emits 3/min
+  against 7.5/min removed, so the clean-recipe invariant above holds. What it emits goes
+  back into the air for intakes to capture again.
+- **Tech: blue science.** The recipe is unlocked by a chemical-science technology, not
+  the old red and green one.
+- **Filters stay the consumable,** which settles the filter-role question in the risks
+  section. Filter recipe requirements are still to be discussed.
+
+**Open.** The improved filter tier: its old recipe worked by tripling the building's
+negative emissions, which means nothing once pollution arrives by pipe. Also open: the
+exact `emissions_multiplier`, the technology's cost and prerequisites, and the migration
+for purifiers already placed in 0.1.x saves. Spore filtering on the old purifier goes
+away with it; Gleba gets its own mechanic later.
 
 ## What processing should produce
 
@@ -468,8 +512,23 @@ about *effective* capture, which for intake includes reach, not only per-buildin
   and let Rampant users get a naturally sharper version.
 - **Sequestration as a degenerate strategy.** Tank farms are legitimate, but confirm the
   land and material cost escalates fast enough to force a decision eventually.
-- **Filter role.** Filters most likely stay the intake building's consumable, preserving the
-  Krastorio flavor. Confirm rather than assume, since it interacts with the restore recipes.
+- **Filter role (resolved 2026-09-19).** Filters are the air purifier recipe's consumable,
+  not the intake's. The intake uses water instead.
+- **Biter targeting of scripted emissions is unverified.** The vent idea depends on attack
+  waves heading for the pollution source. Engine emissions come from a real entity, but
+  the directional and remote-nozzle outflow designs would place pollution with
+  `pollute()` at a position, and biters attack entities. Measure what attack groups do
+  with script-placed pollution before building outflow tier 2.
+- **Intake reach needs scripted absorption.** Engine emissions only affect the building's
+  own chunk, so pulling from neighbouring chunks means `set_pollution` on those chunks.
+  That moves away from option B toward option D. Reconcile before building intake tier 2.
+- **The venting tax is provisional.** Tier 1 ships a 10% tax (`emissions_multiplier =
+  1.1`). Whether that is "meaningfully more" enough to stop a single killbox from making
+  biters trivial is untested.
+- **Does late game ever solve pollution?** The target curve below ends with four buildings
+  covering a modest base, "mostly solved." The 2026-09-19 direction is that purifying
+  should ease pollution rather than remove it. Decide whether late tiers still reach the
+  "mostly solved" end state or a growing base always outpaces capture.
 - **Art budget.** Every building tier needs a sprite set, and the mod has one inherited
   building sprite today. This constrains tier count more than balance does.
 - **Tier counts.** Unspecified for all three families.
