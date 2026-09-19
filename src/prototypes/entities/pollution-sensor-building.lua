@@ -34,11 +34,20 @@ local picture = {
 sensor.picture_off = picture
 sensor.picture_on = util.table.deepcopy(picture)
 
--- The readout glows on its own in the art, so the lamp's own light is only a
--- faint green wash rather than the white circle a vanilla lamp casts.
+-- No lamp behaviour beyond the prototype base: the sensor is not a light. The
+-- readout already glows in the art, so every one of vanilla lamp's lighting
+-- fields is cleared, and picture_on is the same sprite as picture_off. The
+-- device therefore looks identical powered or not, day or night, instead of
+-- washing green the way a coloured lamp would.
 sensor.always_on = true
-sensor.light = { intensity = 0.25, size = 4, color = { r = 0.55, g = 0.85, b = 0.45 } }
-sensor.glow_color_intensity = 0.3
+sensor.light = nil
+sensor.light_when_colored = nil
+sensor.glow_size = 0
+sensor.glow_color_intensity = 0
+sensor.glow_render_mode = nil
+sensor.signal_to_color_mapping = nil
+sensor.darkness_for_all_lamps_on = nil
+sensor.darkness_for_all_lamps_off = nil
 sensor.energy_usage_per_tick = "500W"
 
 -- Trivial but non-zero draw: the reading should go dark when the power does,

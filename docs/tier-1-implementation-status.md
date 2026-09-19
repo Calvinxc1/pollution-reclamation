@@ -66,8 +66,10 @@ survey chunks before deciding where condensers are worth building.
 - **`pr_pollution-sensor`** is a 1x1 powered building with its own placeholder art: a
   squat steel housing on a bolted base plate, blue band, green readout and a top intake
   grille. The prototype is still a deep copy of vanilla `small-lamp`, for its behaviour
-  (1x1, powered, status line, always-on) rather than its looks; only the sprites and
-  power are overridden. The world sprite is 96x96 at `scale = 0.5`, so the device is one
+  (1x1, powered, status line, always-on) rather than its looks; the sprites, power, and
+  all of the lamp's lighting are overridden. Every light, glow and signal-colour field is
+  cleared and `picture_on` is the same sprite as `picture_off`, so the sensor looks
+  identical powered or not, day or night, instead of glowing like a lamp. The world sprite is 96x96 at `scale = 0.5`, so the device is one
   tile wide, shifted down so the base plate sits on the tile instead of floating. It shows the pollution in its own chunk as an entity status
   line, and nothing else. Unpowered it clears the reading and falls back to the engine's
   own "No power" status rather than leaving a stale number on screen.
