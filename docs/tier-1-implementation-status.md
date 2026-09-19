@@ -135,6 +135,12 @@ machine anywhere** to copy correct proportions from; the smallest is native 3x3.
 pixel alignment isn't achievable with borrowed 3x3 art -- it needs art actually drawn
 for 2x2.
 
+The fluid has real art: `src/graphics/icons/fluids/captured-pollution.png`, a grimy
+version of vanilla water's droplet in the same 120x64 four-mipmap strip, cut from a
+supplied image whose four droplets were drawn per mipmap size. Since 2026-09-19 the
+fluid is shown in game as **"Polluted water"**; the internal name stays
+`pr_captured-pollution`.
+
 Concept art for the eventual real intake building is archived in
 [concept-art/pollution-intake/](concept-art/pollution-intake), with
 `chatgpt-concept-02.png` as the current primary reference and an in-progress 3D model
