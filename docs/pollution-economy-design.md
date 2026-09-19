@@ -268,9 +268,9 @@ sulfur.
 
   | | Value |
   | --- | --- |
-  | Cycle (`energy_required`) | 12s |
-  | In | 20 sulfuric acid + 10 light oil |
-  | Out | 20 solvent |
+  | Cycle (`energy_required`) | 3s |
+  | In | 5 sulfuric acid + 2.5 light oil |
+  | Out | 5 solvent |
 
   One solvent plant (100/min) supplies exactly five cleaning plants (20/min each).
   Both recipes run in chemical plants, so the ratio holds at any plant speed unless
