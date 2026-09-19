@@ -134,6 +134,10 @@ air a tier-one cannot touch.
 
 ### Outflow building
 
+The tier-1 outflow building is named the **pollution vaporizer** (`pr_pollution-vaporizer`)
+in game: it evaporates polluted water straight into the air. "Outflow" remains the name
+for the building family and its tech branch in this doc.
+
 **Open, but with a preferred progression.** Variations discussed:
 
 - **Omnidirectional (tier one).** Engine emissions, natural diffusion, no control at all.
@@ -163,8 +167,8 @@ its own chunk. Emission placement is fully scriptable.
 is intake and outflow only.
 
 **Leaning.** First processing tier lands around late green or early blue science. That is
-consistent with where the mod's existing tech already sits (`pr_air-purification` is 250
-red-plus-green with steel and engine prereqs; the improved filter is already at blue), and
+consistent with where the 0.1.x tech sat (`pr_air-purification` was 250 red-plus-green
+with steel and engine prereqs; the improved filter was at blue), and
 blue means oil is running, which is also where filter plastic comes from. The gate
 justifies itself.
 
@@ -407,7 +411,7 @@ even where there is no direct conflict.
 
 **This is the single most important mechanical constraint, and it is not obvious.**
 
-The current air purifier scrubs pollution via negative `emissions_per_minute` on its energy
+The 0.1.x air purifier scrubbed pollution via negative `emissions_per_minute` on its energy
 source. Negative emissions floor at zero, so a purifier in clean air removes nothing. That
 part is self-limiting and correct.
 
@@ -419,7 +423,7 @@ manufacturing feedstock out of clean air.
 Left unaddressed, the premise collapses: a player parks a capture field in an untouched
 corner of the map and farms infinite pollution fluid without ever polluting anything.
 
-**Therefore a `control.lua` is mandatory for this design.** The mod currently has none.
+**Therefore a `control.lua` is mandatory for this design.** The mod had none before tier 1.
 There is no prototype-only way to express "this recipe requires ambient pollution."
 
 ## Verified API surface (Factorio 2.1)
@@ -543,9 +547,9 @@ Vanilla emission rates, read directly from `base/prototypes/entity` at Factorio 
 | Assembling machine 3 | 2 |
 | Electric furnace | 1 |
 
-The current air purifier scrubs **75/min** at default (configurable 50/75/100).
+The 0.1.x air purifier scrubbed **75/min** at default (configurable 50/75/100).
 
-### The problem with the current rate
+### The problem with the 0.1.x rate
 
 A small early mining outpost — eight electric drills — emits roughly 80/min. At 75/min per
 building, a *single* purifier nearly covers it. Far too strong for the intended feel.

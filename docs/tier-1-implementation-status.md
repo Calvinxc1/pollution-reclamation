@@ -1,4 +1,4 @@
-# Tier-1 intake/outflow: implementation status
+# Tier-1 intake and vaporizer: implementation status
 
 Working notes for the first implementation pass at the pollution economy's tier-1
 buildings, from the 2026-08-14 session. Companion to
@@ -15,7 +15,8 @@ A complete, playable capture/vent loop, verified running in a real save:
 
 - **`pr_pollution-intake`** draws ambient pollution from its chunk, consumes water as
   the scrubbing medium, and outputs `pr_polluted-water` fluid.
-- **`pr_pollution-outflow`** consumes that fluid and vents it back into the atmosphere
+- **`pr_pollution-vaporizer`** ("Pollution vaporizer", the tier-1 outflow building)
+  consumes that fluid and vents it back into the atmosphere
   wherever it's placed, relocating the biter aggression it attracts. It evaporates the
   water along with the pollution.
 - **`control.lua`** gates intake on real ambient pollution, so it can't manufacture
@@ -36,19 +37,19 @@ All first-pass, all deliberately adjustable. The exchange rate is the important 
 | Intake atmospheric absorption | `-15/min` (entity `emissions_per_minute`) |
 | Intake fluid output | 10 per 4s craft = **150/min** at full uptime |
 | Intake water consumption | 10 per craft = **150/min**, 1:1 with pollution produced |
-| Outflow fluid consumption | 10 per 4s craft = **150/min** |
-| Outflow atmospheric emission | `+15/min` base x `1.1` recipe multiplier = **+16.5/min** |
+| Vaporizer fluid consumption | 10 per 4s craft = **150/min** |
+| Vaporizer atmospheric emission | `+15/min` base x `1.1` recipe multiplier = **+16.5/min** |
 | control.lua pollution threshold | 10 (chunk pollution below this disables the intake) |
 | control.lua entities per tick | 4 |
 
 Two derived figures worth keeping in mind:
 
-- **The 10% venting tax.** Outflow releases more than intake captured (150 in vs. 165
+- **The 10% venting tax.** The vaporizer releases more than intake captured (150 in vs. 165
   out, in fluid-equivalent terms) because boiling the water back off to re-release the
   pollution is its own inefficient, energy-hungry process. This is the design doc's
   "lossy round trip" biter-aggro mitigation, and the ratio reads identically in both
   scales since 1 atmospheric = 10 fluid.
-- **Water is not returned.** The outflow evaporates the polluted water into the air,
+- **Water is not returned.** The vaporizer evaporates the polluted water into the air,
   water and all, so every intake needs a steady 150/min of fresh water. A water return
   was tried on 2026-09-19 and taken back out the same day: a straight outflow comes
   first, and closing the water loop is left for later.
@@ -110,7 +111,7 @@ in-save testing is needed again, recreate it locally and keep it out of commits.
 ## Placeholder art
 
 Both buildings are re-tinted, rescaled copies of vanilla `chemical-plant` (intake green,
-outflow orange). Jason's stated bar for now is functional visibility, not looks.
+vaporizer orange). Jason's stated bar for now is functional visibility, not looks.
 
 Things that were genuinely fixed rather than left sloppy, worth not regressing:
 
@@ -174,16 +175,17 @@ errors, and it caught two during this session that nothing else would have.
 
 ## Known gaps in tier 1
 
-Found in the 2026-09-19 doc review. Not fixed yet.
+Found in the 2026-09-19 doc review.
 
-- **Spore surfaces bypass the gate.** The intake absorbs `pollution` only, but
-  `get_pollution()` returns the surface's own pollutant, which is spores on Gleba.
-  Nothing restricts where the intake can be placed, so on Gleba it passes the threshold
-  on spores, absorbs nothing, and makes captured fluid for free. Fix by restricting
-  the intake to surfaces whose `pollutant_type` is `pollution`, either through
-  `surface_conditions` or a check in the gate. This is a guard only; Gleba's own
-  mechanic stays deferred.
-- **Grouped intakes outrun their chunk.** Each intake compares its chunk against a fixed
+- **Spore surfaces bypassed the gate (fixed 2026-09-19).** The intake absorbs
+  `pollution` only, but `get_pollution()` returns the surface's own pollutant, which is
+  spores on Gleba, so an intake there passed the threshold on spores and made polluted
+  water for free. The gate now also requires the surface's `pollutant_type` to be
+  `pollution`, which also covers planets with no pollutant. Checked in a headless run:
+  with spores at 240 on a real Gleba surface the intake stays disabled and makes
+  nothing, while a Nauvis intake runs. This is a guard only; Gleba's own mechanic
+  stays deferred.
+- **Grouped intakes outrun their chunk (not fixed).** Each intake compares its chunk against a fixed
   threshold of 10 without counting the other intakes in that chunk. Negative emissions
   stop at zero, so enough intakes in one thin chunk keep producing fluid the chunk
   can't back.
