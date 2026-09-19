@@ -261,6 +261,8 @@ technology. Until then filters are single-use: early purifying is paid for in fr
 filters, and the player has to put the used ones somewhere until they reach oil and
 sulfur.
 
+- **Name:** shown in game as "Pollution filter" ("Used pollution filter" once spent),
+  renamed from 0.1.x's "Anti-pollution filter". The internal names are unchanged.
 - **Filter recipe:** 2 coal, 2 iron plate, 1 steel plate, 2 plastic bar, with or without
   Space Age. The old base-game version without plastic is dropped.
 - **Cleaning recipe (`pr_restore-used-pollution-filter`):** `chemistry` category, so it
