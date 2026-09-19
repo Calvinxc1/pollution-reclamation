@@ -228,11 +228,11 @@ if polutionFilterIngredients ~= nil then
         -- building only ever emits while it has real captured fluid to
         -- consume, never for free.
         --
-        -- Most of the water comes back out: 8 per 10 polluted water
-        -- consumed (2/s against 2.5/s in). A capture/vent loop can pipe it
-        -- back to the intakes, but loses a fifth of its water per pass and
-        -- needs topping up. Icon and subgroup are still set explicitly, so
-        -- the recipe doesn't show up as plain water.
+        -- A straight outflow: the polluted water is evaporated into the air,
+        -- pollution and water together, so nothing comes back out. Empty
+        -- results is a fully supported "pure sink" recipe shape; with no
+        -- product, icon and subgroup can't be inherited and are set
+        -- explicitly below.
         {
           type = "recipe",
           name = "pr_pollution-venting",
@@ -246,15 +246,13 @@ if polutionFilterIngredients ~= nil then
           ingredients = {
             { type = "fluid", name = "pr_polluted-water", amount = 10 },
           },
-          results = {
-            { type = "fluid", name = "water", amount = 8 },
-          },
+          results = {},
           -- Deliberately lossy round trip per the design doc's biter-aggro
           -- risk mitigation: venting releases more pollution than the fluid
           -- it consumed represents.
           --
-          -- 10% tax: stripping the pollution back out of the water to
-          -- release it is its own inefficient process, so venting emits
+          -- 10% tax: evaporating the water off to release the pollution is
+          -- its own inefficient process, so venting emits
           -- more than was captured. Against intake's -15/min this yields
           -- +16.5/min -- 150 vs 165 in fluid-equivalent terms, at the 1
           -- atmospheric : 10 fluid exchange rate used throughout.
