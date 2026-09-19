@@ -153,10 +153,9 @@ data:extend({
         --
         -- Water is the scrubbing medium, consumed 1:1 with the captured
         -- pollution produced (10 water -> 10 polluted water). This is
-        -- what gives condenser a real consumable cost -- before it, a built and
-        -- powered condenser ran free forever. It also extends the water-as-
-        -- cleaning-agent logic the filter-restore recipes above already use,
-        -- and matches how real wet scrubbers actually capture particulates.
+        -- what gives the condenser a real consumable cost -- before it, a built
+        -- and powered condenser ran free forever. It also matches how real wet
+        -- scrubbers capture particulates.
         {
           type = "recipe",
           name = "pr_pollution-condensing",
