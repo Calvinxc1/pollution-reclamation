@@ -71,7 +71,9 @@ survey chunks before deciding where condensers are worth building.
   tile wide, shifted down so the base plate sits on the tile instead of floating. It shows the pollution in its own chunk as an entity status
   line, and nothing else. Unpowered it clears the reading and falls back to the engine's
   own "No power" status rather than leaving a stale number on screen.
-- **`pr_pollution-sensing`** unlocks it: 50 automation science at 15s, after `automation`.
+- **`pr_pollution-sensing`** unlocks it: 25 automation science at 15s, after `radar`,
+  vanilla's own survey instrument (itself 20). `pr_pollution-control` requires it in turn,
+  so a player can always read a chunk before building anything that acts on one.
   The recipe costs 5 iron plates and 2 electronic circuits.
 - **Sensors share the condensers' check budget.** `control.lua` visits
   `ENTITIES_PER_TICK` tracked entities per tick across both kinds, so a sensor refreshes
@@ -98,7 +100,8 @@ building recipes, two process recipes) together, per the design doc's "Decided" 
 that a player should get a complete loop or none of it.
 
 - **Cost:** 250 x (automation + logistic science), 30s. Green science tier.
-- **Prerequisite:** `fluid-handling`, specifically. Not `steel-processing`/`engine`
+- **Prerequisites:** `fluid-handling` and `pr_pollution-sensing`.
+- **On `fluid-handling`,** specifically. Not `steel-processing`/`engine`
   (which `fluid-handling` already requires transitively). The reason is concrete:
   `fluid-handling` is what unlocks `storage-tank` and `pump`. Without it a player could
   build the loop and connect it with plain pipes, but couldn't build a tank farm --

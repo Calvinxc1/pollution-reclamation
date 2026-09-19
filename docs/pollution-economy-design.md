@@ -128,7 +128,9 @@ parity preserved.
 **Decided 2026-09-19, and built.** A cheap red-science building that reads the pollution
 in the chunk it stands in, and shows nothing else. It sits deliberately *before* the
 economy in the tree, so a player can survey chunks before deciding where condensers are
-worth building, and can see why a crowded chunk's condensers have stopped.
+worth building, and can see why a crowded chunk's condensers have stopped. It follows
+`radar`, vanilla's own survey instrument, and the economy's root technology requires it
+in turn: a player can always read a chunk before building anything that acts on one.
 
 It is tracked by the same `control.lua` state as the condensers, with a `sensor` role, so
 the number it displays is read through the same helpers that decide whether condensers

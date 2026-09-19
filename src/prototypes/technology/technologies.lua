@@ -73,8 +73,11 @@ data:extend({
     },
     -- Red science, before the economy itself: a player can survey chunks and
     -- decide where condensers are worth building before researching them.
-    -- Gated on `automation` only, the first red-science technology, so the
-    -- sensor is available as early as the science that unlocks it.
+    --
+    -- Gated on `radar`, vanilla's own survey instrument and the closest thing
+    -- to this in the tree, and priced just above it (radar is 20). Pollution
+    -- control then requires this, so a player always has the means to read a
+    -- chunk before they can build anything that acts on one.
     {
       type = "technology",
       name = "pr_pollution-sensing",
@@ -88,9 +91,9 @@ data:extend({
           recipe = "pr_pollution-sensor",
         },
       },
-      prerequisites = { "automation" },
+      prerequisites = { "radar" },
       unit = {
-        count = 50,
+        count = 25,
         ingredients = {
           {"automation-science-pack", 1}
         },
@@ -133,7 +136,7 @@ data:extend({
           recipe = "pr_pollution-vaporizing",
         },
       },
-      prerequisites = { "fluid-handling" },
+      prerequisites = { "fluid-handling", "pr_pollution-sensing" },
       unit = {
         count = 250,
         ingredients = {
