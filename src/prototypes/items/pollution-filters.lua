@@ -20,27 +20,5 @@ data:extend({
     order = "w2-a2[pr_used-pollution-filter]",
     stack_size = 50,
     weight = 2*kg,
-  },
-  {
-    type = "item",
-    name = "pr_improved-pollution-filter",
-    icon = "__pollution-reclamation__/graphics/icons/items/improved-pollution-filter.png",
-    icon_size = 64,
-    icon_mipmaps = 4,
-    subgroup = "intermediate-product",
-    order = "w2-b1[pr_improved-pollution-filter]",
-    stack_size = 50,
-    weight = 2*kg,
-  },
-  {
-    type = "item",
-    name = "pr_used-improved-pollution-filter",
-    icon = "__pollution-reclamation__/graphics/icons/items/used-improved-pollution-filter.png",
-    icon_size = 64,
-    icon_mipmaps = 4,
-    subgroup = "intermediate-product",
-    order = "w2-b2[pr_used-improved-pollution-filter]",
-    stack_size = 50,
-    weight = 4*kg,
   }
 })

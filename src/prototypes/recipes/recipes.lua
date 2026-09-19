@@ -1,156 +1,110 @@
 ---------------------------------------------------------------------------
--- -- -- CONDITIONAL UPDATES FOR SPACE AGE USERS
----------------------------------------------------------------------------
-local polutionFilterIngredients = {}
-local improvedPolutionFilterIngredients = {}
-
-if not mods["space-age"] then
-  polutionFilterIngredients = {
-    { type = "item", name = "coal", amount = 2 },
-    { type = "item", name = "iron-plate", amount = 2 },
-    { type = "item", name = "steel-plate", amount = 1 }
-  }
-  improvedPolutionFilterIngredients = {
-    { type = "item", name = "pr_pollution-filter", amount = 1 },
-    { type = "item", name = "plastic-bar", amount = 3 }
-  }
-else
-  polutionFilterIngredients = {
-    { type = "item", name = "coal", amount = 2 },
-    { type = "item", name = "iron-plate", amount = 2 },
-    { type = "item", name = "steel-plate", amount = 1 },
-    { type = "item", name = "plastic-bar", amount = 2 }
-  }
-  improvedPolutionFilterIngredients = {
-    { type = "item", name = "pr_pollution-filter", amount = 1 },
-    { type = "item", name = "carbon-fiber", amount = 2 }
-  }
-end
-
----------------------------------------------------------------------------
 -- -- -- DATA EXTENSION ITSELF
 ---------------------------------------------------------------------------
-if polutionFilterIngredients ~= nil then
-  data:extend({
-      -------------
-      -- BUILDING
-      -------------
-      {
-          type = "recipe",
-          name = "pr_air-purifier",
-          energy_required = 5,
-          enabled = false,
-          ingredients = {
-            { type = "item", name = "steel-plate", amount = 2 },
-            { type = "item", name = "advanced-circuit", amount = 4 },
-            { type = "item", name = "plastic-bar", amount = 20 },
-            { type = "item", name = "engine-unit", amount = 3 },
-          },
-          results = { { type = "item", name = "pr_air-purifier", amount = 1 } },
-      },
-      -------------
-      -- PROCESS
-      -------------
-      {
-          type = "recipe",
-          name = "pr_air-cleaning",
-          categories = { "pr_air-purification-category" },
-          icon = "__pollution-reclamation__/graphics/icons/recipes/filtering.png",
-          icon_size = 64,
-          energy_required = 480,
-          enabled = false,
-          hidden = false,
-          hide_from_player_crafting = true,
-          ingredients = {
-            { type = "item", name = "pr_pollution-filter", amount = 1 },
-          },
-          results = {
-            { type = "item", name = "pr_used-pollution-filter", independent_probability = 0.80, amount = 1 },
-          },
-          subgroup = "raw-material",
-          order = "zz[air-cleaning]",
-        },
-        {
-          type = "recipe",
-          name = "pr_air-cleaning-2",
-          categories = { "pr_air-purification-category" },
-          icon = "__pollution-reclamation__/graphics/icons/recipes/filtering.png",
-          icon_size = 64,
-          energy_required = 600,
-          enabled = false,
-          hidden = false,
-          hide_from_player_crafting = true,
-          ingredients = {
-            { type = "item", name = "pr_improved-pollution-filter", amount = 1 },
-          },
-          results = {
-            { type = "item", name = "pr_used-improved-pollution-filter", independent_probability = 0.90, amount = 1 },
-          },
-          emissions_multiplier = 3.0,
-          subgroup = "raw-material",
-          order = "zz[air-cleaning]",
-        },
+data:extend({
         -------------
         -- ITEMS
         -------------
+        -- Same cost with or without Space Age. Plastic keeps filters behind
+        -- oil processing, and the unlocking technology requires plastics so
+        -- the filter is craftable the moment it unlocks.
         {
           type = "recipe",
           name = "pr_pollution-filter",
           energy_required = 10,
           enabled = false,
           allow_productivity = true,
-          ingredients = polutionFilterIngredients,
+          ingredients = {
+            { type = "item", name = "coal", amount = 2 },
+            { type = "item", name = "iron-plate", amount = 2 },
+            { type = "item", name = "steel-plate", amount = 1 },
+            { type = "item", name = "plastic-bar", amount = 2 },
+          },
           results = { { type = "item", name = "pr_pollution-filter", amount = 1 } },
         },
+        -------------
+        -- AIR PURIFICATION
+        -------------
+        -- Pipe-fed: the filter traps pollution that intakes already pulled out
+        -- of the air, and the water the intake used to capture it comes back
+        -- out. It no longer touches the atmosphere directly; the only
+        -- pollution involved is what the assembler itself emits while running.
+        --
+        -- crafting-with-fluid puts this in Assembler 2 and 3 only, since
+        -- Assembler 1 has no fluid connections. Those have one fluid input and
+        -- one fluid output, which is why water is an output here rather than
+        -- a second input.
+        --
+        -- Base rate at crafting speed 1.0: 75 polluted water per 60s, a
+        -- tenth of the old building's 75 atmospheric units per minute at the
+        -- 1 atmospheric : 10 fluid exchange rate. One intake (150/min) feeds
+        -- two of these.
+        {
+          type = "recipe",
+          name = "pr_air-cleaning",
+          categories = { "crafting-with-fluid" },
+          icon = "__pollution-reclamation__/graphics/icons/recipes/filtering.png",
+          icon_size = 64,
+          energy_required = 60,
+          enabled = false,
+          hide_from_player_crafting = true,
+          ingredients = {
+            { type = "fluid", name = "pr_polluted-water", amount = 75 },
+            { type = "item", name = "pr_pollution-filter", amount = 1 },
+          },
+          results = {
+            { type = "item", name = "pr_used-pollution-filter", independent_probability = 0.80, amount = 1 },
+            { type = "fluid", name = "water", amount = 75 },
+          },
+          subgroup = "raw-material",
+          order = "zz[air-cleaning]",
+        },
+        -------------
+        -- FILTER RESTORATION
+        -------------
+        -- Solvent is sulfuric acid cut with light oil: the oil dissolves the
+        -- tar and soot fouling a used filter so the acid can reach the
+        -- mineral residue underneath. Light oil only exists after advanced
+        -- oil processing, which is what gates restoration to blue science.
+        --
+        -- 100 solvent/min per plant against 20/min per restoring plant: one
+        -- solvent plant supplies exactly five restoring plants. Both run in
+        -- chemical plants, so the ratio holds at any plant speed.
+        {
+          type = "recipe",
+          name = "pr_solvent",
+          categories = { "chemistry" },
+          energy_required = 3,
+          enabled = false,
+          ingredients = {
+            { type = "fluid", name = "sulfuric-acid", amount = 5 },
+            { type = "fluid", name = "light-oil", amount = 2.5 },
+          },
+          results = {
+            { type = "fluid", name = "pr_solvent", amount = 5 },
+          },
+          subgroup = "fluid-recipes",
+          order = "z[pollution-reclamation]-a[solvent]",
+        },
+        -- No byproduct on purpose: recovering material from used filters is
+        -- deferred to a later extraction branch of the tech tree.
         {
           type = "recipe",
           name = "pr_restore-used-pollution-filter",
-          categories = { "crafting-with-fluid" },
+          categories = { "chemistry" },
           icon = "__pollution-reclamation__/graphics/icons/recipes/restore-used-pollution-filter.png",
           icon_size = 128,
-          energy_required = 10,
+          energy_required = 60,
           enabled = false,
           ingredients = {
             { type = "item", name = "pr_used-pollution-filter", amount = 1 },
-            { type = "fluid", name = "water", amount = 100 },
+            { type = "fluid", name = "pr_solvent", amount = 20 },
           },
           results = {
             { type = "item", name = "pr_pollution-filter", amount = 1 },
-            { type = "item", name = "coal", amount = 1, independent_probability = 0.50 }
           },
           subgroup = "intermediate-product",
           order = "w3-a[pr_restore-used-pollution-filter]",
-        },
-        {
-          type = "recipe",
-          name = "pr_improved-pollution-filter",
-          energy_required = 10,
-          enabled = false,
-          allow_productivity = true,
-          ingredients = improvedPolutionFilterIngredients,
-          results = { 
-            { type = "item", name = "pr_improved-pollution-filter", amount = 1 } 
-          }
-        },
-        {
-          type = "recipe",
-          name = "pr_restore-used-improved-pollution-filter",
-          categories = { "crafting-with-fluid" },
-          icon = "__pollution-reclamation__/graphics/icons/recipes/restore-used-improved-pollution-filter.png",
-          icon_size = 128,
-          energy_required = 10,
-          enabled = false,
-          ingredients = {
-            { type = "item", name = "pr_used-improved-pollution-filter", amount = 1 },
-            { type = "fluid", name = "water", amount = 100 },
-          },
-          results = {
-            { type = "item", name = "pr_improved-pollution-filter", amount = 1 },
-            { type = "item", name = "coal", amount = 1, independent_probability = 0.50 },
-            { type = "item", name = "stone", amount = 1, independent_probability = 0.50 }
-          },
-          subgroup = "intermediate-product",
-          order = "w3-b[pr_restore-used-pollution-filter]",
         },
         -------------
         -- POLLUTION ECONOMY: BUILDINGS
@@ -261,5 +215,4 @@ if polutionFilterIngredients ~= nil then
           subgroup = "raw-material",
           order = "zz[pollution-vaporizing]",
         }
-  })
-end
+})
