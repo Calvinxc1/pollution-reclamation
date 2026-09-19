@@ -6,4 +6,6 @@ Pollution condensers scrub pollution out of the air into water. Evaporate that p
 
 This mod continues an independent line of KrastorioAirPurifier by Tarckmhog, itself a port of the air purifier from Krastorio 2 by raiguard, Krastor, and Linver. KrastorioAirPurifier has no public source repository, so this is a from-scratch continuation rather than a fork.
 
+All art is placeholder for now: it does its job in game, but it isn't the final look.
+
 Pollution Reclamation is released under the GNU General Public License v3.0.

@@ -35,6 +35,13 @@ Release packaging and automated deployment are documented in [docs/release-proce
 
 Contribution guidelines are documented in [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Art
+
+All art in Pollution Reclamation is placeholder for now. It does its job, making each building, item, fluid, recipe and technology recognisable in game, but it isn't the intended final look, and any of it may be replaced.
+
+- The pollution condenser and pollution vaporizer are re-tinted, resized copies of the vanilla chemical plant.
+- The item, fluid, recipe and technology icons are AI-generated renders, cut down to Factorio's icon sizes. The full-size source renders are kept in [docs/icon-candidates/](docs/icon-candidates).
+
 ## License
 
 Pollution Reclamation is released under the [GNU General Public License v3.0](LICENSE), continuing the license of the Krastorio 2 and KrastorioAirPurifier work it derives from.
@@ -46,6 +53,6 @@ Pollution Reclamation is released under the [GNU General Public License v3.0](LI
 
 ## AI Disclosure
 
-This mod is developed with substantial AI assistance. AI tools have contributed to code implementation, documentation, validation workflow setup, and release automation.
+This mod is developed with substantial AI assistance. AI tools have contributed to code implementation, documentation, validation workflow setup, release automation, and the current placeholder art.
 
 AI-assisted work in this repository is governed through the policy files under `.governance/`. Those policies are intended to keep AI contributions reviewable, scoped to the task at hand, and aligned with the repository's validation and release process.

@@ -111,8 +111,27 @@ in-save testing is needed again, recreate it locally and keep it out of commits.
 
 ## Placeholder art
 
-Both buildings are re-tinted, rescaled copies of vanilla `chemical-plant` (condenser green,
-vaporizer orange). Jason's stated bar for now is functional visibility, not looks.
+**All art in the mod is placeholder** (Jason, 2026-09-19): each piece does its basic job
+of making things recognisable in game, but none of it is the intended final look. The
+README says so for players.
+
+| Asset | Current placeholder |
+| --- | --- |
+| Condenser and vaporizer buildings | re-tinted, rescaled vanilla `chemical-plant` (deferred) |
+| Polluted water, solvent (fluid icons) | AI-generated droplets |
+| Pollution filter, used pollution filter (items) | AI-generated renders of one filter cartridge |
+| Pollution filtering, Pollution filter restoration (recipes) | AI-generated renders |
+| Pollution filtering, Pollution filter restoration (techs) | the matching filter renders, at 256 px |
+| Pollution control (tech) | the polluted water droplet, until building art exists |
+| Mod thumbnail | AI-generated, see `docs/icon-specs/` |
+
+Every AI-generated icon was cut down from a 1254 px render with real transparency: the
+body alpha solidified, sub-17 alpha specks dropped, then downscaled into the standard
+mipmap strip (120x64 for items, fluids and recipes; 480x256 for techs). The source
+renders are kept in `docs/icon-candidates/`.
+
+On the buildings: condenser green, vaporizer orange. Jason's stated bar for now is
+functional visibility, not looks.
 
 Things that were genuinely fixed rather than left sloppy, worth not regressing:
 
@@ -134,7 +153,7 @@ machine anywhere** to copy correct proportions from; the smallest is native 3x3.
 pixel alignment isn't achievable with borrowed 3x3 art -- it needs art actually drawn
 for 2x2.
 
-The fluid has real art: `src/graphics/icons/fluids/polluted-water.png`, a grimy
+The fluid's icon, `src/graphics/icons/fluids/polluted-water.png`, is a grimy
 version of vanilla water's droplet in the same 120x64 four-mipmap strip, cut from a
 supplied image whose four droplets were drawn per mipmap size. The fluid was
 introduced as `pr_captured-pollution` ("Captured pollution") and renamed to

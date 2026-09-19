@@ -335,10 +335,9 @@ the recipes `pr_air-cleaning` to `pr_pollution-filtering` and
 `pr_restore-used-pollution-filter` to `pr_pollution-filter-restoration`.
 
 **Open.** The rest of the tech tree beyond the two techs above, and the purifier
-recipe's exact `emissions_multiplier` (1.0 for now). Tech icons: `pr_pollution-filtering`
-and `pr_pollution-control` use the removed building's image, and
-`pr_pollution-filter-restoration` uses the old improved filter tech's image, as
-placeholders.
+recipe's exact `emissions_multiplier` (1.0 for now). All art, tech icons included, is
+placeholder; see the art inventory in
+[tier-1-implementation-status.md](tier-1-implementation-status.md#placeholder-art).
 
 **Naming convention (2026-09-19).** Everything is `pr_`-prefixed and named noun first.
 Buildings and the recipes they run pair up: pollution condenser / pollution
