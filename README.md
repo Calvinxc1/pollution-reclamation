@@ -1,6 +1,6 @@
 # Pollution Reclamation
 
-Pollution Reclamation is a Factorio 2.1 mod that adds a standalone air purification and pollution filtering system: an air purifier building that consumes electricity and pollution filters to actively erase pollution, with a restore recipe for used filters and an advanced filter tier for higher throughput.
+Pollution Reclamation is a Factorio 2.1 mod that turns pollution into something you manage rather than only minimise: capture it from the air as a fluid, vent it somewhere else, or trap it in filters.
 
 ## Origin
 
@@ -10,14 +10,14 @@ This mod continues an independent line of [KrastorioAirPurifier](https://mods.fa
 
 - Factorio 2.1.
 - English only for now. Translations from fluent speakers are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md#translations).
-- Space Age is optional. The mod adjusts filter recipes and adds Gleba spore filtering when Space Age is active, and works without it.
+- Space Age is optional. The mod plays the same with or without it. It works with Nauvis pollution only; Gleba's spores are not handled yet.
 
 ## Features
 
-- An air purifier building that consumes electricity and pollution filters to actively remove pollution.
-- A restore recipe that reclaims used filters with water, with a chance of recovering raw materials.
-- An advanced filter tier with higher throughput and, on Space Age saves, spore filtering for Gleba.
-- Two configurable startup settings for filtering efficiency.
+- A pollution condenser that scrubs pollution out of the air around it into water, producing polluted water. It only runs where the air is actually polluted.
+- A pollution vaporizer that evaporates polluted water into the air wherever it is placed, moving the biter attacks it attracts.
+- Pollution filtering in Assembler 2 and 3, which traps the pollution in polluted water in a pollution filter and returns the water.
+- Pollution filter restoration at blue science: a solvent made from sulfuric acid and light oil restores used filters in a chemical plant. Until then, filters are single-use.
 
 ## Installation
 
@@ -35,6 +35,13 @@ Release packaging and automated deployment are documented in [docs/release-proce
 
 Contribution guidelines are documented in [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Art
+
+All art in Pollution Reclamation is placeholder for now. It does its job, making each building, item, fluid, recipe and technology recognisable in game, but it isn't the intended final look, and any of it may be replaced.
+
+- The pollution condenser and pollution vaporizer are re-tinted, resized copies of the vanilla chemical plant.
+- The item, fluid, recipe and technology icons are AI-generated renders, cut down to Factorio's icon sizes. The full-size source renders are kept in [docs/icon-candidates/](docs/icon-candidates).
+
 ## License
 
 Pollution Reclamation is released under the [GNU General Public License v3.0](LICENSE), continuing the license of the Krastorio 2 and KrastorioAirPurifier work it derives from.
@@ -46,6 +53,6 @@ Pollution Reclamation is released under the [GNU General Public License v3.0](LI
 
 ## AI Disclosure
 
-This mod is developed with substantial AI assistance. AI tools have contributed to code implementation, documentation, validation workflow setup, and release automation.
+This mod is developed with substantial AI assistance. AI tools have contributed to code implementation, documentation, validation workflow setup, release automation, and the current placeholder art.
 
 AI-assisted work in this repository is governed through the policy files under `.governance/`. Those policies are intended to keep AI contributions reviewable, scoped to the task at hand, and aligned with the repository's validation and release process.

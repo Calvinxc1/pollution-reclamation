@@ -1,71 +1,38 @@
 ---------------------------------------------------------------------------
--- -- -- CONDITIONAL UPDATES FOR SPACE AGE USERS
----------------------------------------------------------------------------
-local airPurificationPrerequisites = {}
-local improvedAirPurificationPrerequisites = {}
-local improvedAirPurificationCosts = {}
-
-if not mods["space-age"] then
-  airPurificationPrerequisites = { "steel-processing", "engine" }
-  improvedAirPurificationPrerequisites = { "pr_air-purification", "plastics" }
-  improvedAirPurificationCosts = {
-    count = 300,
-    ingredients = {
-      {"automation-science-pack", 1},
-      {"logistic-science-pack", 1},
-      {"chemical-science-pack", 1}
-    },
-    time = 45,
-  }
-else
-  airPurificationPrerequisites = { "plastics", "steel-processing", "engine" }
-  improvedAirPurificationPrerequisites = { "pr_air-purification", "planet-discovery-gleba", "carbon-fiber" }
-  improvedAirPurificationCosts = {
-    count = 150,
-    ingredients = {
-      {"automation-science-pack", 1},
-      {"logistic-science-pack", 1},
-      {"chemical-science-pack", 1},
-      {"space-science-pack", 1},
-      {"agricultural-science-pack", 1}
-    },
-    time = 45,
-  }
-end
-
----------------------------------------------------------------------------
 -- -- -- DATA EXTENSION ITSELF
 ---------------------------------------------------------------------------
-if airPurificationPrerequisites ~= nil then
-  data:extend({
+-- The same tree with or without Space Age: every prerequisite below is a
+-- base-game technology.
+data:extend({
+    -- Filters and pollution filtering, mid-to-late green science. Was
+    -- pr_air-purification in 0.1.x; migrations/pollution-reclamation-renames.json
+    -- carries that research over. Requires plastics so the filter, which
+    -- needs plastic bar, can be crafted the moment it unlocks;
+    -- pr_pollution-control supplies the polluted water filtering consumes.
+    --
+    -- Restoring used filters is deliberately NOT here. Until
+    -- pr_pollution-filter-restoration, filters are single-use and the player
+    -- has to put the used ones somewhere.
     {
       type = "technology",
-      name = "pr_air-purification",
+      name = "pr_pollution-filtering",
       mod = "pollution-reclamation",
-      icon = "__pollution-reclamation__/graphics/technologies/air-purifier.png",
+      icon = "__pollution-reclamation__/graphics/technologies/pollution-filtering.png",
       icon_size = 256,
       icon_mipmaps = 4,
       effects = {
-        {
-          type = "unlock-recipe",
-          recipe = "pr_air-purifier",
-        },
         {
           type = "unlock-recipe",
           recipe = "pr_pollution-filter",
         },
         {
           type = "unlock-recipe",
-          recipe = "pr_air-cleaning",
-        },
-        {
-          type = "unlock-recipe",
-          recipe = "pr_restore-used-pollution-filter",
+          recipe = "pr_pollution-filtering",
         },
       },
-      prerequisites = airPurificationPrerequisites,
+      prerequisites = { "pr_pollution-control", "plastics" },
       unit = {
-        count = 250,
+        count = 300,
         ingredients = {
           {"automation-science-pack", 1},
           {"logistic-science-pack", 1}
@@ -73,35 +40,41 @@ if airPurificationPrerequisites ~= nil then
         time = 30,
       },
     },
+    -- Solvent and filter restoration, early blue science. Gated on
+    -- advanced-oil-processing because solvent needs light oil, which basic
+    -- oil processing does not produce; that also brings chemical science.
     {
       type = "technology",
-      name = "pr_improved-pollution-filter",
+      name = "pr_pollution-filter-restoration",
       mod = "pollution-reclamation",
-      icon = "__pollution-reclamation__/graphics/technologies/improved-pollution-filter.png",
+      icon = "__pollution-reclamation__/graphics/technologies/pollution-filter-restoration.png",
       icon_size = 256,
       icon_mipmaps = 4,
       effects = {
         {
           type = "unlock-recipe",
-          recipe = "pr_improved-pollution-filter",
+          recipe = "pr_solvent",
         },
         {
           type = "unlock-recipe",
-          recipe = "pr_air-cleaning-2",
-        },
-        {
-          type = "unlock-recipe",
-          recipe = "pr_restore-used-improved-pollution-filter",
+          recipe = "pr_pollution-filter-restoration",
         },
       },
-      prerequisites = improvedAirPurificationPrerequisites,
-      unit = improvedAirPurificationCosts,
+      prerequisites = { "pr_pollution-filtering", "advanced-oil-processing" },
+      unit = {
+        count = 300,
+        ingredients = {
+          {"automation-science-pack", 1},
+          {"logistic-science-pack", 1},
+          {"chemical-science-pack", 1}
+        },
+        time = 30,
+      },
     },
     -- Single root technology unlocking both tier-1 pollution-economy
     -- buildings together, per the design doc's explicit "Decided" call: a
     -- player should get a complete, playable capture/vent loop the moment
-    -- this is researched, not half of one. Nauvis-scoped, so unconditional
-    -- (no mods["space-age"] branching, unlike the two technologies above).
+    -- this is researched, not half of one. Nauvis-scoped.
     --
     -- Gated on fluid-handling specifically, not just steel-processing/engine
     -- (which fluid-handling already requires transitively): fluid-handling
@@ -113,7 +86,7 @@ if airPurificationPrerequisites ~= nil then
       type = "technology",
       name = "pr_pollution-control",
       mod = "pollution-reclamation",
-      icon = "__pollution-reclamation__/graphics/technologies/air-purifier.png",
+      icon = "__pollution-reclamation__/graphics/technologies/pollution-control.png",
       icon_size = 256,
       icon_mipmaps = 4,
       effects = {
@@ -144,5 +117,4 @@ if airPurificationPrerequisites ~= nil then
         time = 30,
       },
     }
-  })
-end
+})
