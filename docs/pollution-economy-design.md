@@ -7,8 +7,9 @@ trade-offs are written down before any recipes get balanced around them.
 
 **Tier-1 intake and outflow have since been built.** See
 [tier-1-implementation-status.md](tier-1-implementation-status.md) for what actually
-exists and the tuned numbers. The air purifier rework below is decided but not yet
-built. Everything else in this document remains unimplemented design.
+exists and the tuned numbers. The air purifier rework, filters, and filter
+restoration below are built as specified. Everything else in this document remains
+unimplemented design.
 
 ## Premise
 
@@ -304,9 +305,10 @@ sulfur.
   it mid-to-late in green science, after oil processing. Intakes and outflows arrive well
   before it, so for that stretch polluted water can only be vented or stored.
 - **Filter cleaning tech (blue): decided.** New technology `pr_filter-restoration`,
-  "Filter restoration". Unlocks the solvent and cleaning recipes.
-  Prerequisites are the green filter tech and `advanced-oil-processing`, which brings
-  chemical science and light oil. That puts it in early blue science.
+  "Filter restoration". Unlocks the solvent and cleaning recipes. Costs 300 red +
+  green + blue at 30s. Prerequisites are the green filter tech and
+  `advanced-oil-processing`, which brings chemical science and light oil. That puts it
+  in early blue science.
 
 **Deferred: extraction processes.** Recovering materials from used filters becomes its
 own later branch of the tech tree rather than a byproduct of cleaning. Solvent is a
@@ -314,14 +316,21 @@ natural input for that branch, and a "spent solvent" output from cleaning, carry
 the dissolved tar, is one option for feeding it. To be built out
 with the rest of the tech tree.
 
-**Open.** The filter restoration tech's cost, and the rest of the tech tree beyond the
-two techs above. Tech icons: both `pr_air-purification` and `pr_pollution-control` use
-the removed building's image as a placeholder.
-The improved filter tier and its cleaning recipe: its old recipe worked by tripling the building's
-negative emissions, which means nothing once pollution arrives by pipe. Also open: the
-exact `emissions_multiplier` and the migration
-for purifiers already placed in 0.1.x saves. Spore filtering on the old purifier goes
-away with it; Gleba gets its own mechanic later.
+**Decided: the improved filter tier is removed for now.** Its purifier recipe worked by
+tripling the building's negative emissions, which means nothing once pollution arrives
+by pipe. The improved filter, its used form, its three recipes, and
+`pr_improved-pollution-filter` are gone, to be redesigned later as their own piece.
+Spore filtering on the old purifier goes too; Gleba gets its own mechanic later.
+
+**Existing 0.1.x saves need no migration script.** Measured by loading a save made on
+the old code: Factorio drops the removed building and items on load, and re-syncs
+recipe unlocks with researched technologies by itself, so filter restoration is
+locked again until `pr_filter-restoration` even where 0.1.x had unlocked it.
+
+**Open.** The rest of the tech tree beyond the two techs above, and the purifier
+recipe's exact `emissions_multiplier` (1.0 for now). Tech icons: `pr_air-purification`
+and `pr_pollution-control` use the removed building's image, and
+`pr_filter-restoration` uses the old improved filter tech's image, as placeholders.
 
 ## What processing should produce
 

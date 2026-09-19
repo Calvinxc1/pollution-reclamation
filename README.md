@@ -1,6 +1,6 @@
 # Pollution Reclamation
 
-Pollution Reclamation is a Factorio 2.1 mod that adds a standalone air purification and pollution filtering system: an air purifier building that consumes electricity and pollution filters to actively erase pollution, with a restore recipe for used filters and an advanced filter tier for higher throughput.
+Pollution Reclamation is a Factorio 2.1 mod that turns pollution into something you manage rather than only minimise: capture it from the air as a fluid, vent it somewhere else, or trap it in filters.
 
 ## Origin
 
@@ -10,14 +10,14 @@ This mod continues an independent line of [KrastorioAirPurifier](https://mods.fa
 
 - Factorio 2.1.
 - English only for now. Translations from fluent speakers are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md#translations).
-- Space Age is optional. The mod adjusts filter recipes and adds Gleba spore filtering when Space Age is active, and works without it.
+- Space Age is optional. The mod plays the same with or without it. It works with Nauvis pollution only; Gleba's spores are not handled yet.
 
 ## Features
 
-- An air purifier building that consumes electricity and pollution filters to actively remove pollution.
-- A restore recipe that reclaims used filters with water, with a chance of recovering raw materials.
-- An advanced filter tier with higher throughput and, on Space Age saves, spore filtering for Gleba.
-- Two configurable startup settings for filtering efficiency.
+- A pollution intake building that scrubs pollution out of the air around it into water, producing polluted water. It only runs where the air is actually polluted.
+- A pollution outflow building that evaporates polluted water into the air wherever it is placed, moving the biter attacks it attracts.
+- An air filtering process for Assembler 2 and 3 that traps the pollution in polluted water in an anti-pollution filter and returns the water.
+- Filter restoration at blue science: a solvent made from sulfuric acid and light oil restores used filters in a chemical plant. Until then, filters are single-use.
 
 ## Installation
 

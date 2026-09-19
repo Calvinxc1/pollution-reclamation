@@ -172,8 +172,8 @@ errors, and it caught two during this session that nothing else would have.
   settings once playtested.
 - Outflow's progression past tier 1 (the design doc's preferred endpoint is a remote,
   disposable nozzle fed by pipe; nothing beyond tier 1 is built).
-- The whole processing branch. Its first piece, the pipe-fed air purifier, is decided
-  in the design doc and not yet built.
+- The rest of the processing branch. Its first piece, the pipe-fed air purifier with
+  filter restoration, is built; see the design doc.
 - Whether the mod's GitHub mirror should be made public (currently private, while
   `docs/release-process.md` describes it as the public mirror).
 
