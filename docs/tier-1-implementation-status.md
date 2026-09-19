@@ -20,8 +20,8 @@ A complete, playable capture/vent loop, verified running in a real save:
   consumes that fluid and vents it back into the atmosphere
   wherever it's placed, relocating the biter aggression it attracts. It evaporates the
   water along with the pollution.
-- **`control.lua`** gates condenser on real ambient pollution, so it can't manufacture
-  fluid out of clean air.
+- **`control.lua`** gates condensers on real ambient pollution, and only on surfaces whose
+  pollutant is `pollution`, so they can't manufacture fluid out of clean air or spores.
 
 Confirmed working in-game: the loop runs, fluid is produced, and condensers register in
 the global pollution statistics as genuine consumers. Confirmed *not* easily visible:
@@ -45,7 +45,7 @@ All first-pass, all deliberately adjustable. The exchange rate is the important 
 
 Two derived figures worth keeping in mind:
 
-- **The 10% venting tax.** The vaporizer releases more tha condenser captured (150 in vs. 165
+- **The 10% venting tax.** The vaporizer releases more than the condenser captured (150 in vs. 165
   out, in fluid-equivalent terms) because boiling the water back off to re-release the
   pollution is its own inefficient, energy-hungry process. This is the design doc's
   "lossy round trip" biter-aggro mitigation, and the ratio reads identically in both
@@ -191,8 +191,8 @@ errors, and it caught two during this session that nothing else would have.
   settings once playtested.
 - Outflow's progression past tier 1 (the design doc's preferred endpoint is a remote,
   disposable nozzle fed by pipe; nothing beyond tier 1 is built).
-- The rest of the processing branch. Its first piece, the pipe-fed air purifier with
-  filter restoration, is built; see the design doc.
+- The rest of the processing branch. Its first piece, pollution filtering with filter
+  restoration, is built; see the design doc.
 - Whether the mod's GitHub mirror should be made public (currently private, while
   `docs/release-process.md` describes it as the public mirror).
 
