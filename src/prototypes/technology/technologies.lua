@@ -4,18 +4,18 @@
 -- The same tree with or without Space Age: every prerequisite below is a
 -- base-game technology.
 data:extend({
-    -- Filters and the pipe-fed purifier recipe, mid-to-late green science.
-    -- Keeps its 0.1.x internal name so saves that already researched it keep
-    -- it. Requires plastics so the filter, which needs plastic bar, can be
-    -- crafted the moment it unlocks; pr_pollution-economy supplies the
-    -- polluted water the purifier consumes.
+    -- Filters and pollution filtering, mid-to-late green science. Was
+    -- pr_air-purification in 0.1.x; migrations/pollution-reclamation-renames.json
+    -- carries that research over. Requires plastics so the filter, which
+    -- needs plastic bar, can be crafted the moment it unlocks;
+    -- pr_pollution-control supplies the polluted water filtering consumes.
     --
     -- Restoring used filters is deliberately NOT here. Until
-    -- pr_filter-restoration, filters are single-use and the player has to put
-    -- the used ones somewhere.
+    -- pr_pollution-filter-restoration, filters are single-use and the player
+    -- has to put the used ones somewhere.
     {
       type = "technology",
-      name = "pr_air-purification",
+      name = "pr_pollution-filtering",
       mod = "pollution-reclamation",
       icon = "__pollution-reclamation__/graphics/technologies/air-purifier.png",
       icon_size = 256,
@@ -27,10 +27,10 @@ data:extend({
         },
         {
           type = "unlock-recipe",
-          recipe = "pr_air-cleaning",
+          recipe = "pr_pollution-filtering",
         },
       },
-      prerequisites = { "pr_pollution-economy", "plastics" },
+      prerequisites = { "pr_pollution-control", "plastics" },
       unit = {
         count = 300,
         ingredients = {
@@ -45,9 +45,9 @@ data:extend({
     -- oil processing does not produce; that also brings chemical science.
     {
       type = "technology",
-      name = "pr_filter-restoration",
+      name = "pr_pollution-filter-restoration",
       mod = "pollution-reclamation",
-      icon = "__pollution-reclamation__/graphics/technologies/filter-restoration.png",
+      icon = "__pollution-reclamation__/graphics/technologies/pollution-filter-restoration.png",
       icon_size = 256,
       icon_mipmaps = 4,
       effects = {
@@ -57,10 +57,10 @@ data:extend({
         },
         {
           type = "unlock-recipe",
-          recipe = "pr_restore-used-pollution-filter",
+          recipe = "pr_pollution-filter-restoration",
         },
       },
-      prerequisites = { "pr_air-purification", "advanced-oil-processing" },
+      prerequisites = { "pr_pollution-filtering", "advanced-oil-processing" },
       unit = {
         count = 300,
         ingredients = {

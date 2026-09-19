@@ -23,7 +23,7 @@ data:extend({
           results = { { type = "item", name = "pr_pollution-filter", amount = 1 } },
         },
         -------------
-        -- AIR PURIFICATION
+        -- POLLUTION FILTERING
         -------------
         -- Pipe-fed: the filter traps pollution that condensers already pulled
         -- out of the air, and the water the condenser used to capture it comes back
@@ -41,9 +41,9 @@ data:extend({
         -- two of these.
         {
           type = "recipe",
-          name = "pr_air-cleaning",
+          name = "pr_pollution-filtering",
           categories = { "crafting-with-fluid" },
-          icon = "__pollution-reclamation__/graphics/icons/recipes/filtering.png",
+          icon = "__pollution-reclamation__/graphics/icons/recipes/pollution-filtering.png",
           icon_size = 64,
           energy_required = 60,
           enabled = false,
@@ -57,10 +57,10 @@ data:extend({
             { type = "fluid", name = "water", amount = 75 },
           },
           subgroup = "raw-material",
-          order = "zz[air-cleaning]",
+          order = "zz[pollution-filtering]",
         },
         -------------
-        -- FILTER RESTORATION
+        -- POLLUTION FILTER RESTORATION
         -------------
         -- Solvent is sulfuric acid cut with light oil: the oil dissolves the
         -- tar and soot fouling a used filter so the acid can reach the
@@ -90,9 +90,9 @@ data:extend({
         -- deferred to a later extraction branch of the tech tree.
         {
           type = "recipe",
-          name = "pr_restore-used-pollution-filter",
+          name = "pr_pollution-filter-restoration",
           categories = { "chemistry" },
-          icon = "__pollution-reclamation__/graphics/icons/recipes/restore-used-pollution-filter.png",
+          icon = "__pollution-reclamation__/graphics/icons/recipes/pollution-filter-restoration.png",
           icon_size = 128,
           energy_required = 60,
           enabled = false,
@@ -104,7 +104,7 @@ data:extend({
             { type = "item", name = "pr_pollution-filter", amount = 1 },
           },
           subgroup = "intermediate-product",
-          order = "w3-a[pr_restore-used-pollution-filter]",
+          order = "w3-a[pr_pollution-filter-restoration]",
         },
         -------------
         -- POLLUTION ECONOMY: BUILDINGS
