@@ -1,11 +1,11 @@
 {
   "name": "pollution-reclamation",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "factorio_version": "2.1",
   "title": "Pollution Reclamation",
   "author": "Jason M. Cherry",
   "contact": "",
-  "description": "Adds a standalone air purification and pollution filtering system for Factorio 2.1, continuing an independent mod originally ported from Krastorio 2.",
+  "description": "Turns pollution into something you manage: condense it out of the air into polluted water, vaporize it somewhere else, or trap it in pollution filters. For Factorio 2.1, continuing an independent mod originally ported from Krastorio 2.",
   "dependencies": [
     "base >= 2.1.0",
     "? space-age",
