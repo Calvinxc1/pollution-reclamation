@@ -76,6 +76,16 @@ function M.new_state()
     chunks = {},
     -- Where the chunk walk is up to.
     cursor = nil,
+    -- Sensors, and where their own walk is up to. They are kept apart from
+    -- the chunk index on purpose: a sensor gates nothing, so it has no
+    -- business in the structure that decides whether condensers run, and
+    -- `get_pollution` is a lookup of a value the engine already stores rather
+    -- than anything the gate computes. Keeping them separate means a sensor
+    -- no longer makes the condenser walk visit a chunk it has no stake in,
+    -- and sensors refresh on a cadence set by how many *sensors* exist --
+    -- a handful -- instead of by how many chunks hold condensers.
+    sensors = {},
+    sensor_cursor = nil,
     -- Which chunk each key belongs to. Buildings never move, so this is
     -- recorded once, at add time.
     entity_chunk = {},
@@ -93,7 +103,7 @@ end
 local function chunk_record(state, chunk)
   local record = state.chunks[chunk]
   if record == nil then
-    record = { condensers = {}, sensors = {}, condenser_count = 0, applied = nil }
+    record = { condensers = {}, condenser_count = 0, applied = nil }
     state.chunks[chunk] = record
   end
   return record
@@ -116,13 +126,15 @@ end
 function M.add_entity(state, key, entity, role)
   role = role or "condenser"
   if state.entities[key] == nil then
-    local chunk = M.chunk_key(entity)
-    local record = chunk_record(state, chunk)
-    state.entity_chunk[key] = chunk
+    -- Recorded for both kinds: a sensor doesn't join the chunk index, but
+    -- knowing which chunk it stands in is what a later sensor tier would need
+    -- to show that chunk's condenser count and bar.
+    state.entity_chunk[key] = M.chunk_key(entity)
     state.roles[key] = role
     if role == "sensor" then
-      record.sensors[key] = true
+      state.sensors[key] = true
     else
+      local record = chunk_record(state, state.entity_chunk[key])
       record.condensers[key] = true
       record.condenser_count = record.condenser_count + 1
       -- One more condenser raises the bar for every condenser in the chunk,
@@ -148,28 +160,32 @@ end
 -- `next(t, k)` after `k` has already been removed from `t` is not something
 -- Lua promises will work.
 function M.remove_entity(state, key)
-  local chunk = state.entity_chunk[key]
-  if state.entities[key] ~= nil and chunk then
-    local record = state.chunks[chunk]
-    if record then
-      if state.roles[key] == "sensor" then
-        record.sensors[key] = nil
-      else
+  if state.entities[key] ~= nil then
+    if state.roles[key] == "sensor" then
+      -- Advance the sensor cursor before the key goes, while `next` can still
+      -- find it; calling next(t, k) after k has been removed from t is not
+      -- something Lua promises will work.
+      if state.sensor_cursor == key then
+        state.sensor_cursor = next(state.sensors, key)
+      end
+      state.sensors[key] = nil
+    else
+      local chunk = state.entity_chunk[key]
+      local record = chunk and state.chunks[chunk]
+      if record then
         record.condensers[key] = nil
         record.condenser_count = record.condenser_count - 1
         -- One fewer condenser lowers the bar for the rest, so the cached
         -- verdict has to be recomputed rather than reused.
         record.applied = nil
-      end
-      if next(record.condensers) == nil and next(record.sensors) == nil then
-        -- Last building in this chunk: drop the chunk from the walk. Advance
-        -- the cursor first, while `next` can still find this key -- calling
-        -- next(t, k) after k has been removed from t is not something Lua
-        -- promises will work.
-        if state.cursor == chunk then
-          state.cursor = next(state.chunks, chunk)
+        if next(record.condensers) == nil then
+          -- Last condenser in this chunk: drop the chunk from the walk, same
+          -- cursor caution as above.
+          if state.cursor == chunk then
+            state.cursor = next(state.chunks, chunk)
+          end
+          state.chunks[chunk] = nil
         end
-        state.chunks[chunk] = nil
       end
     end
     state.entity_chunk[key] = nil
@@ -356,29 +372,10 @@ function M.visit_chunk(state, record, threshold)
     if sample then break end
   end
   if sample == nil then
-    for key in pairs(record.sensors) do
-      sample = state.entities[key]
-      if sample then break end
-    end
-  end
-  if sample == nil then
     return
   end
 
-  local reading = M.reading(sample)
-
-  for key in pairs(record.sensors) do
-    local entity = state.entities[key]
-    if entity then
-      M.report(entity, reading, M.signal_of(state, key))
-    end
-  end
-
-  if record.condenser_count == 0 then
-    return
-  end
-
-  local allowed = M.can_capture(reading, threshold, record.condenser_count)
+  local allowed = M.can_capture(M.reading(sample), threshold, record.condenser_count)
   if record.applied == allowed then
     return
   end
@@ -390,6 +387,35 @@ function M.visit_chunk(state, record, threshold)
     end
   end
   record.applied = allowed
+end
+
+-- Sensors, on their own walk.
+--
+-- Each one reads its own chunk, because that is all a sensor does and the
+-- read is a lookup rather than a calculation. It cannot drift from the gate
+-- even so: both go through `reading`, `is_pollution` and `status_label`, so
+-- what counts as pollution and how it is rounded have exactly one definition.
+-- That guarantee was always in the shared helpers rather than in the shared
+-- loop, which is why the two can be separated without losing it.
+function M.step_sensors(state, slice_count)
+  for _ = 1, slice_count do
+    local key = state.sensor_cursor
+    if key == nil then
+      key = next(state.sensors, nil)
+    end
+    if key == nil then
+      break
+    end
+
+    local entity = state.entities[key]
+    state.sensor_cursor = next(state.sensors, key)
+
+    if entity then
+      M.report(entity, M.reading(entity), M.signal_of(state, key))
+    end
+  end
+
+  return state
 end
 
 -- Visits up to `slice_count` chunks that hold tracked buildings, wrapping

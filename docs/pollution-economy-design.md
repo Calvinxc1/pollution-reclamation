@@ -132,10 +132,12 @@ worth building, and can see why a crowded chunk's condensers have stopped. It fo
 `radar`, vanilla's own survey instrument, and the economy's root technology requires it
 in turn: a player can always read a chunk before building anything that acts on one.
 
-It is tracked by the same `control.lua` state as the condensers, with a `sensor` role, so
-the number it displays is read through the same helpers that decide whether condensers
-run: the readout cannot drift from the rule. Sensors are excluded from a chunk's
-condenser population, since they absorb nothing.
+The number it displays is read and phrased through the same helpers that decide whether
+condensers run, so the readout cannot drift from the rule. It does not, however, share
+their loop: a sensor gates nothing, and a chunk's pollution is a value the engine already
+stores rather than something the gate works out, so there is nothing to piggyback on. It
+walks on its own and refreshes at a pace set by how many sensors exist. Sensors are
+excluded from a chunk's condenser population, since they absorb nothing.
 
 **It reports pollution and only pollution.** `get_pollution` answers for whichever
 pollutant a surface uses, so on Gleba the same call returns a spore count. A sensor

@@ -32,6 +32,12 @@ local ROLE = {
 -- stays until playtesting says what the lap should be.
 local POLLUTION_THRESHOLD = 10
 local CHUNKS_PER_TICK = 4
+-- Sensors walk separately from the condenser gate, so their refresh rate is
+-- set by how many sensors exist -- a handful in any real base -- rather than
+-- by how many chunks hold condensers. A player with a dozen sensors sees each
+-- one refresh about twenty times a second; the gate's pace no longer has
+-- anything to do with it.
+local SENSORS_PER_TICK = 4
 
 local entity_filter = {
   { filter = "name", name = CONDENSER_ENTITY_NAME },
@@ -95,9 +101,14 @@ end
 -- the event coverage -- logged instead of allowed to crash the tick and take
 -- scripting down with it.
 local function on_tick()
-  local ok, err = pcall(pollution_condenser.step, storage.pr_pollution_condenser, POLLUTION_THRESHOLD, CHUNKS_PER_TICK)
+  local state = storage.pr_pollution_condenser
+  local ok, err = pcall(pollution_condenser.step, state, POLLUTION_THRESHOLD, CHUNKS_PER_TICK)
   if not ok then
-    log("pollution tracking step failed: " .. tostring(err))
+    log("pollution gating step failed: " .. tostring(err))
+  end
+  ok, err = pcall(pollution_condenser.step_sensors, state, SENSORS_PER_TICK)
+  if not ok then
+    log("pollution sensor step failed: " .. tostring(err))
   end
 end
 

@@ -22,6 +22,14 @@ local function check(name, condition)
   end
 end
 
+-- One tick of control.lua: the condenser gate walks chunks, sensors walk
+-- themselves. Tests drive both together so they exercise the same pairing the
+-- runtime does.
+local function tick(state, threshold, slice)
+  module.step(state, threshold, slice)
+  module.step_sensors(state, slice)
+end
+
 -- disabled_by_script starts nil (not false) so tests can tell "visited and
 -- computed false" apart from "never visited, still at its initial value".
 -- Entities default to chunk 0,0 of surface 1; pass a position to place one in
@@ -76,7 +84,7 @@ do
   local cold = make_entity(2, "pollution", { x = 100, y = 100 }) -- below threshold
   module.add_entity(state, "hot", hot)
   module.add_entity(state, "cold", cold)
-  module.step(state, 10, 2)
+  tick(state, 10, 2)
   check("entity above threshold stays enabled", hot.disabled_by_script == false)
   check("entity below threshold gets disabled", cold.disabled_by_script == true)
 end
@@ -91,7 +99,7 @@ do
   module.add_entity(state, "nauvis", nauvis)
   module.add_entity(state, "gleba", gleba)
   module.add_entity(state, "vulcanus", vulcanus)
-  module.step(state, 10, 3)
+  tick(state, 10, 3)
   check("pollution surface above threshold stays enabled", nauvis.disabled_by_script == false)
   check("spore surface is disabled even above threshold", gleba.disabled_by_script == true)
   check("surface with no pollutant is disabled", vulcanus.disabled_by_script == true)
@@ -109,7 +117,7 @@ do
   end
   local lone = make_entity(40, "pollution", { x = 100, y = 100 }) -- its own chunk
   module.add_entity(state, "lone", lone)
-  module.step(state, 10, 6)
+  tick(state, 10, 6)
   local crowd_disabled = true
   for _, e in ipairs(crowd) do
     if e.disabled_by_script ~= true then crowd_disabled = false end
@@ -126,7 +134,7 @@ do
     crowd[i] = make_entity(50) -- exactly 5 x 10
     module.add_entity(state, "crowd" .. i, crowd[i])
   end
-  module.step(state, 10, 5)
+  tick(state, 10, 5)
   local all_enabled = true
   for _, e in ipairs(crowd) do
     if e.disabled_by_script ~= false then all_enabled = false end
@@ -142,12 +150,12 @@ do
     crowd[i] = make_entity(20)
     module.add_entity(state, "crowd" .. i, crowd[i])
   end
-  module.step(state, 10, 5)
+  tick(state, 10, 5)
   check("five sharing a chunk with 20 pollution are disabled", crowd[1].disabled_by_script == true)
   for i = 3, 5 do
     module.remove_entity(state, "crowd" .. i)
   end
-  module.step(state, 10, 2)
+  tick(state, 10, 2)
   check("after three are removed the remaining two run", crowd[1].disabled_by_script == false and crowd[2].disabled_by_script == false)
   check("chunk population tracks removals", module.chunk_population(state, "crowd1") == 2)
 end
@@ -171,7 +179,7 @@ do
   module.add_entity(state, "condenser", condenser)
   check("a sensor doesn't count toward its chunk's condenser population",
     module.chunk_population(state, "sensor") == 1)
-  module.step(state, 10, 2)
+  tick(state, 10, 2)
   check("the lone condenser still runs beside a sensor", condenser.disabled_by_script == false)
   check("the sensor is never gated", sensor.disabled_by_script == nil)
   check("the sensor reports the chunk's rounded pollution",
@@ -185,7 +193,7 @@ do
   local state = module.new_state()
   local sensor = make_entity(80)
   module.add_entity(state, "sensor", sensor, "sensor")
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
   local slot = sensor.section.slots[1]
   check("the sensor writes its reading to the circuit output", slot ~= nil and slot.min == 80)
   check("a fresh sensor defaults to signal-P",
@@ -198,7 +206,7 @@ do
   local sensor = make_entity(42)
   module.add_entity(state, "sensor", sensor, "sensor")
   module.set_signal(state, "sensor", { type = "item", name = "iron-plate", quality = "normal" })
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
   local slot = sensor.section.slots[1]
   check("the chosen signal is used", slot.value.name == "iron-plate")
   check("the reading is written to it", slot.min == 42)
@@ -213,15 +221,15 @@ do
   local sensor = make_entity(75)
   module.add_entity(state, "sensor", sensor, "sensor")
   module.set_signal(state, "sensor", { type = "item", name = "copper-plate", quality = "normal" })
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
   check("a wired sensor's output is enabled", sensor.behavior.enabled == true)
   sensor.wired.connection_count = 0
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
   check("an unwired sensor's output is switched off", sensor.behavior.enabled == false)
   check("its signal survives being unwired",
     module.signal_of(state, "sensor").name == "copper-plate")
   sensor.wired.connection_count = 1
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
   check("rewiring switches the output back on", sensor.behavior.enabled == true)
   check("and the reading comes back on the kept signal",
     sensor.section.slots[1].value.name == "copper-plate" and sensor.section.slots[1].min == 75)
@@ -232,7 +240,7 @@ do
   local state = module.new_state()
   local sensor = make_entity(500, false)
   module.add_entity(state, "sensor", sensor, "sensor")
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
   check("a sensor without a pollutant outputs zero", sensor.section.slots[1].min == 0)
 end
 
@@ -241,7 +249,7 @@ do
   local state = module.new_state()
   local sensor = make_entity(50, false)
   module.add_entity(state, "sensor", sensor, "sensor")
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
   check("a sensor without a pollutant says so",
     sensor.custom_status.label[1] == "pr-sensor.no-pollutant")
 end
@@ -256,7 +264,7 @@ do
   local state = module.new_state()
   local sensor = make_entity(240, "spores")
   module.add_entity(state, "sensor", sensor, "sensor")
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
   check("a sensor on a spore surface says there is no pollution",
     sensor.custom_status.label[1] == "pr-sensor.no-pollutant")
   check("a sensor on a spore surface outputs zero, not the spore count",
@@ -299,7 +307,7 @@ do
   end
   -- One entity per step; 7 steps is exactly one lap over 7 entities.
   for _ = 1, 7 do
-    module.step(state, 10, 1)
+    tick(state, 10, 1)
   end
   local all_visited = true
   for _, e in ipairs(entities) do
@@ -336,7 +344,7 @@ do
     crowd[i] = counting_entity()
     module.add_entity(state, "c" .. i, crowd[i])
   end
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
   check("twenty condensers in one chunk cost one pollution read", reads == 1)
   local all_enabled = true
   for _, e in ipairs(crowd) do
@@ -371,12 +379,12 @@ do
     entities[i] = e
     module.add_entity(state, "e" .. i, e)
   end
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
   local first_pass = writes
   check("the first visit writes the verdict to every condenser", first_pass == 5)
-  module.step(state, 10, 1)
-  module.step(state, 10, 1)
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
+  tick(state, 10, 1)
+  tick(state, 10, 1)
   check("later visits with the same verdict write nothing", writes == first_pass)
 end
 
@@ -386,15 +394,15 @@ do
   local state = module.new_state()
   local a = make_entity(15)
   module.add_entity(state, "a", a)
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
   check("one condenser in a chunk holding 15 runs", a.disabled_by_script == false)
   local b = make_entity(15)
   module.add_entity(state, "b", b)
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
   check("adding a second re-decides and stops both", a.disabled_by_script == true)
   check("including the new one", b.disabled_by_script == true)
   module.remove_entity(state, "b")
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
   check("removing it re-decides and the survivor runs again", a.disabled_by_script == false)
 end
 
@@ -411,6 +419,50 @@ do
   occupied = 0
   for _ in pairs(state.chunks) do occupied = occupied + 1 end
   check("removing the last building drops its chunk", occupied == 0)
+end
+
+-- Test: a sensor does not put its chunk on the condenser walk. Sensors gate
+-- nothing, so a chunk that holds only sensors has no verdict to reach and no
+-- business slowing down the chunks that do.
+do
+  local state = module.new_state()
+  module.add_entity(state, "s", make_entity(500, "pollution", { x = 500, y = 500 }), "sensor")
+  local occupied = 0
+  for _ in pairs(state.chunks) do occupied = occupied + 1 end
+  check("a sensor alone leaves the chunk walk empty", occupied == 0)
+
+  module.add_entity(state, "c", make_entity(500), "condenser")
+  occupied = 0
+  for _ in pairs(state.chunks) do occupied = occupied + 1 end
+  check("a condenser is what puts a chunk on the walk", occupied == 1)
+end
+
+-- Test: sensors refresh on their own walk, at their own pace, whatever the
+-- condenser gate is doing.
+do
+  local state = module.new_state()
+  local sensor = make_entity(500, "pollution", { x = 500, y = 500 })
+  module.add_entity(state, "s", sensor, "sensor")
+  module.step(state, 10, 8)
+  check("the chunk walk alone never touches a sensor", sensor.custom_status == nil)
+  module.step_sensors(state, 1)
+  check("the sensor walk reports it", sensor.custom_status.label[2] == "500")
+  check("and puts the reading on its output", sensor.section.slots[1].min == 500)
+end
+
+-- Test: a sensor and the gate still agree, now that they read separately.
+-- The guarantee lives in the shared helpers, not in a shared loop.
+do
+  local state = module.new_state()
+  local sensor = make_entity(37.4)
+  local condenser = make_entity(37.4)
+  module.add_entity(state, "s", sensor, "sensor")
+  module.add_entity(state, "c", condenser, "condenser")
+  tick(state, 10, 4)
+  check("the sensor rounds the way the gate's helpers do",
+    sensor.custom_status.label[2] == "37")
+  check("and the condenser beside it ran on the same reading",
+    condenser.disabled_by_script == false)
 end
 
 -- Test: the cursor wraps around and keeps cycling rather than getting
@@ -438,7 +490,7 @@ do
   end
   -- Three full laps' worth of single-chunk steps.
   for _ = 1, 15 do
-    module.step(state, 10, 1)
+    tick(state, 10, 1)
   end
   local min_visits = math.huge
   for _, count in pairs(visit_counts) do
@@ -459,7 +511,7 @@ do
   module.add_entity(state, "e3", e3)
 
   -- Advance the cursor onto whichever entity comes first.
-  module.step(state, 10, 1)
+  tick(state, 10, 1)
 
   local removed_ok = pcall(function()
     module.remove_entity(state, "e1")
@@ -469,7 +521,7 @@ do
   -- Comfortably more than one lap over the two survivors, regardless of
   -- where the cursor happened to land.
   for _ = 1, 6 do
-    module.step(state, 10, 1)
+    tick(state, 10, 1)
   end
   check(
     "surviving neighbors still get visited after a removal",
@@ -481,7 +533,7 @@ end
 do
   local state = module.new_state()
   local ok = pcall(function()
-    module.step(state, 10, 4)
+    tick(state, 10, 4)
   end)
   check("stepping an empty tracked table doesn't error", ok)
 end

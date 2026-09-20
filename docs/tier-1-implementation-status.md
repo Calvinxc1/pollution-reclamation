@@ -41,7 +41,8 @@ All first-pass, all deliberately adjustable. The exchange rate is the important 
 | Vaporizer fluid consumption | 10 per 4s craft = **150/min** |
 | Vaporizer atmospheric emission | `+15/min` base x `1.1` recipe multiplier = **+16.5/min** |
 | control.lua pollution threshold | 10 per condenser sharing the chunk: a chunk needs `10 x condensers in it` or none of them run |
-| control.lua chunks per tick | 4 occupied chunks, not 4 buildings: a lap takes `occupied chunks / 240` seconds |
+| control.lua chunks per tick | 4 chunks holding condensers, not 4 buildings: a lap takes `those chunks / 240` seconds |
+| control.lua sensors per tick | 4, on a separate walk sized by sensor count |
 | Filter survival per filtering craft | `independent_probability = 0.80` -- 20% of filters are consumed outright |
 
 Two derived figures worth keeping in mind:
@@ -118,19 +119,27 @@ survey chunks before deciding where condensers are worth building.
   vanilla's own survey instrument (itself 20). `pr_pollution-control` requires it in turn,
   so a player can always read a chunk before building anything that acts on one.
   The recipe costs 5 iron plates and 2 electronic circuits.
-- **Sensors share the condensers' check budget.** `control.lua` visits
-  `CHUNKS_PER_TICK` occupied chunks per tick, and a sensor refreshes when its chunk comes
-  up: with 400 occupied chunks that's about 1.7 seconds. Fine for a readout, and it keeps
-  the runtime cost flat no matter how many buildings stand in those chunks. The gate
-  itself no longer depends on that cadence for correctness -- see the chunk population
-  rule below.
-- **It reuses the condenser's own gate code.** The sensor is tracked in the same table
-  with a `sensor` role, so the number it displays is read through the same helpers that
-  decide whether condensers run, and the readout cannot drift from the rule. The window
-  goes through those helpers too -- `reading`, `is_pollution`, `status_label` -- rather
-  than recomputing the number for display, which is what let the two disagree once.
-  Sensors are excluded from a chunk's condenser population, since they absorb nothing
-  and must not raise the bar their neighbours have to clear.
+- **Sensors walk separately from the gate.** They were folded into the condenser walk
+  originally, on the idea that sharing the loop was what kept the displayed number from
+  drifting from the tested one. It isn't -- that guarantee lives in the shared helpers
+  (`reading`, `is_pollution`, `status_label`), which define what counts as pollution and
+  how it rounds in exactly one place. And `get_pollution` is a lookup of a value the
+  engine already stores, not anything the gate computes, so there was nothing for a
+  sensor to piggyback on. Split 2026-09-19: `SENSORS_PER_TICK` sensors are refreshed per
+  tick from their own list, so a sensor's pace is set by how many *sensors* exist -- a
+  handful -- instead of by how many chunks hold condensers. A dozen sensors each refresh
+  about twenty times a second.
+- **A sensor no longer drags its chunk onto the condenser walk.** It gates nothing, so a
+  chunk holding only sensors has no verdict to reach, and it used to be visited anyway --
+  one pollution read and an immediate return -- slowing the chunks that do. Only
+  condensers put a chunk on that walk now.
+- **It reuses the condenser's own helpers.** The number it displays is read and phrased
+  through `reading`, `is_pollution` and `status_label` -- the same three the gate uses --
+  so the readout cannot drift from the rule, and the window calls them too rather than
+  recomputing the number for display, which is what let the two disagree once. It is the
+  helpers doing that work, not shared iteration: the sensor keeps its own walk and still
+  cannot disagree. Sensors are excluded from a chunk's condenser population, since they
+  absorb nothing and must not raise the bar their neighbours have to clear.
 - **One number on purpose.** The tracking also knows how many condensers share the chunk
   and what that chunk needs to run them; showing that is left to a later sensor tier.
 - Verified headless: the reading matched `get_pollution` exactly as pollution rose and
