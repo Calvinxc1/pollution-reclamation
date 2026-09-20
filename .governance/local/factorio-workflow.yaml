@@ -142,7 +142,6 @@ local_testing:
       load-tested; this makes the same obligation concrete for behaviour questions.
 declared_deviations:
   - Post-release main-to-dev sync is manual until automation is implemented and validated.
-  - Factorio Mod Portal listing for pollution-reclamation is not yet confirmed to exist. KrastorioAirPurifier is already taken on the portal by a different author, so this mod needs its own listing; the upload step in deploy.yml is wired and will run on the next version bump regardless, and will simply fail that one destination (Gitea and GitHub releases still succeed independently) if the listing is missing.
   - main branch protection is not yet enabled on Gitea for this repository, unlike advanced-fluid-infrastructure.
 workspace_specific_rules:
   - Start ordinary implementation branches from dev as feature/<topic>.
@@ -157,6 +156,10 @@ workspace_specific_rules:
   - Settle undocumented engine behaviour with a headless harness run before quoting a
     number or asserting a behaviour; see local_testing.
 migration_notes:
+  - Factorio Mod Portal listing confirmed 2026-09-19, retiring the deviation that had it
+    as unverified. mods.factorio.com/api/mods/pollution-reclamation/full returns
+    "Pollution Reclamation" owned by Calvin_xc1 with 0.1.0 and 0.1.1 published, which is the
+    same endpoint deploy.yml's release gate queries to decide whether to upload.
   - On 2026-09-19 the headless harness was recorded as this repository's standard local
     testing approach, after a graphical launch attempt handed off to Steam mid-session.
     The practice predates the record -- it had already been used for the condenser gate
@@ -169,6 +172,5 @@ migration_notes:
 last_stage_reviewed_at: 2026-08-13T00:00:00-07:00
 known_gaps:
   - Post-release main-to-dev sync is manual until automation is implemented and validated.
-  - Factorio Mod Portal listing existence is unconfirmed.
   - main branch protection is not yet enabled.
 notes: This local workflow file is the repo-specific source of truth for GitFlow stage and branch roles.
