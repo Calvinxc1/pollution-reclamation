@@ -41,7 +41,8 @@ All first-pass, all deliberately adjustable. The exchange rate is the important 
 | Vaporizer fluid consumption | 10 per 4s craft = **150/min** |
 | Vaporizer atmospheric emission | `+15/min` base x `1.1` recipe multiplier = **+16.5/min** |
 | control.lua pollution threshold | 10 per condenser sharing the chunk: a chunk needs `10 x condensers in it` or none of them run |
-| control.lua entities per tick | 4 |
+| control.lua chunks per tick | 4 occupied chunks, not 4 buildings: a lap takes `occupied chunks / 240` seconds |
+| Filter survival per filtering craft | `independent_probability = 0.80` -- 20% of filters are consumed outright |
 
 Two derived figures worth keeping in mind:
 
