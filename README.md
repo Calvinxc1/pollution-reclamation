@@ -40,7 +40,7 @@ Contribution guidelines are documented in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 All art in Pollution Reclamation is placeholder for now. It does its job, making each building, item, fluid, recipe and technology recognisable in game, but it isn't the intended final look, and any of it may be replaced.
 
-- The pollution condenser and pollution vaporizer are re-tinted, resized copies of the vanilla chemical plant. The pollution sensor has its own art.
+- The pollution condenser and pollution vaporizer are re-tinted, resized copies of the vanilla chemical plant. The pollution sensor has art of its own rather than a borrowed building, but it is an AI-generated render like the icons below, and equally provisional.
 - The item, fluid, recipe and technology icons are AI-generated renders, cut down to Factorio's icon sizes. The full-size source renders are kept in [docs/icon-candidates/](docs/icon-candidates).
 
 ## License

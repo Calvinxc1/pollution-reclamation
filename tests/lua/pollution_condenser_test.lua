@@ -244,6 +244,34 @@ do
     sensor.custom_status.label[1] == "pr-sensor.no-pollutant")
 end
 
+-- Test: a sensor on Gleba reports no pollution rather than a spore count.
+-- get_pollution answers for whatever pollutant the surface uses, so without
+-- this the sensor would label a spore reading "Chunk pollution" and put it on
+-- the wire -- on the one surface where the gate has already refused to run a
+-- condenser. The number a player reads and the number the gate tests have to
+-- be the same number.
+do
+  local state = module.new_state()
+  local sensor = make_entity(240, "spores")
+  module.add_entity(state, "sensor", sensor, "sensor")
+  module.step(state, 10, 1)
+  check("a sensor on a spore surface says there is no pollution",
+    sensor.custom_status.label[1] == "pr-sensor.no-pollutant")
+  check("a sensor on a spore surface outputs zero, not the spore count",
+    sensor.section.slots[1].min == 0)
+  check("and its status diode is not green", sensor.custom_status.diode == module.DIODE.yellow)
+end
+
+-- Test: the gate and the sensor agree on what counts as pollution, because
+-- they ask the same question.
+do
+  check("spores are not pollution", module.is_pollution({ pollutant = "spores", pollution = 240 }) == false)
+  check("nothing is not pollution", module.is_pollution({ pollutant = nil, pollution = 0 }) == false)
+  check("pollution is pollution", module.is_pollution({ pollutant = "pollution", pollution = 5 }) == true)
+  local label = module.status_label({ pollutant = "pollution", pollution = 504.8 })
+  check("a reading is rounded for display", label[2] == "505")
+end
+
 -- Test: removing a sensor leaves its chunk's condenser count alone.
 do
   local state = module.new_state()

@@ -23,6 +23,10 @@ sensor.fast_replaceable_group = nil
 sensor.next_upgrade = nil
 sensor.icon = "__pollution-reclamation__/graphics/icons/entities/pollution-sensor.png"
 sensor.icon_size = 64
+-- The icon file is a 120x64 mipmap strip (64+32+16+8), like every other icon
+-- in this mod. Without this the engine reads only the first square and the
+-- icon renders unsmoothed everywhere it is drawn small.
+sensor.icon_mipmaps = 4
 sensor.icon_draw_specification = nil
 
 -- 64 image pixels at scale 0.5 is 32 screen pixels, one tile wide. The shift

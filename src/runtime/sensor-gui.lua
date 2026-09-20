@@ -37,21 +37,6 @@ local function open_frames()
   return storage.pr_sensor_frames
 end
 
-local function has_pollutant(entity)
-  local pollutant = entity.surface.pollutant_type
-  return pollutant ~= nil and pollutant.name == "pollution"
-end
-
--- The reading, phrased the same way as the status line the sensor shows when
--- a player stands next to it, so the two never disagree.
-local function reading_caption(entity)
-  if not has_pollutant(entity) then
-    return { "pr-sensor.no-pollutant" }
-  end
-  local pollution = math.floor(entity.surface.get_pollution(entity.position) + 0.5)
-  return { "pr-sensor.pollution", tostring(pollution) }
-end
-
 -- Which networks the sensor is actually on, the way vanilla's panel reports it.
 local function network_caption(entity)
   local parts = { "" }
@@ -189,8 +174,14 @@ end
 
 function M.refresh(open)
   local entity = open.entity
-  open.reading.caption = reading_caption(entity)
-  open.status.sprite = has_pollutant(entity) and "utility/status_working" or "utility/status_inactive"
+  -- Read and phrased through the gate's own helpers, never recomputed here:
+  -- the window has to show the number the gate tests, and a second copy of
+  -- that arithmetic is exactly how the two would drift apart.
+  local reading = pollution_condenser.reading(entity)
+  open.reading.caption = pollution_condenser.status_label(reading)
+  open.status.sprite = pollution_condenser.is_pollution(reading)
+    and "utility/status_working"
+    or "utility/status_inactive"
   open.network.caption = network_caption(entity)
   if not open.pinned then
     open.circuit.visible = pollution_condenser.is_connected(entity)

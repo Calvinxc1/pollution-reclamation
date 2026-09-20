@@ -37,6 +37,10 @@ function M.set_circuit_wires(wire_ids)
   M.CIRCUIT_WIRES = wire_ids
 end
 
+-- The only pollutant this mod's economy is built on. Everything that reads a
+-- surface -- the gate and the sensor alike -- measures against this one name.
+M.POLLUTANT = "pollution"
+
 function M.new_state()
   return {
     entities = {},
@@ -116,25 +120,6 @@ function M.remove_entity(state, key)
   state.entities[key] = nil
 end
 
--- Visits up to `slice_count` tracked entities, reading pollution at each
--- one's own position/surface and setting `entity.disabled_by_script`
--- against `threshold`. Wraps around automatically when the cursor runs off
--- the end of the table (`next` returns nil), so it never needs to know the
--- table's size up front.
---
--- Reads pollution via `entity.surface.get_pollution(entity.position)`
--- rather than taking a single surface parameter for the whole tracked
--- table -- tracked entities aren't guaranteed to share one surface (nothing
--- restricts this building to Nauvis at the prototype level), and each real
--- LuaEntity already carries its own `.surface`. In tests, fake entities
--- carry their own fake `.surface` stub the same way, so this stays just as
--- mockable as a separate parameter would have been.
---
--- Order across entities is deliberately NOT a contract of this function --
--- Factorio's own `next`/`pairs` is a deterministic-but-insertion-order
--- reimplementation that no stock Lua interpreter reproduces, so callers
--- (and tests) should only rely on "every entity gets visited eventually",
--- never on a specific sequence.
 -- The condenser only absorbs `pollution` (its emissions_per_minute names no
 -- other pollutant), but get_pollution() reports whatever pollutant the
 -- surface uses: spores on Gleba, nothing at all on Vulcanus, Fulgora, or
@@ -161,7 +146,7 @@ end
 function M.can_capture(entity, threshold, population)
   local surface = entity.surface
   local pollutant = surface.pollutant_type
-  if not (pollutant and pollutant.name == "pollution") then
+  if not (pollutant and pollutant.name == M.POLLUTANT) then
     return false
   end
   return surface.get_pollution(entity.position) >= threshold * (population or 1)
@@ -181,6 +166,29 @@ function M.reading(entity)
     pollutant = pollutant and pollutant.name or nil,
     pollution = (pollutant and surface.get_pollution(entity.position)) or 0,
   }
+end
+
+-- Gleba's spores come back through the same get_pollution call, and a surface
+-- with no pollutant at all reports nothing. The gate already refuses to absorb
+-- either, so a sensor must not report either as pollution -- otherwise the
+-- number a player reads and the number that decides whether condensers run
+-- part company on exactly the surface where it matters.
+function M.is_pollution(reading)
+  return reading.pollutant == M.POLLUTANT
+end
+
+function M.rounded(reading)
+  return math.floor(reading.pollution + 0.5)
+end
+
+-- The one phrasing of a reading, shared by the status line a player sees
+-- standing next to a sensor and by the sensor's window, so the two cannot
+-- disagree.
+function M.status_label(reading)
+  if not M.is_pollution(reading) then
+    return { "pr-sensor.no-pollutant" }
+  end
+  return { "pr-sensor.pollution", tostring(M.rounded(reading)) }
 end
 
 -- The signal a freshly placed sensor outputs on, until the player picks
@@ -247,23 +255,34 @@ end
 -- standing next to it, and the same number on its circuit output.
 function M.report(entity, signal)
   local reading = M.reading(entity)
-  local pollution = math.floor(reading.pollution + 0.5)
-  if reading.pollutant == nil then
-    entity.custom_status = {
-      diode = M.DIODE.yellow,
-      label = { "pr-sensor.no-pollutant" },
-    }
-    M.write_signal(entity, 0, signal)
-  else
-    entity.custom_status = {
-      diode = M.DIODE.green,
-      label = { "pr-sensor.pollution", tostring(pollution) },
-    }
-    M.write_signal(entity, pollution, signal)
-  end
+  local pollution = M.is_pollution(reading)
+  entity.custom_status = {
+    diode = pollution and M.DIODE.green or M.DIODE.yellow,
+    label = M.status_label(reading),
+  }
+  M.write_signal(entity, pollution and M.rounded(reading) or 0, signal)
   return reading
 end
 
+-- Visits up to `slice_count` tracked entities, reading pollution at each
+-- one's own position/surface and setting `entity.disabled_by_script`
+-- against `threshold`. Wraps around automatically when the cursor runs off
+-- the end of the table (`next` returns nil), so it never needs to know the
+-- table's size up front.
+--
+-- Reads pollution via `entity.surface.get_pollution(entity.position)`
+-- rather than taking a single surface parameter for the whole tracked
+-- table -- tracked entities aren't guaranteed to share one surface (nothing
+-- restricts this building to Nauvis at the prototype level), and each real
+-- LuaEntity already carries its own `.surface`. In tests, fake entities
+-- carry their own fake `.surface` stub the same way, so this stays just as
+-- mockable as a separate parameter would have been.
+--
+-- Order across entities is deliberately NOT a contract of this function --
+-- Factorio's own `next`/`pairs` is a deterministic-but-insertion-order
+-- reimplementation that no stock Lua interpreter reproduces, so callers
+-- (and tests) should only rely on "every entity gets visited eventually",
+-- never on a specific sequence.
 function M.step(state, threshold, slice_count)
   for _ = 1, slice_count do
     local key = state.cursor

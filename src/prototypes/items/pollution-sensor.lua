@@ -4,6 +4,7 @@ data:extend({
     name = "pr_pollution-sensor",
     icon = "__pollution-reclamation__/graphics/icons/entities/pollution-sensor.png",
     icon_size = 64,
+    icon_mipmaps = 4,
     -- Beside the condenser and vaporizer in the production tab: the three are
     -- built and placed together, whatever the sensor is made of.
     subgroup = "production-machine",

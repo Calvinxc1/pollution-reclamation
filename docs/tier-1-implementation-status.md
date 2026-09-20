@@ -81,8 +81,15 @@ survey chunks before deciding where condensers are worth building.
   copy until 2026-09-19, when the circuit output was chosen over the power requirement.
 - **The output signal is the player's.** A fresh sensor outputs on `signal-P`; the player
   can change it in the sensor's own window, and each update rewrites only the slot's
-  value, keeping their signal. An emptied slot is refilled with the default. A surface
-  with no pollutant outputs zero.
+  value, keeping their signal. An emptied slot is refilled with the default.
+- **It reads pollution, not whatever the surface happens to emit.** `get_pollution`
+  answers for whichever pollutant a surface uses, so on Gleba it returns a spore count.
+  The gate has always refused to run a condenser on that; the sensor did not, and until
+  2026-09-19 would have labelled a spore reading "Chunk pollution" and put it on the
+  wire -- on the one surface where the gate had already said no. Both now ask the same
+  question through one helper, and a non-pollution surface reads as no pollution and
+  outputs zero. Found while cross-checking the window against the gate, and covered by
+  tests in both directions.
 - **It only outputs when it is wired.** An unwired sensor leaves the circuit output
   switched off rather than quietly holding a value, so a sensor that isn't connected to
   anything isn't pretending to be. The player's signal choice survives the wire being
@@ -119,9 +126,11 @@ survey chunks before deciding where condensers are worth building.
   population rule below.
 - **It reuses the condenser's own gate code.** The sensor is tracked in the same table
   with a `sensor` role, so the number it displays is read through the same helpers that
-  decide whether condensers run, and the readout cannot drift from the rule. Sensors are
-  excluded from a chunk's condenser population, since they absorb nothing and must not
-  raise the bar their neighbours have to clear.
+  decide whether condensers run, and the readout cannot drift from the rule. The window
+  goes through those helpers too -- `reading`, `is_pollution`, `status_label` -- rather
+  than recomputing the number for display, which is what let the two disagree once.
+  Sensors are excluded from a chunk's condenser population, since they absorb nothing
+  and must not raise the bar their neighbours have to clear.
 - **One number on purpose.** The tracking also knows how many condensers share the chunk
   and what that chunk needs to run them; showing that is left to a later sensor tier.
 - Verified headless: the reading matched `get_pollution` exactly as pollution rose and
@@ -130,9 +139,13 @@ survey chunks before deciding where condensers are worth building.
   same way on 2026-09-19: an unwired sensor had its output switched off with no slot
   written at all, while still showing its status line; wiring two together put
   `signal-P = 505` on the wire against a surface reading of 504.8; cutting the wire
-  switched the output back off and kept `signal-P` selected. The window itself is the one
-  part that cannot be checked this way -- a headless run has no player to open it -- so
-  it needs an in-game look.
+  switched the output back off and kept `signal-P` selected. The Gleba rule was checked
+  on a real Gleba surface rather than only in the unit tests: with 640 polluted into each,
+  the Nauvis sensor read 545 on a green diode while the Gleba sensor -- whose surface
+  reports 640 of `spores` through the same call -- said "no pollution on this surface" on
+  a yellow one and wrote nothing. The window itself is the one part that cannot be
+  checked this way -- a headless run has no player to open it -- so it needs an in-game
+  look.
 
 ## Tech placement
 
