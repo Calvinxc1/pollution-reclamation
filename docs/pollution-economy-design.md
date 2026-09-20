@@ -173,20 +173,27 @@ keeping it apart leaves the gate logic testable on its own.
 what that chunk must hold to run them; showing that is the obvious next step, and tier 1
 stays one number on purpose.
 
-### Concentration is the intended play
+### Concentration is probably the optimal layout
 
-**Decided 2026-09-19.** The optimal and intended way to run this economy is to grab as
-much pollution as possible from one place: dense blocks of condensers built where the
-pollution actually is, expanding outward as they saturate. Not a thin scatter across the
-map.
+**Not a decision -- an inference, noted 2026-09-19.** The design takes no position on how
+anyone should lay these out, and nothing in the mod requires or rewards a particular
+shape beyond what the mechanics already do. This is recorded because it bears on the
+runtime, not because it is a target anyone is building toward.
 
-Two things push that way and neither is arbitrary. The pollution is densest in and around
-the factory, so that is where an intake building earns its keep. And the polluted water
-has to reach tanks, vaporizers and filtering, so a scatter one condenser to a chunk would
-mean a pipe network thousands of tiles across, which no one is going to build.
+Jason's reading is that the optimal play is to grab as much pollution as possible from
+one place: dense blocks of condensers where the pollution actually is, expanding outward
+as they saturate, rather than a thin scatter across the map. Two things point that way.
+The pollution is densest in and around the factory, so that is where an intake building
+earns its keep. And the polluted water has to reach tanks, vaporizers and filtering, so a
+scatter one condenser to a chunk would mean a pipe network thousands of tiles across,
+which no one is going to build.
 
-**The all-or-nothing rule does not fight this, and reading it as an anti-crowding measure
-was a mistake.** The bar it sets -- `threshold x condensers in the chunk` -- is a *stock*
+That inference is untested against an actual game. If it turns out wrong, nothing here
+breaks -- see the runtime note at the end of this section for the only thing that
+depends on it, and it only loses an optimization it never assumed.
+
+**Separately, and regardless of how anyone plays: the all-or-nothing rule is not an
+anti-crowding measure, and describing it as one was a mistake.** The bar it sets -- `threshold x condensers in the chunk` -- is a *stock*
 requirement: pollution sitting in the chunk, not flowing through it. A chunk inside a
 factory holds far more than its condensers are claiming, so the gate simply never binds
 there. What the rule refuses is a crowd the chunk cannot back: build faster than pollution
@@ -204,7 +211,7 @@ anything in this design. If it turns out to be uncomfortably low, the lever is t
 condenser's `-15/min` rather than the gate.
 
 **Consequence for the runtime.** The per-chunk walk in `control.lua` is sized by chunks
-rather than buildings, so an intended-play layout is also its best case -- concentration
+rather than buildings, so a concentrated layout is also its best case -- concentration
 keeps the chunk count small while the building count grows. See the status doc.
 
 ### Intake building

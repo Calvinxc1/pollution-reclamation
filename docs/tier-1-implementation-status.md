@@ -183,9 +183,10 @@ between checks.
 **How much it buys depends on layout, and the layout is favourable.** The shared-read
 saving scales with buildings per chunk: condensers spread one per chunk would give
 `chunks == buildings` and no lap improvement at all. That was the first reading of the
-all-or-nothing rule and it was wrong -- concentration is the intended play (see the
-design doc), so the dense figures above are the representative case rather than the
-optimistic one. Better still, the two pull the same way: concentrating keeps the chunk
+all-or-nothing rule and it was wrong, in two ways: the rule does not penalise
+concentration, and concentration is the layout Jason expects to be optimal anyway (see
+the design doc, where it is recorded as an inference rather than a design target). So
+the dense figures above are more likely the representative case than the optimistic one. Better still, the two pull the same way: concentrating keeps the chunk
 count small while the building count grows, and the lap is over chunks. A 5,000-condenser
 farm at ~100 per chunk is 50 chunks, a 0.2 s lap.
 
@@ -393,7 +394,8 @@ Found in the 2026-09-19 doc review.
   The threshold is now per condenser sharing the chunk, all or nothing: a chunk must hold
   `threshold x condensers in that chunk` before any of them run. All-or-nothing needs no
   arbitration between condensers in a chunk and no rotation to stay fair. It is not a
-  penalty on concentration -- see "Concentration is the intended play" in the design doc:
+  penalty on concentration -- see "Concentration is probably the optimal layout" in the
+  design doc:
   the bar is a stock requirement, so a chunk inside a factory carries far more than its
   condensers claim. What it refuses is a crowd the chunk cannot back. Re-measured after
   the fix: the same dense block produced 25.0 against 25.7 removed, and a normal field of

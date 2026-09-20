@@ -202,11 +202,12 @@ end
 -- condenser in a chunk reads the same number, so the decision needs no
 -- arbitration between them and no rotation to keep it fair.
 --
--- Note what this does and does not discourage. Concentrating condensers is the
--- intended play -- you build where the pollution is, and the polluted water
--- has to reach one set of pipes -- and the bar is a *stock* requirement, so a
--- chunk inside a factory holds far more than its condensers are claiming and
--- the gate never binds. What the rule refuses is a crowd that the chunk cannot
+-- Note what this does and does not discourage. It is not an anti-crowding
+-- measure: the bar is a *stock* requirement, so a chunk inside a factory
+-- holds far more than its condensers are claiming and the gate never binds
+-- there. Concentrating condensers is very likely the optimal way to build --
+-- you build where the pollution is, and the polluted water has to reach one
+-- set of pipes -- and nothing here penalises that. What the rule refuses is a crowd that the chunk cannot
 -- actually back: build faster than the pollution arrives and the whole chunk
 -- stops together rather than quietly producing fluid out of nothing. The
 -- ceiling on a chunk is then how fast pollution diffuses into it, which is
