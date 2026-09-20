@@ -180,11 +180,17 @@ the old number is about 1% of a 16.67 ms frame. The lap is the part that matters
 it bounds how stale a sensor's reading gets and how long a crowded chunk can be overdrawn
 between checks.
 
-**What it does not buy.** The shared-read saving scales with buildings per chunk, and
-the all-or-nothing rule deliberately discourages crowding, so condensers spread one per
-chunk give `chunks == buildings` and no lap improvement at all. The saving that survives
-any layout is writing nothing when a verdict hasn't changed, which at rest is nearly
-every chunk, nearly every lap.
+**How much it buys depends on layout, and the layout is favourable.** The shared-read
+saving scales with buildings per chunk: condensers spread one per chunk would give
+`chunks == buildings` and no lap improvement at all. That was the first reading of the
+all-or-nothing rule and it was wrong -- concentration is the intended play (see the
+design doc), so the dense figures above are the representative case rather than the
+optimistic one. Better still, the two pull the same way: concentrating keeps the chunk
+count small while the building count grows, and the lap is over chunks. A 5,000-condenser
+farm at ~100 per chunk is 50 chunks, a 0.2 s lap.
+
+The saving that survives any layout at all, dense or sparse, is writing nothing when a
+verdict hasn't changed -- at rest that is nearly every chunk, nearly every lap.
 
 **The trade.** Another mod setting `disabled_by_script` on one of our condensers would
 not be corrected until that chunk's verdict next flips. Nothing else has business
@@ -386,7 +392,9 @@ Found in the 2026-09-19 doc review.
 
   The threshold is now per condenser sharing the chunk, all or nothing: a chunk must hold
   `threshold x condensers in that chunk` before any of them run. All-or-nothing needs no
-  arbitration between condensers in a chunk and no rotation to stay fair, and crowding a
-  chunk is what the design wants to discourage. Re-measured after the fix: the same dense
-  block produced 25.0 against 25.7 removed, and a normal field of one condenser per chunk
-  still runs at its full 150 fluid/min each.
+  arbitration between condensers in a chunk and no rotation to stay fair. It is not a
+  penalty on concentration -- see "Concentration is the intended play" in the design doc:
+  the bar is a stock requirement, so a chunk inside a factory carries far more than its
+  condensers claim. What it refuses is a crowd the chunk cannot back. Re-measured after
+  the fix: the same dense block produced 25.0 against 25.7 removed, and a normal field of
+  one condenser per chunk still runs at its full 150 fluid/min each.
