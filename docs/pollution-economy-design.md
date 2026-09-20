@@ -137,6 +137,14 @@ the number it displays is read through the same helpers that decide whether cond
 run: the readout cannot drift from the rule. Sensors are excluded from a chunk's
 condenser population, since they absorb nothing.
 
+**It reports pollution and only pollution.** `get_pollution` answers for whichever
+pollutant a surface uses, so on Gleba the same call returns a spore count. A sensor
+there reads as no pollution and outputs zero rather than passing spores off as the thing
+this economy is built on -- which matches the Nauvis-specific scope above, and matches
+the gate, which has always refused to run a condenser on anything but `pollution`. When
+Gleba gets its own mechanic it gets its own reading; borrowing this one would have meant
+shipping a number that looks like pollution and isn't.
+
 It reads out two ways: a status line for a player standing beside it, and a circuit
 signal, `signal-P` by default and changeable in its window. It outputs only while it is
 actually wired to something; unwired it just shows its status line. That makes it a

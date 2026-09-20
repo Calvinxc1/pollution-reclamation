@@ -164,8 +164,15 @@ that a player should get a complete loop or none of it.
 ## Architecture notes
 
 - **`src/control.lua`** is a thin entrypoint only, per governance. It wires Factorio
-  events and owns `.valid` filtering of tracked entities.
-- **`src/control/pollution-condenser.lua`** holds the real logic and is deliberately pure
+  events, owns `.valid` filtering of tracked entities, and hands the engine's `defines`
+  constants to the pure module. That injection runs from `on_init`,
+  `on_configuration_changed` *and* `on_load`: loading an existing save runs neither of
+  the first two, and it used to be redone every tick to cover that gap.
+- **`src/control/pollution-condenser.lua`** holds the real logic for both tracked
+  buildings -- gating condensers and reporting for sensors -- through one table and one
+  set of helpers, so the number a sensor shows cannot disagree with the number the gate
+  tests. The file keeps its condenser-era name because the storage key and module path
+  are the ones a shipped save already refers to. It is deliberately pure
   and dependency-injected -- no `game`/`storage`/`script` access anywhere in it. That's
   what lets the same file load both inside Factorio and under a plain Lua interpreter
   for testing. `scripts/validate.sh` enforces this mechanically with a grep guard,
@@ -306,6 +313,25 @@ Found in the 2026-09-19 doc review.
   with spores at 240 on a real Gleba surface the condenser stays disabled and makes
   nothing, while a Nauvis condenser runs. This is a guard only; Gleba's own mechanic
   stays deferred.
+- **The sensor reported spores as pollution (fixed 2026-09-19).** The same family of
+  bug as the one above, one level up. `can_capture` had been taught to require the
+  surface's pollutant to be `pollution`, but `report()` -- what the sensor shows and
+  puts on the wire -- only checked that *some* pollutant existed. On Gleba a sensor
+  would have read `Chunk pollution: 640` from a spore count and put 640 on the circuit
+  network, on the very surface where the gate had already refused to run a condenser.
+  The sensor exists to report the rule, so the two disagreeing is the one thing it must
+  not do. Both now ask through a single helper (`M.POLLUTANT`, `is_pollution`,
+  `status_label`), and the window calls those helpers rather than recomputing the
+  reading for display -- the duplicate arithmetic was how they drifted apart. Checked on
+  a real Gleba surface: 640 polluted into each, Nauvis reads 545 on a green diode while
+  Gleba says "no pollution on this surface" on a yellow one and writes nothing.
+- **The sensor's icon never used its mipmaps (fixed 2026-09-19).** Its icon file is a
+  120x64 mipmap strip (64+32+16+8) like every other icon here, but the item and the
+  entity declared `icon_size = 64` with no `icon_mipmaps`, so the engine read only the
+  first square and the icon rendered unsmoothed wherever it is drawn small. Factorio
+  does not complain about this, which is why a passing load check never caught it --
+  it was found by comparing the declarations against the files. Confirmed fixed against
+  a `--dump-data`.
 - **Grouped condensers outran their chunk (fixed 2026-09-19).** Each condenser used to
   compare its chunk against a flat threshold of 10, ignoring the others drawing on the
   same pool. Since the gate only re-checks a slice of condensers per tick, a crowded

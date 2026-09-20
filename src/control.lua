@@ -40,9 +40,21 @@ local function rescan_all_surfaces(state)
   end
 end
 
-local function init_storage()
+-- The pure module can't reach `defines`, so the engine's own constants are
+-- handed to it here. This has to happen on every path that brings the mod up,
+-- which is why it isn't simply part of init_storage: on_init covers a new
+-- game and on_configuration_changed a changed mod set, but loading an
+-- existing save runs neither, only on_load.
+local function inject_engine_constants()
   pollution_condenser.set_diodes(defines.entity_status_diode)
-  pollution_condenser.set_circuit_wires({ defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green })
+  pollution_condenser.set_circuit_wires({
+    defines.wire_connector_id.circuit_red,
+    defines.wire_connector_id.circuit_green,
+  })
+end
+
+local function init_storage()
+  inject_engine_constants()
   -- Rebuilt from scratch rather than reused, so a save made before sensors
   -- existed, or before a state field was added, picks up both entity kinds
   -- and the current state shape.
@@ -66,18 +78,17 @@ local function on_tracked_removed(event)
   pollution_condenser.remove_entity(storage.pr_pollution_condenser, entity.unit_number)
 end
 
--- The 9 build/mine/died events below are meant to be the exhaustive set of
--- ways a condenser entity can enter or leave existence, so state.entities
--- should never actually contain an invalid reference by the time step()
--- runs. pcall here is cheap insurance against that assumption being wrong
--- in some edge case rather than a substitute for the event coverage --
--- logged instead of allowed to crash the tick and take scripting down with it.
+-- The build/mine/died events registered at the bottom of this file are meant
+-- to be the exhaustive set of ways a tracked building can enter or leave
+-- existence, so state.entities should never actually contain an invalid
+-- reference by the time step() runs. pcall here is cheap insurance against
+-- that assumption being wrong in some edge case rather than a substitute for
+-- the event coverage -- logged instead of allowed to crash the tick and take
+-- scripting down with it.
 local function on_tick()
-  pollution_condenser.set_diodes(defines.entity_status_diode)
-  pollution_condenser.set_circuit_wires({ defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green })
   local ok, err = pcall(pollution_condenser.step, storage.pr_pollution_condenser, POLLUTION_THRESHOLD, ENTITIES_PER_TICK)
   if not ok then
-    log("pr_pollution-condenser gating step failed: " .. tostring(err))
+    log("pollution tracking step failed: " .. tostring(err))
   end
 end
 
@@ -145,6 +156,7 @@ end
 
 script.on_init(init_storage)
 script.on_configuration_changed(init_storage)
+script.on_load(inject_engine_constants)
 
 script.on_event(defines.events.on_gui_opened, on_gui_opened)
 script.on_event(defines.events.on_gui_closed, on_gui_closed)
@@ -156,7 +168,8 @@ script.on_nth_tick(30, sensor_gui.refresh_all)
 
 script.on_event(defines.events.on_tick, on_tick)
 
--- Additions: every way a condenser building can come into existence.
+-- Additions: every way a tracked building -- condenser or sensor -- can come
+-- into existence.
 script.on_event(defines.events.on_built_entity, on_tracked_built, entity_filter)
 script.on_event(defines.events.on_robot_built_entity, on_tracked_built, entity_filter)
 script.on_event(defines.events.on_space_platform_built_entity, on_tracked_built, entity_filter)
@@ -165,8 +178,8 @@ script.on_event(defines.events.script_raised_built, on_tracked_built, entity_fil
 -- Removals: every way one can stop existing. on_entity_died covers biter
 -- destruction specifically -- easy to forget since it isn't "mining", but
 -- missing it lets the tracked table silently drift from reality, which for
--- this feature means a real condenser building that's never cleaned up and
--- never gets re-gated.
+-- this feature means a real building that's never cleaned up: a condenser
+-- that never gets re-gated, or a sensor that never stops reporting.
 script.on_event(defines.events.on_player_mined_entity, on_tracked_removed, entity_filter)
 script.on_event(defines.events.on_robot_mined_entity, on_tracked_removed, entity_filter)
 script.on_event(defines.events.on_space_platform_mined_entity, on_tracked_removed, entity_filter)

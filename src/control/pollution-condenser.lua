@@ -1,14 +1,31 @@
--- Pure gating logic for pr_pollution-condenser buildings: a rolling `next()`
--- cursor over a tracked-entities table, visiting a small slice per tick and
--- toggling each entity offline when its chunk doesn't have enough ambient
--- pollution to back a real craft.
+-- Pure per-chunk pollution logic, shared by both buildings that care about it:
+-- a rolling `next()` cursor over one tracked-entities table, visiting a small
+-- slice per tick. What a visit does depends on the entity's role --
+--
+--   * condenser: toggled offline when its chunk doesn't have enough ambient
+--     pollution to back a real craft;
+--   * sensor: never gated, but its status line and circuit output updated
+--     with the very number the gate tests, plus the signal the player chose
+--     for it.
+--
+-- One table and one set of helpers on purpose. The sensor's whole job is to
+-- report the rule, so it must not be able to disagree with it; a second copy
+-- of the arithmetic is exactly how that happens, and did once (see
+-- `is_pollution`).
+--
+-- The file is still named for the condenser because the storage key and the
+-- module path are the ones a shipped save already refers to. The name is
+-- historical; the contents are not condenser-only.
 --
 -- Deliberately dependency-injected: nothing in this file touches `game`,
--- `storage`, or `script`. `state`, `surface`, `threshold`, and `slice_count`
--- are always passed in explicitly. That's what lets this exact file load
--- two different ways with no contradiction between them: from real
--- Factorio via `require("__pollution-reclamation__/control/pollution-condenser")`,
--- and from the plain-Lua test runner via `dofile(...)`.
+-- `storage`, or `script`. `state`, `threshold` and `slice_count` are always
+-- passed in explicitly, and the engine's `defines` constants are handed in by
+-- control.lua rather than read here. Pollution is read through each entity's
+-- own `.surface`, which a fake entity in the tests supplies as readily as a
+-- real one does. That's what lets this exact file load two different ways
+-- with no contradiction between them: from real Factorio via
+-- `require("__pollution-reclamation__/control/pollution-condenser")`, and
+-- from the plain-Lua test runner via `dofile(...)`.
 --
 -- Trust boundary: this module does not check entity validity. The adapter
 -- (control.lua) is responsible for keeping `state.entities` free of invalid
