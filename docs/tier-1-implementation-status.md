@@ -88,12 +88,24 @@ survey chunks before deciding where condensers are worth building.
   anything isn't pretending to be. The player's signal choice survives the wire being
   cut and comes back when it is reconnected. The status line is unaffected either way --
   a sensor with no wire still reads its chunk for anyone standing next to it.
-- **It has its own window, not the combinator's.** Opening a sensor hands the player a
-  small frame -- the current reading, and one picker for the output signal -- instead of
-  the combinator's logistic-section interface, which has nothing to do with a gauge. It
-  lives in `src/runtime/sensor-gui.lua`: deliberately outside `src/control/`, which is
-  reserved for pure, dependency-injected logic the plain-Lua tests can load. GUI code
-  cannot be pure, so the gate logic it drives stays testable on its own.
+- **It has its own window, not the combinator's.** Opening a sensor gives the player a
+  window shaped like a vanilla entity's -- status line, entity preview, and a circuit
+  panel beside it holding the one setting the sensor has -- instead of the combinator's
+  logistic-section interface, which has nothing to do with a gauge. The panel follows
+  the wiring the way vanilla's does: shown when the sensor is connected, and openable by
+  hand from a circuit-network button when it isn't. Once the player opens it by hand it
+  stays open.
+- **That window is a reproduction, and has to be.** The engine builds an entity's real
+  circuit panel from that prototype's own control behaviour, and a mod cannot add a
+  control to it. `player.gui.relative` only anchors a separate frame to one of the 79
+  stock GUI types on one of four sides (measured 2026-09-19) -- there is no anchor
+  inside the circuit panel. So the panel here is ours, built from the same vanilla
+  styles the engine uses: `entity_frame`, `entity_button_frame`, `wide_entity_button`,
+  `status_image`, and `utility/circuit_network_panel` for the button. Each of those
+  names was checked against the installed 2.1 data rather than assumed.
+- **Where it lives.** `src/runtime/sensor-gui.lua`, deliberately outside `src/control/`,
+  which is reserved for pure, dependency-injected logic the plain-Lua tests can load.
+  GUI code cannot be pure, so the gate logic it drives stays testable on its own.
 - **`pr_pollution-sensing`** unlocks it: 25 automation science at 15s, after `radar`,
   vanilla's own survey instrument (itself 20). `pr_pollution-control` requires it in turn,
   so a player can always read a chunk before building anything that acts on one.

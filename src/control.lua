@@ -108,12 +108,18 @@ end
 
 local function on_gui_click(event)
   local element = event.element
-  if element and element.valid and sensor_gui.is_close_button(element) then
-    local player = game.get_player(event.player_index)
-    if player then
-      player.opened = nil
-      sensor_gui.close(player)
-    end
+  if not (element and element.valid) then
+    return
+  end
+  local player = game.get_player(event.player_index)
+  if not player then
+    return
+  end
+  if sensor_gui.is_close_button(element) then
+    player.opened = nil
+    sensor_gui.close(player)
+  elseif sensor_gui.is_circuit_toggle(element) then
+    sensor_gui.toggle_circuit(player)
   end
 end
 

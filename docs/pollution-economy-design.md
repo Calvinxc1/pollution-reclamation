@@ -145,11 +145,21 @@ wire, which in turn means it cannot require power. A gauge that works wherever i
 planted suits a scouting instrument.
 
 Being a combinator underneath is plumbing, and the player should never have to know it.
-Opening a sensor gives them a small window of their own -- the reading, and a picker for
-the output signal -- rather than the combinator's logistic-section interface. That window
-is the one piece of this feature that lives outside `src/control/`, in `src/runtime/`:
-GUI code needs players, elements and storage, so it cannot be pure, and keeping it apart
-leaves the gate logic testable on its own.
+Opening a sensor should feel like opening a boiler: basic information about the thing,
+and a circuit panel carrying whatever control it has -- here, one selector for which
+signal carries the reading. So that is what it gives them, rather than the combinator's
+logistic-section interface.
+
+The window is a reproduction of that shape rather than the real thing, because it has to
+be: the engine builds an entity's circuit panel from its prototype's own control
+behaviour, and a mod cannot add a control to it. The only hook is `player.gui.relative`,
+which anchors a separate frame to one of the stock GUI types on one of four sides -- not
+inside the panel. Rebuilding the panel from the same vanilla styles is the closest thing
+available, and it is close.
+
+That window is the one piece of this feature that lives outside `src/control/`, in
+`src/runtime/`: GUI code needs players, elements and storage, so it cannot be pure, and
+keeping it apart leaves the gate logic testable on its own.
 
 **Open.** Later sensor tiers. The tracking already knows a chunk's condenser count and
 what that chunk must hold to run them; showing that is the obvious next step, and tier 1
