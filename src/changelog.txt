@@ -1,4 +1,25 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 2026.09.19
+  Features:
+    - Added the pollution condenser, which scrubs pollution out of the air around it into polluted water. It only runs where the air is actually polluted.
+    - Added the pollution vaporizer, which evaporates polluted water back into the air wherever it is placed, moving the biter attacks that pollution draws.
+    - Added the pollution sensor, which reads how much pollution sits in the chunk it stands in, shows it as a status line, and puts it on the circuit network on a signal of your choice.
+    - Added solvent, made from sulfuric acid and light oil, and pollution filter restoration, which restores used filters with it in a chemical plant.
+    - Added the Pollution sensing, Pollution control, Pollution filtering and Pollution filter restoration technologies, running from radar through to advanced oil processing.
+  Graphics:
+    - New placeholder icons for the filters, filtering, restoration, solvent and every technology, replacing the inherited Krastorio 2 art. The pollution sensor has placeholder art of its own. All of it is provisional and may be replaced.
+  Optimizations:
+    - Pollution is now checked once per chunk rather than once per building, so large numbers of condensers are re-checked far more promptly.
+  Changes:
+    - The air purifier building is removed. Pollution filtering now runs in Assembler 2 and 3 on polluted water from pollution condensers, and returns the water.
+    - Pollution filters cost 2 coal, 2 iron, 1 steel and 2 plastic in all games, and are named "Pollution filter".
+    - Pollution condensers sharing a chunk now need that chunk's pollution to cover all of them, so a crowded chunk stops together instead of producing polluted water it cannot back.
+    - Pollution control now requires Pollution sensing as well as Fluid handling, so a chunk can always be read before anything is built to act on one.
+    - The improved filter tier and the two efficiency startup settings are removed, to be redesigned later.
+  Locale:
+    - Removed the French translation for now. The mod is English only until translations from fluent speakers return; see CONTRIBUTING.md.
+---------------------------------------------------------------------------------------------------
 Version: 0.1.1
 Date: 2026.08.25
   Bugfixes:
