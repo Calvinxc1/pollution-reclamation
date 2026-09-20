@@ -60,12 +60,24 @@ M.POLLUTANT = "pollution"
 
 function M.new_state()
   return {
+    -- Every tracked building, by key, for lookups that start from an entity
+    -- (the sensor window asking for its own signal, say).
     entities = {},
+    -- The chunk index, and the thing the walk actually iterates. Pollution is
+    -- stored per chunk and the gate's verdict is per chunk and all-or-nothing,
+    -- so both ends of the calculation are chunk-scoped; walking buildings
+    -- meant reading the same chunk's pollution once per building and writing
+    -- the same answer to each of them. Each record is
+    --   { condensers = {key->true}, sensors = {key->true},
+    --     condenser_count = n, applied = nil|boolean }
+    -- and only chunks that actually hold a tracked building appear here --
+    -- never the map's chunks at large, which on a big save outnumber these by
+    -- orders of magnitude.
+    chunks = {},
+    -- Where the chunk walk is up to.
     cursor = nil,
-    -- How many tracked condensers sit in each chunk, and which chunk each
-    -- tracked key belongs to. Buildings never move, so a condenser's chunk is
-    -- fixed for as long as it is tracked and is recorded once, at add time.
-    chunk_counts = {},
+    -- Which chunk each key belongs to. Buildings never move, so this is
+    -- recorded once, at add time.
     entity_chunk = {},
     -- "condenser" for the buildings the gate switches on and off, "sensor"
     -- for pollution sensors. Sensors share the tracking so they report the
@@ -76,6 +88,15 @@ function M.new_state()
     -- chosen by the player in the sensor's window. Absent means the default.
     signals = {},
   }
+end
+
+local function chunk_record(state, chunk)
+  local record = state.chunks[chunk]
+  if record == nil then
+    record = { condensers = {}, sensors = {}, condenser_count = 0, applied = nil }
+    state.chunks[chunk] = record
+  end
+  return record
 end
 
 -- Chunks are 32x32 tiles, and pollution is stored per chunk, so every
@@ -96,10 +117,17 @@ function M.add_entity(state, key, entity, role)
   role = role or "condenser"
   if state.entities[key] == nil then
     local chunk = M.chunk_key(entity)
+    local record = chunk_record(state, chunk)
     state.entity_chunk[key] = chunk
     state.roles[key] = role
-    if role == "condenser" then
-      state.chunk_counts[chunk] = (state.chunk_counts[chunk] or 0) + 1
+    if role == "sensor" then
+      record.sensors[key] = true
+    else
+      record.condensers[key] = true
+      record.condenser_count = record.condenser_count + 1
+      -- One more condenser raises the bar for every condenser in the chunk,
+      -- so whatever was decided last time no longer applies to any of them.
+      record.applied = nil
     end
   end
   state.entities[key] = entity
@@ -110,7 +138,8 @@ end
 -- which may be none.
 function M.chunk_population(state, key)
   local chunk = state.entity_chunk[key]
-  return (chunk and state.chunk_counts[chunk]) or 0
+  local record = chunk and state.chunks[chunk]
+  return (record and record.condenser_count) or 0
 end
 
 -- Safe against the classic next()-after-delete pitfall: if the cursor is
@@ -119,21 +148,34 @@ end
 -- `next(t, k)` after `k` has already been removed from `t` is not something
 -- Lua promises will work.
 function M.remove_entity(state, key)
-  if state.cursor == key then
-    state.cursor = next(state.entities, key)
-  end
-  if state.entities[key] ~= nil then
-    local chunk = state.entity_chunk[key]
-    if chunk then
-      if state.roles[key] ~= "sensor" then
-        local remaining = (state.chunk_counts[chunk] or 1) - 1
-        state.chunk_counts[chunk] = remaining > 0 and remaining or nil
+  local chunk = state.entity_chunk[key]
+  if state.entities[key] ~= nil and chunk then
+    local record = state.chunks[chunk]
+    if record then
+      if state.roles[key] == "sensor" then
+        record.sensors[key] = nil
+      else
+        record.condensers[key] = nil
+        record.condenser_count = record.condenser_count - 1
+        -- One fewer condenser lowers the bar for the rest, so the cached
+        -- verdict has to be recomputed rather than reused.
+        record.applied = nil
       end
-      state.entity_chunk[key] = nil
+      if next(record.condensers) == nil and next(record.sensors) == nil then
+        -- Last building in this chunk: drop the chunk from the walk. Advance
+        -- the cursor first, while `next` can still find this key -- calling
+        -- next(t, k) after k has been removed from t is not something Lua
+        -- promises will work.
+        if state.cursor == chunk then
+          state.cursor = next(state.chunks, chunk)
+        end
+        state.chunks[chunk] = nil
+      end
     end
-    state.roles[key] = nil
-    state.signals[key] = nil
+    state.entity_chunk[key] = nil
   end
+  state.roles[key] = nil
+  state.signals[key] = nil
   state.entities[key] = nil
 end
 
@@ -160,13 +202,11 @@ end
 -- condenser in a chunk reads the same number, so the decision needs no
 -- arbitration between them and no rotation to keep it fair, and crowding a
 -- chunk is the play the design wants to discourage anyway.
-function M.can_capture(entity, threshold, population)
-  local surface = entity.surface
-  local pollutant = surface.pollutant_type
-  if not (pollutant and pollutant.name == M.POLLUTANT) then
+function M.can_capture(reading, threshold, population)
+  if not M.is_pollution(reading) then
     return false
   end
-  return surface.get_pollution(entity.position) >= threshold * (population or 1)
+  return reading.pollution >= threshold * (population or 1)
 end
 
 -- What a pollution sensor reports: the same chunk pollution the gate tests,
@@ -270,8 +310,7 @@ end
 
 -- Writes the reading onto the entity: a custom status line for a player
 -- standing next to it, and the same number on its circuit output.
-function M.report(entity, signal)
-  local reading = M.reading(entity)
+function M.report(entity, reading, signal)
   local pollution = M.is_pollution(reading)
   entity.custom_status = {
     diode = pollution and M.DIODE.green or M.DIODE.yellow,
@@ -281,46 +320,98 @@ function M.report(entity, signal)
   return reading
 end
 
--- Visits up to `slice_count` tracked entities, reading pollution at each
--- one's own position/surface and setting `entity.disabled_by_script`
--- against `threshold`. Wraps around automatically when the cursor runs off
--- the end of the table (`next` returns nil), so it never needs to know the
--- table's size up front.
+-- Everything one chunk needs, off one pollution read.
 --
--- Reads pollution via `entity.surface.get_pollution(entity.position)`
--- rather than taking a single surface parameter for the whole tracked
--- table -- tracked entities aren't guaranteed to share one surface (nothing
--- restricts this building to Nauvis at the prototype level), and each real
--- LuaEntity already carries its own `.surface`. In tests, fake entities
--- carry their own fake `.surface` stub the same way, so this stays just as
--- mockable as a separate parameter would have been.
+-- Sensors still get individual attention -- each has its own status line and
+-- its own circuit output -- but they read from this sample rather than each
+-- fetching the same number again, which is also what keeps a sensor and the
+-- condensers beside it from ever reporting different pollution.
 --
--- Order across entities is deliberately NOT a contract of this function --
+-- Condensers get the verdict applied only when it has actually changed.
+-- `record.applied` is what was last written to this chunk's condensers, so a
+-- chunk sitting comfortably above or below its bar costs one read and two
+-- comparisons per visit and touches no entity at all. That is the whole point
+-- of the chunk index: at rest, which is nearly always, the walk is almost
+-- free no matter how many buildings are standing in it.
+--
+-- The trade is that another mod setting `disabled_by_script` on one of our
+-- condensers would not be corrected until the chunk's verdict next flips.
+-- Nothing else has business touching it, membership changes invalidate the
+-- cache, and `control.lua` rebuilds the whole state on every mod change, so
+-- any drift clears on the next update.
+function M.visit_chunk(state, record, threshold)
+  local sample = nil
+  for key in pairs(record.condensers) do
+    sample = state.entities[key]
+    if sample then break end
+  end
+  if sample == nil then
+    for key in pairs(record.sensors) do
+      sample = state.entities[key]
+      if sample then break end
+    end
+  end
+  if sample == nil then
+    return
+  end
+
+  local reading = M.reading(sample)
+
+  for key in pairs(record.sensors) do
+    local entity = state.entities[key]
+    if entity then
+      M.report(entity, reading, M.signal_of(state, key))
+    end
+  end
+
+  if record.condenser_count == 0 then
+    return
+  end
+
+  local allowed = M.can_capture(reading, threshold, record.condenser_count)
+  if record.applied == allowed then
+    return
+  end
+  local disabled = not allowed
+  for key in pairs(record.condensers) do
+    local entity = state.entities[key]
+    if entity then
+      entity.disabled_by_script = disabled
+    end
+  end
+  record.applied = allowed
+end
+
+-- Visits up to `slice_count` chunks that hold tracked buildings, wrapping
+-- around automatically when the cursor runs off the end of the table (`next`
+-- returns nil), so it never needs to know how many there are up front.
+--
+-- The slice is chunks, not buildings. A chunk holding twenty condensers costs
+-- the same visit as one holding a single sensor, because pollution is stored
+-- per chunk and the verdict is per chunk: the work a visit does is one read
+-- and one comparison, plus writes only where something actually changed.
+--
+-- Order across chunks is deliberately NOT a contract of this function --
 -- Factorio's own `next`/`pairs` is a deterministic-but-insertion-order
--- reimplementation that no stock Lua interpreter reproduces, so callers
--- (and tests) should only rely on "every entity gets visited eventually",
--- never on a specific sequence.
+-- reimplementation that no stock Lua interpreter reproduces, so callers (and
+-- tests) should only rely on "every chunk gets visited eventually", never on
+-- a specific sequence.
 function M.step(state, threshold, slice_count)
   for _ = 1, slice_count do
-    local key = state.cursor
-    if key == nil then
-      key = next(state.entities, nil)
+    local chunk = state.cursor
+    if chunk == nil then
+      chunk = next(state.chunks, nil)
     end
-    if key == nil then
-      -- Tracked table is empty; nothing to do this tick.
+    if chunk == nil then
+      -- No chunk holds a tracked building; nothing to do this tick.
       break
     end
 
-    local entity = state.entities[key]
-    state.cursor = next(state.entities, key)
+    local record = state.chunks[chunk]
+    state.cursor = next(state.chunks, chunk)
 
-    if entity then
-      if state.roles[key] == "sensor" then
-        M.report(entity, M.signal_of(state, key))
-      else
-        local population = M.chunk_population(state, key)
-        entity.disabled_by_script = not M.can_capture(entity, threshold, population)
-      end
+    if record then
+      M.visit_chunk(state, record, threshold)
     end
   end
 

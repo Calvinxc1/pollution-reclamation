@@ -71,7 +71,9 @@ end
 do
   local state = module.new_state()
   local hot = make_entity(50) -- above threshold
-  local cold = make_entity(2) -- below threshold
+  -- Its own chunk: two buildings in one chunk necessarily read the same
+  -- pollution, so "one hot, one cold" only means anything a chunk apart.
+  local cold = make_entity(2, "pollution", { x = 100, y = 100 }) -- below threshold
   module.add_entity(state, "hot", hot)
   module.add_entity(state, "cold", cold)
   module.step(state, 10, 2)
@@ -84,8 +86,8 @@ end
 do
   local state = module.new_state()
   local nauvis = make_entity(50)
-  local gleba = make_entity(50, "spores")
-  local vulcanus = make_entity(50, false)
+  local gleba = make_entity(50, "spores", { x = 100, y = 0 })
+  local vulcanus = make_entity(50, false, { x = 200, y = 0 })
   module.add_entity(state, "nauvis", nauvis)
   module.add_entity(state, "gleba", gleba)
   module.add_entity(state, "vulcanus", vulcanus)
@@ -308,6 +310,109 @@ do
   check("every entity visited within one lap", all_visited)
 end
 
+-- Test: a chunk is read once per visit, however many buildings stand in it.
+-- This is the point of walking chunks instead of buildings: pollution is
+-- stored per chunk, so reading it once per building was the same number
+-- fetched over and over.
+do
+  local state = module.new_state()
+  local reads = 0
+  local function counting_entity()
+    return {
+      position = { x = 0, y = 0 },
+      disabled_by_script = nil,
+      surface = {
+        index = 1,
+        pollutant_type = { name = "pollution" },
+        get_pollution = function()
+          reads = reads + 1
+          return 500
+        end,
+      },
+    }
+  end
+  local crowd = {}
+  for i = 1, 20 do
+    crowd[i] = counting_entity()
+    module.add_entity(state, "c" .. i, crowd[i])
+  end
+  module.step(state, 10, 1)
+  check("twenty condensers in one chunk cost one pollution read", reads == 1)
+  local all_enabled = true
+  for _, e in ipairs(crowd) do
+    if e.disabled_by_script ~= false then all_enabled = false end
+  end
+  check("and all twenty still got the verdict", all_enabled)
+end
+
+-- Test: a chunk whose verdict hasn't changed writes to no entity at all.
+-- This is the saving that doesn't depend on how densely anyone builds, and
+-- at rest -- which is nearly always -- it is most of the walk.
+do
+  local state = module.new_state()
+  local writes = 0
+  local entities = {}
+  for i = 1, 5 do
+    local e = make_entity(500)
+    -- Count assignments to disabled_by_script rather than reads of it.
+    local backing = nil
+    setmetatable(e, {
+      __index = function(_, k) if k == "disabled_by_script" then return backing end end,
+      __newindex = function(t, k, v)
+        if k == "disabled_by_script" then
+          writes = writes + 1
+          backing = v
+        else
+          rawset(t, k, v)
+        end
+      end,
+    })
+    rawset(e, "disabled_by_script", nil)
+    entities[i] = e
+    module.add_entity(state, "e" .. i, e)
+  end
+  module.step(state, 10, 1)
+  local first_pass = writes
+  check("the first visit writes the verdict to every condenser", first_pass == 5)
+  module.step(state, 10, 1)
+  module.step(state, 10, 1)
+  module.step(state, 10, 1)
+  check("later visits with the same verdict write nothing", writes == first_pass)
+end
+
+-- Test: a membership change invalidates the cached verdict, because it moves
+-- the bar for everyone already in the chunk.
+do
+  local state = module.new_state()
+  local a = make_entity(15)
+  module.add_entity(state, "a", a)
+  module.step(state, 10, 1)
+  check("one condenser in a chunk holding 15 runs", a.disabled_by_script == false)
+  local b = make_entity(15)
+  module.add_entity(state, "b", b)
+  module.step(state, 10, 1)
+  check("adding a second re-decides and stops both", a.disabled_by_script == true)
+  check("including the new one", b.disabled_by_script == true)
+  module.remove_entity(state, "b")
+  module.step(state, 10, 1)
+  check("removing it re-decides and the survivor runs again", a.disabled_by_script == false)
+end
+
+-- Test: the walk only ever holds chunks that contain something, so an empty
+-- chunk is dropped rather than left to be visited forever.
+do
+  local state = module.new_state()
+  local e = make_entity(50)
+  module.add_entity(state, "e", e)
+  local occupied = 0
+  for _ in pairs(state.chunks) do occupied = occupied + 1 end
+  check("one building means one chunk on the walk", occupied == 1)
+  module.remove_entity(state, "e")
+  occupied = 0
+  for _ in pairs(state.chunks) do occupied = occupied + 1 end
+  check("removing the last building drops its chunk", occupied == 0)
+end
+
 -- Test: the cursor wraps around and keeps cycling rather than getting
 -- stuck after the first lap.
 do
@@ -317,7 +422,8 @@ do
     local key = "e" .. i
     visit_counts[key] = 0
     local e = {
-      position = { x = 0, y = 0 },
+      -- A chunk each, so each one is its own stop on the walk.
+      position = { x = i * 100, y = 0 },
       disabled_by_script = nil,
       surface = {
         index = 1,
@@ -330,7 +436,7 @@ do
     }
     module.add_entity(state, key, e)
   end
-  -- Three full laps' worth of single-entity steps.
+  -- Three full laps' worth of single-chunk steps.
   for _ = 1, 15 do
     module.step(state, 10, 1)
   end

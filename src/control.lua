@@ -18,11 +18,20 @@ local ROLE = {
 -- First-pass constants -- genuinely need playtesting to land right, per the
 -- design doc's own balance notes. THRESHOLD is a minimum chunk pollution
 -- stock (as returned by LuaSurface.get_pollution) required to keep an
--- condenser building running; ENTITIES_PER_TICK bounds how many tracked
--- buildings get re-checked per tick, keeping the cost flat regardless of
--- how many are built.
+-- condenser building running; CHUNKS_PER_TICK bounds how many occupied
+-- chunks get re-checked per tick, keeping the cost flat regardless of how
+-- many buildings are standing in them.
+--
+-- The slice counts chunks, not buildings, because that is what the walk
+-- iterates. One chunk costs one pollution read and one comparison however
+-- many condensers are in it, and writes to them only when the verdict
+-- changes, so 4 is far cheaper here than the same number was when it meant
+-- buildings. There is headroom to raise it -- lap time is chunks / (slice x
+-- 60) seconds, and that lap is what bounds both how stale a sensor's reading
+-- gets and how long a crowded chunk can be overdrawn between checks -- but 4
+-- stays until playtesting says what the lap should be.
 local POLLUTION_THRESHOLD = 10
-local ENTITIES_PER_TICK = 4
+local CHUNKS_PER_TICK = 4
 
 local entity_filter = {
   { filter = "name", name = CONDENSER_ENTITY_NAME },
@@ -86,7 +95,7 @@ end
 -- the event coverage -- logged instead of allowed to crash the tick and take
 -- scripting down with it.
 local function on_tick()
-  local ok, err = pcall(pollution_condenser.step, storage.pr_pollution_condenser, POLLUTION_THRESHOLD, ENTITIES_PER_TICK)
+  local ok, err = pcall(pollution_condenser.step, storage.pr_pollution_condenser, POLLUTION_THRESHOLD, CHUNKS_PER_TICK)
   if not ok then
     log("pollution tracking step failed: " .. tostring(err))
   end
@@ -150,7 +159,7 @@ local function on_gui_elem_changed(event)
   element.elem_value = signal
   local entity = state.entities[unit_number]
   if entity and entity.valid then
-    pollution_condenser.report(entity, signal)
+    pollution_condenser.report(entity, pollution_condenser.reading(entity), signal)
   end
 end
 

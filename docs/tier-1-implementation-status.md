@@ -118,12 +118,11 @@ survey chunks before deciding where condensers are worth building.
   so a player can always read a chunk before building anything that acts on one.
   The recipe costs 5 iron plates and 2 electronic circuits.
 - **Sensors share the condensers' check budget.** `control.lua` visits
-  `ENTITIES_PER_TICK` tracked entities per tick across both kinds, so a sensor refreshes
-  once per lap of the whole tracked table: with 400 tracked entities that's about 1.7
-  seconds. Fine for a readout, and it keeps the runtime cost flat no matter how many are
-  built, but it does mean sensors slightly slow how often each condenser is re-checked.
-  The gate itself no longer depends on that cadence for correctness -- see the chunk
-  population rule below.
+  `CHUNKS_PER_TICK` occupied chunks per tick, and a sensor refreshes when its chunk comes
+  up: with 400 occupied chunks that's about 1.7 seconds. Fine for a readout, and it keeps
+  the runtime cost flat no matter how many buildings stand in those chunks. The gate
+  itself no longer depends on that cadence for correctness -- see the chunk population
+  rule below.
 - **It reuses the condenser's own gate code.** The sensor is tracked in the same table
   with a `sensor` role, so the number it displays is read through the same helpers that
   decide whether condensers run, and the readout cannot drift from the rule. The window
@@ -147,6 +146,51 @@ survey chunks before deciding where condensers are worth building.
   checked this way -- a headless run has no player to open it -- so it needs an in-game
   look.
 
+## The walk is over chunks, not buildings
+
+Changed 2026-09-19, after asking what this does at megabase scale.
+
+Pollution is stored per chunk, and the gate's verdict is per chunk and all-or-nothing by
+design -- so both ends of the calculation were already chunk-scoped while the loop was
+building-scoped. Five condensers in a chunk meant five `get_pollution` calls returning
+the same number, five identical comparisons, and five writes of the same answer.
+
+`state.chunks` is now the index and the iteration unit: `{ condensers, sensors,
+condenser_count, applied }` per occupied chunk, built from the same build/mine events
+that already maintained `entity_chunk`. **Only chunks holding a tracked building are in
+it** -- never the map's chunks at large, which on a big save outnumber these by orders of
+magnitude, and scanning those would be far worse than what this replaced.
+
+A visit is one pollution read and one comparison, whatever is standing there. Sensors
+still get individual attention, since each has its own status line and circuit output,
+but they read from the chunk's one sample -- which is also what now makes it impossible
+for a sensor and the condensers beside it to report different pollution. Condensers get
+written **only when the verdict changes**: `applied` holds what was last written, so a
+chunk sitting comfortably above or below its bar touches no entity at all.
+
+Measured, 8,000 condensers packed at 3-tile spacing (about 100 per chunk, 81 chunks):
+
+| | old | new |
+|---|---|---|
+| mod cost above baseline | 0.197 ms/tick | 0.092 ms/tick |
+| lap over everything tracked | 33.3 s | 0.34 s |
+
+The cost figure is the smaller half of the story -- the mod was never expensive, and even
+the old number is about 1% of a 16.67 ms frame. The lap is the part that matters, because
+it bounds how stale a sensor's reading gets and how long a crowded chunk can be overdrawn
+between checks.
+
+**What it does not buy.** The shared-read saving scales with buildings per chunk, and
+the all-or-nothing rule deliberately discourages crowding, so condensers spread one per
+chunk give `chunks == buildings` and no lap improvement at all. The saving that survives
+any layout is writing nothing when a verdict hasn't changed, which at rest is nearly
+every chunk, nearly every lap.
+
+**The trade.** Another mod setting `disabled_by_script` on one of our condensers would
+not be corrected until that chunk's verdict next flips. Nothing else has business
+touching it, membership changes invalidate the cached verdict, and `control.lua` rebuilds
+the whole state on every mod change, so any drift clears on the next update.
+
 ## Tech placement
 
 `pr_pollution-control` ("Pollution control") is a single root technology unlocking all four recipes (two
@@ -169,8 +213,8 @@ that a player should get a complete loop or none of it.
   `on_configuration_changed` *and* `on_load`: loading an existing save runs neither of
   the first two, and it used to be redone every tick to cover that gap.
 - **`src/control/pollution-condenser.lua`** holds the real logic for both tracked
-  buildings -- gating condensers and reporting for sensors -- through one table and one
-  set of helpers, so the number a sensor shows cannot disagree with the number the gate
+  buildings -- gating condensers and reporting for sensors -- through one chunk index and
+  one set of helpers, so the number a sensor shows cannot disagree with the number the gate
   tests. The file keeps its condenser-era name because the storage key and module path
   are the ones a shipped save already refers to. It is deliberately pure
   and dependency-injected -- no `game`/`storage`/`script` access anywhere in it. That's
