@@ -3,6 +3,7 @@
 -- system into it.
 
 local pollution_condenser = require("__pollution-reclamation__/control/pollution-condenser")
+local sensor_gui = require("__pollution-reclamation__/runtime/sensor-gui")
 
 local CONDENSER_ENTITY_NAME = "pr_pollution-condenser"
 local SENSOR_ENTITY_NAME = "pr_pollution-sensor"
@@ -41,6 +42,7 @@ end
 
 local function init_storage()
   pollution_condenser.set_diodes(defines.entity_status_diode)
+  pollution_condenser.set_circuit_wires({ defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green })
   -- Rebuilt from scratch rather than reused, so a save made before sensors
   -- existed, or before a state field was added, picks up both entity kinds
   -- and the current state shape.
@@ -72,14 +74,79 @@ end
 -- logged instead of allowed to crash the tick and take scripting down with it.
 local function on_tick()
   pollution_condenser.set_diodes(defines.entity_status_diode)
+  pollution_condenser.set_circuit_wires({ defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green })
   local ok, err = pcall(pollution_condenser.step, storage.pr_pollution_condenser, POLLUTION_THRESHOLD, ENTITIES_PER_TICK)
   if not ok then
     log("pr_pollution-condenser gating step failed: " .. tostring(err))
   end
 end
 
+-- The sensor's own window, in place of the constant combinator's. Opening a
+-- sensor hands the player this frame instead, and the signal they pick is
+-- recorded against that sensor in the tracked state.
+local function on_gui_opened(event)
+  local entity = event.entity
+  if not (entity and entity.valid and entity.name == SENSOR_ENTITY_NAME) then
+    return
+  end
+  local player = game.get_player(event.player_index)
+  if not player then
+    return
+  end
+  sensor_gui.open(player, entity, pollution_condenser.signal_of(storage.pr_pollution_condenser, entity.unit_number))
+end
+
+local function on_gui_closed(event)
+  local element = event.element
+  if element and element.valid and sensor_gui.is_sensor_frame(element) then
+    local player = game.get_player(event.player_index)
+    if player then
+      sensor_gui.close(player)
+    end
+  end
+end
+
+local function on_gui_click(event)
+  local element = event.element
+  if element and element.valid and sensor_gui.is_close_button(element) then
+    local player = game.get_player(event.player_index)
+    if player then
+      player.opened = nil
+      sensor_gui.close(player)
+    end
+  end
+end
+
+local function on_gui_elem_changed(event)
+  local element = event.element
+  if not (element and element.valid and sensor_gui.is_signal_chooser(element)) then
+    return
+  end
+  local unit_number = sensor_gui.opened_unit_number(event.player_index)
+  if not unit_number then
+    return
+  end
+  local state = storage.pr_pollution_condenser
+  local signal = pollution_condenser.set_signal(state, unit_number, element.elem_value)
+  -- Put the default back in the button when the player clears it, so the
+  -- window always shows the signal the sensor actually outputs on.
+  element.elem_value = signal
+  local entity = state.entities[unit_number]
+  if entity and entity.valid then
+    pollution_condenser.report(entity, signal)
+  end
+end
+
 script.on_init(init_storage)
 script.on_configuration_changed(init_storage)
+
+script.on_event(defines.events.on_gui_opened, on_gui_opened)
+script.on_event(defines.events.on_gui_closed, on_gui_closed)
+script.on_event(defines.events.on_gui_click, on_gui_click)
+script.on_event(defines.events.on_gui_elem_changed, on_gui_elem_changed)
+
+-- Twice a second is plenty for a number a player is reading off a panel.
+script.on_nth_tick(30, sensor_gui.refresh_all)
 
 script.on_event(defines.events.on_tick, on_tick)
 

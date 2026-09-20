@@ -138,10 +138,18 @@ run: the readout cannot drift from the rule. Sensors are excluded from a chunk's
 condenser population, since they absorb nothing.
 
 It reads out two ways: a status line for a player standing beside it, and a circuit
-signal, `signal-P` by default and changeable in its window. That makes it a
+signal, `signal-P` by default and changeable in its window. It outputs only while it is
+actually wired to something; unwired it just shows its status line. That makes it a
 `constant-combinator` underneath, the only type that can put a script-set value on a
 wire, which in turn means it cannot require power. A gauge that works wherever it is
 planted suits a scouting instrument.
+
+Being a combinator underneath is plumbing, and the player should never have to know it.
+Opening a sensor gives them a small window of their own -- the reading, and a picker for
+the output signal -- rather than the combinator's logistic-section interface. That window
+is the one piece of this feature that lives outside `src/control/`, in `src/runtime/`:
+GUI code needs players, elements and storage, so it cannot be pure, and keeping it apart
+leaves the gate logic testable on its own.
 
 **Open.** Later sensor tiers. The tracking already knows a chunk's condenser count and
 what that chunk must hold to run them; showing that is the obvious next step, and tier 1

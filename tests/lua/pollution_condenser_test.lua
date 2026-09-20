@@ -31,7 +31,14 @@ local function make_entity(pollution_level, pollutant_name, position)
     pollutant_name = "pollution"
   end
   local slots = {}
+  local behavior = { enabled = true }
+  local wired = { connection_count = 1 }
   return {
+    -- Sensors only output while something is wired to them; the tests flip
+    -- this to stand in for connecting and disconnecting a wire.
+    wired = wired,
+    behavior = behavior,
+    get_wire_connector = function(_, _) return wired end,
     position = position or { x = 0, y = 0 },
     disabled_by_script = nil,
     -- A stand-in for the constant combinator underneath a sensor: one
@@ -40,15 +47,14 @@ local function make_entity(pollution_level, pollutant_name, position)
     -- self and close over the slots table instead.
     section = { slots = slots },
     get_or_create_control_behavior = function()
-      return {
-        get_section = function()
-          return {
-            get_slot = function(i) return slots[i] end,
-            set_slot = function(i, filter) slots[i] = filter end,
-          }
-        end,
-        add_section = function() return nil end,
-      }
+      behavior.get_section = function()
+        return {
+          get_slot = function(i) return slots[i] end,
+          set_slot = function(i, filter) slots[i] = filter end,
+        }
+      end
+      behavior.add_section = function() return nil end
+      return behavior
     end,
     surface = {
       -- false stands for a surface with no pollutant at all (pollutant_type nil).
@@ -184,16 +190,39 @@ do
     slot.value.name == "signal-P" and slot.value.type == "virtual")
 end
 
--- Test: the player's chosen signal survives the update; only the value moves.
+-- Test: the player's chosen signal is what gets written.
 do
   local state = module.new_state()
   local sensor = make_entity(42)
   module.add_entity(state, "sensor", sensor, "sensor")
-  sensor.section.slots[1] = { value = { type = "item", name = "iron-plate", quality = "normal" }, min = 0 }
+  module.set_signal(state, "sensor", { type = "item", name = "iron-plate", quality = "normal" })
   module.step(state, 10, 1)
   local slot = sensor.section.slots[1]
-  check("the chosen signal is kept", slot.value.name == "iron-plate")
-  check("the value is updated under it", slot.min == 42)
+  check("the chosen signal is used", slot.value.name == "iron-plate")
+  check("the reading is written to it", slot.min == 42)
+  module.set_signal(state, "sensor", nil)
+  check("clearing the choice restores the default",
+    module.signal_of(state, "sensor").name == "signal-P")
+end
+
+-- Test: an unwired sensor outputs nothing, but keeps the player's signal.
+do
+  local state = module.new_state()
+  local sensor = make_entity(75)
+  module.add_entity(state, "sensor", sensor, "sensor")
+  module.set_signal(state, "sensor", { type = "item", name = "copper-plate", quality = "normal" })
+  module.step(state, 10, 1)
+  check("a wired sensor's output is enabled", sensor.behavior.enabled == true)
+  sensor.wired.connection_count = 0
+  module.step(state, 10, 1)
+  check("an unwired sensor's output is switched off", sensor.behavior.enabled == false)
+  check("its signal survives being unwired",
+    module.signal_of(state, "sensor").name == "copper-plate")
+  sensor.wired.connection_count = 1
+  module.step(state, 10, 1)
+  check("rewiring switches the output back on", sensor.behavior.enabled == true)
+  check("and the reading comes back on the kept signal",
+    sensor.section.slots[1].value.name == "copper-plate" and sensor.section.slots[1].min == 75)
 end
 
 -- Test: a sensor with no pollutant outputs zero rather than a stale number.

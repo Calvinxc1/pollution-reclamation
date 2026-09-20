@@ -29,6 +29,14 @@ function M.set_diodes(diodes)
   M.DIODE = diodes
 end
 
+-- defines.wire_connector_id values for the two circuit wires, injected the
+-- same way. The defaults are the engine's own numbering.
+M.CIRCUIT_WIRES = { 0, 1 }
+
+function M.set_circuit_wires(wire_ids)
+  M.CIRCUIT_WIRES = wire_ids
+end
+
 function M.new_state()
   return {
     entities = {},
@@ -43,6 +51,9 @@ function M.new_state()
     -- very number the gate tests, but they absorb nothing, so they must not
     -- count toward a chunk's condenser population.
     roles = {},
+    -- The signal each sensor outputs on, keyed the same way as entities and
+    -- chosen by the player in the sensor's window. Absent means the default.
+    signals = {},
   }
 end
 
@@ -100,6 +111,7 @@ function M.remove_entity(state, key)
       state.entity_chunk[key] = nil
     end
     state.roles[key] = nil
+    state.signals[key] = nil
   end
   state.entities[key] = nil
 end
@@ -171,36 +183,69 @@ function M.reading(entity)
   }
 end
 
--- The signal a freshly placed sensor outputs on. The player can change it in
--- the sensor's own GUI, exactly as they would a constant combinator's, and
--- the update below keeps whatever they chose.
+-- The signal a freshly placed sensor outputs on, until the player picks
+-- another in the sensor's window.
 M.DEFAULT_SIGNAL = { type = "virtual", name = "signal-P", quality = "normal" }
 
+-- The signal a given sensor outputs on.
+function M.signal_of(state, key)
+  return state.signals[key] or M.DEFAULT_SIGNAL
+end
+
+-- Records the player's choice. Passing nil restores the default rather than
+-- leaving the sensor with nothing to output on.
+function M.set_signal(state, key, signal)
+  if signal and signal.name then
+    state.signals[key] = signal
+  else
+    state.signals[key] = nil
+  end
+  return M.signal_of(state, key)
+end
+
+-- The sensor is a constant combinator underneath, so its output is one
+-- logistic section, whose first slot this owns outright: the player never
+-- edits it (they pick a signal in the sensor's own window instead), so it is
+-- simply rewritten each update from the tracked signal and the reading.
+-- Whether anything is actually wired to this sensor, on either circuit wire.
+-- `or_create = false`, so asking does not itself create a connector.
+function M.is_connected(entity)
+  for _, wire_id in ipairs(M.CIRCUIT_WIRES) do
+    local connector = entity.get_wire_connector(wire_id, false)
+    if connector and (connector.connection_count or 0) > 0 then
+      return true
+    end
+  end
+  return false
+end
+
 -- Puts `value` on the sensor's circuit output, keeping the player's chosen
--- signal. The sensor is a constant combinator underneath, so its output is
--- one logistic section whose first slot we own: we rewrite the slot's count
--- every update and leave its signal alone. An emptied slot is refilled with
--- the default signal, so a sensor always reads out something.
-function M.write_signal(entity, value)
+-- signal.
+--
+-- An unwired sensor outputs nothing: its control behavior is switched off
+-- rather than its slot cleared, so the signal the player picked survives
+-- being disconnected and comes back with the wire. The status line beside the
+-- sensor keeps reading either way -- that is what it is for.
+function M.write_signal(entity, value, signal)
   local behavior = entity.get_or_create_control_behavior()
   if not behavior then
     return
   end
+  if not M.is_connected(entity) then
+    behavior.enabled = false
+    return
+  end
+  behavior.enabled = true
   local section = behavior.get_section(1) or behavior.add_section()
   if not section then
     return
   end
-  local slot = section.get_slot(1)
-  local signal = slot and slot.value or nil
-  if not (signal and signal.name) then
-    signal = M.DEFAULT_SIGNAL
-  end
-  section.set_slot(1, { value = signal, min = value })
+  section.set_slot(1, { value = signal or M.DEFAULT_SIGNAL, min = value })
 end
 
 -- Writes the reading onto the entity: a custom status line for a player
 -- standing next to it, and the same number on its circuit output.
-function M.report(entity)
+function M.report(entity, signal)
   local reading = M.reading(entity)
   local pollution = math.floor(reading.pollution + 0.5)
   if reading.pollutant == nil then
@@ -208,13 +253,13 @@ function M.report(entity)
       diode = M.DIODE.yellow,
       label = { "pr-sensor.no-pollutant" },
     }
-    M.write_signal(entity, 0)
+    M.write_signal(entity, 0, signal)
   else
     entity.custom_status = {
       diode = M.DIODE.green,
       label = { "pr-sensor.pollution", tostring(pollution) },
     }
-    M.write_signal(entity, pollution)
+    M.write_signal(entity, pollution, signal)
   end
   return reading
 end
@@ -235,7 +280,7 @@ function M.step(state, threshold, slice_count)
 
     if entity then
       if state.roles[key] == "sensor" then
-        M.report(entity)
+        M.report(entity, M.signal_of(state, key))
       else
         local population = M.chunk_population(state, key)
         entity.disabled_by_script = not M.can_capture(entity, threshold, population)

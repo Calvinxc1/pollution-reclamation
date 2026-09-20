@@ -74,14 +74,26 @@ survey chunks before deciding where condensers are worth building.
   circuit wire; everything else with a connector either takes input (lamps, inserters) or
   reports something fixed like charge or contents. The only inherited behaviour is the
   circuit output: the combinator's activity LED is replaced with empty sprites (its light
-  offsets are mandatory, so they stay, pointing at nothing) and the sprites are ours.
+  offsets are mandatory, so they stay, pointing at nothing), the sprites are ours, and its
+  window is replaced with ours.
 - **The trade is power.** A constant combinator has no energy source, so the sensor cannot
   require electricity; it reads wherever it is planted. It was a powered `small-lamp`
   copy until 2026-09-19, when the circuit output was chosen over the power requirement.
 - **The output signal is the player's.** A fresh sensor outputs on `signal-P`; the player
-  can change it in the sensor's window like any combinator's, and each update rewrites
-  only the slot's value, keeping their signal. An emptied slot is refilled with the
-  default. A surface with no pollutant outputs zero.
+  can change it in the sensor's own window, and each update rewrites only the slot's
+  value, keeping their signal. An emptied slot is refilled with the default. A surface
+  with no pollutant outputs zero.
+- **It only outputs when it is wired.** An unwired sensor leaves the circuit output
+  switched off rather than quietly holding a value, so a sensor that isn't connected to
+  anything isn't pretending to be. The player's signal choice survives the wire being
+  cut and comes back when it is reconnected. The status line is unaffected either way --
+  a sensor with no wire still reads its chunk for anyone standing next to it.
+- **It has its own window, not the combinator's.** Opening a sensor hands the player a
+  small frame -- the current reading, and one picker for the output signal -- instead of
+  the combinator's logistic-section interface, which has nothing to do with a gauge. It
+  lives in `src/runtime/sensor-gui.lua`: deliberately outside `src/control/`, which is
+  reserved for pure, dependency-injected logic the plain-Lua tests can load. GUI code
+  cannot be pure, so the gate logic it drives stays testable on its own.
 - **`pr_pollution-sensing`** unlocks it: 25 automation science at 15s, after `radar`,
   vanilla's own survey instrument (itself 20). `pr_pollution-control` requires it in turn,
   so a player can always read a chunk before building anything that acts on one.
@@ -102,7 +114,13 @@ survey chunks before deciding where condensers are worth building.
   and what that chunk needs to run them; showing that is left to a later sensor tier.
 - Verified headless: the reading matched `get_pollution` exactly as pollution rose and
   fell, a lamp wired to the sensor read the same number off `signal-P` (366, 507, 410),
-  and a condenser beside a sensor kept running normally.
+  and a condenser beside a sensor kept running normally. The wiring rule was measured the
+  same way on 2026-09-19: an unwired sensor had its output switched off with no slot
+  written at all, while still showing its status line; wiring two together put
+  `signal-P = 505` on the wire against a surface reading of 504.8; cutting the wire
+  switched the output back off and kept `signal-P` selected. The window itself is the one
+  part that cannot be checked this way -- a headless run has no player to open it -- so
+  it needs an in-game look.
 
 ## Tech placement
 
@@ -128,6 +146,11 @@ that a player should get a complete loop or none of it.
   for testing. `scripts/validate.sh` enforces this mechanically with a grep guard,
   because a stray global reference wouldn't fail at load time, only when that exact
   code path first executes.
+- **`src/runtime/`** is for the code that has to touch Factorio at runtime and therefore
+  cannot be pure: today that is `sensor-gui.lua`, the sensor's window. The split is the
+  point -- the purity guard covers `src/control/` only, so GUI code isn't forced into a
+  shape it can't take, and the gate logic it drives doesn't lose its tests to keep it
+  company.
 - **Entity tracking** covers all nine ways a condenser can appear or disappear (including
   `on_entity_died` for biter destruction, which is easy to miss since it isn't mining).
   Incomplete coverage here would let a real condenser run permanently ungated -- exactly
