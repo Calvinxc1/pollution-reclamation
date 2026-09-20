@@ -53,6 +53,15 @@ data:extend({
             { type = "item", name = "pr_pollution-filter", amount = 1 },
           },
           results = {
+            -- `independent_probability`, not `probability`. Factorio 2.0
+            -- replaced ItemProductPrototype::probability with it (see the
+            -- base game's own changelog), and Space Age's recipes use the new
+            -- name -- yumako-seed at 0.02, for instance. The old spelling is
+            -- silently inert, and LuaRecipePrototype.products[i].probability
+            -- reads nil even for vanilla recipes that clearly are
+            -- probabilistic, so neither a load check nor that accessor will
+            -- tell you which one you wrote. 20% of filters are consumed
+            -- outright; the rest come back used and restorable.
             { type = "item", name = "pr_used-pollution-filter", independent_probability = 0.80, amount = 1 },
             { type = "fluid", name = "water", amount = 75 },
           },
@@ -105,6 +114,23 @@ data:extend({
           },
           subgroup = "intermediate-product",
           order = "w3-a[pr_pollution-filter-restoration]",
+        },
+        -------------
+        -- POLLUTION SENSOR
+        -------------
+        -- Deliberately cheap and early: the sensor's job is to let a player
+        -- read a chunk's pollution before committing to condensers, and to
+        -- show why a crowded chunk's condensers have stopped.
+        {
+          type = "recipe",
+          name = "pr_pollution-sensor",
+          energy_required = 2,
+          enabled = false,
+          ingredients = {
+            { type = "item", name = "iron-plate", amount = 5 },
+            { type = "item", name = "electronic-circuit", amount = 2 },
+          },
+          results = { { type = "item", name = "pr_pollution-sensor", amount = 1 } },
         },
         -------------
         -- POLLUTION ECONOMY: BUILDINGS

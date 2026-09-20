@@ -123,6 +123,99 @@ Therefore:
 Both read as early-fiddly and late-controlled, through opposite mechanics, with investment
 parity preserved.
 
+### Pollution sensor
+
+**Decided 2026-09-19, and built.** A cheap red-science building that reads the pollution
+in the chunk it stands in, and shows nothing else. It sits deliberately *before* the
+economy in the tree, so a player can survey chunks before deciding where condensers are
+worth building, and can see why a crowded chunk's condensers have stopped. It follows
+`radar`, vanilla's own survey instrument, and the economy's root technology requires it
+in turn: a player can always read a chunk before building anything that acts on one.
+
+The number it displays is read and phrased through the same helpers that decide whether
+condensers run, so the readout cannot drift from the rule. It does not, however, share
+their loop: a sensor gates nothing, and a chunk's pollution is a value the engine already
+stores rather than something the gate works out, so there is nothing to piggyback on. It
+walks on its own and refreshes at a pace set by how many sensors exist. Sensors are
+excluded from a chunk's condenser population, since they absorb nothing.
+
+**It reports pollution and only pollution.** `get_pollution` answers for whichever
+pollutant a surface uses, so on Gleba the same call returns a spore count. A sensor
+there reads as no pollution and outputs zero rather than passing spores off as the thing
+this economy is built on -- which matches the Nauvis-specific scope above, and matches
+the gate, which has always refused to run a condenser on anything but `pollution`. When
+Gleba gets its own mechanic it gets its own reading; borrowing this one would have meant
+shipping a number that looks like pollution and isn't.
+
+It reads out two ways: a status line for a player standing beside it, and a circuit
+signal, `signal-P` by default and changeable in its window. It outputs only while it is
+actually wired to something; unwired it just shows its status line. That makes it a
+`constant-combinator` underneath, the only type that can put a script-set value on a
+wire, which in turn means it cannot require power. A gauge that works wherever it is
+planted suits a scouting instrument.
+
+Being a combinator underneath is plumbing, and the player should never have to know it.
+Opening a sensor should feel like opening a boiler: basic information about the thing,
+and a circuit panel carrying whatever control it has -- here, one selector for which
+signal carries the reading. So that is what it gives them, rather than the combinator's
+logistic-section interface.
+
+The window is a reproduction of that shape rather than the real thing, because it has to
+be: the engine builds an entity's circuit panel from its prototype's own control
+behaviour, and a mod cannot add a control to it. The only hook is `player.gui.relative`,
+which anchors a separate frame to one of the stock GUI types on one of four sides -- not
+inside the panel. Rebuilding the panel from the same vanilla styles is the closest thing
+available, and it is close.
+
+That window is the one piece of this feature that lives outside `src/control/`, in
+`src/runtime/`: GUI code needs players, elements and storage, so it cannot be pure, and
+keeping it apart leaves the gate logic testable on its own.
+
+**Open.** Later sensor tiers. The tracking already knows a chunk's condenser count and
+what that chunk must hold to run them; showing that is the obvious next step, and tier 1
+stays one number on purpose.
+
+### Concentration is probably the optimal layout
+
+**Not a decision -- an inference, noted 2026-09-19.** The design takes no position on how
+anyone should lay these out, and nothing in the mod requires or rewards a particular
+shape beyond what the mechanics already do. This is recorded because it bears on the
+runtime, not because it is a target anyone is building toward.
+
+Jason's reading is that the optimal play is to grab as much pollution as possible from
+one place: dense blocks of condensers where the pollution actually is, expanding outward
+as they saturate, rather than a thin scatter across the map. Two things point that way.
+The pollution is densest in and around the factory, so that is where an intake building
+earns its keep. And the polluted water has to reach tanks, vaporizers and filtering, so a
+scatter one condenser to a chunk would mean a pipe network thousands of tiles across,
+which no one is going to build.
+
+That inference is untested against an actual game. If it turns out wrong, nothing here
+breaks -- see the runtime note at the end of this section for the only thing that
+depends on it, and it only loses an optimization it never assumed.
+
+**Separately, and regardless of how anyone plays: the all-or-nothing rule is not an
+anti-crowding measure, and describing it as one was a mistake.** The bar it sets -- `threshold x condensers in the chunk` -- is a *stock*
+requirement: pollution sitting in the chunk, not flowing through it. A chunk inside a
+factory holds far more than its condensers are claiming, so the gate simply never binds
+there. What the rule refuses is a crowd the chunk cannot back: build faster than pollution
+arrives and the whole chunk stops together, instead of quietly producing polluted water
+that no removed pollution paid for.
+
+So the real ceiling on a single chunk is how fast pollution diffuses into it -- Factorio's
+own number, not one this mod invents. Past that point more condensers in the same chunk
+just duty-cycle against the gate and the answer is to widen the footprint, not pack
+tighter. Dense blocks, growing area.
+
+**Open.** Where that ceiling actually sits in condensers-per-chunk, which is a playtesting
+question: it depends on a real factory's emission and the engine's diffusion rate, not on
+anything in this design. If it turns out to be uncomfortably low, the lever is the
+condenser's `-15/min` rather than the gate.
+
+**Consequence for the runtime.** The per-chunk walk in `control.lua` is sized by chunks
+rather than buildings, so a concentrated layout is also its best case -- concentration
+keeps the chunk count small while the building count grows. See the status doc.
+
 ### Intake building
 
 The tier-1 intake building is named the **pollution condenser** (`pr_pollution-condenser`)

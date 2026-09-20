@@ -21,7 +21,7 @@ incompatible_mods:
   - air-filtering
   - Krastorio2
 scope_boundaries:
-  - Owns the pollution condenser and pollution vaporizer buildings, the polluted water and solvent fluids, pollution filter items, the pollution filtering and filter restoration recipes, and the pollution technologies.
+  - Owns the pollution sensor, pollution condenser, and pollution vaporizer buildings, the polluted water and solvent fluids, pollution filter items, the pollution filtering and filter restoration recipes, and the pollution technologies.
   - Keep this repository focused on capturing, relocating, and filtering pollution. Keep unrelated gameplay systems out unless Jason explicitly approves a scope expansion.
 release_target: Factorio 2.1 mod releases. Space Age is optional, not required.
 internal_gitflow_stage: full_gitflow

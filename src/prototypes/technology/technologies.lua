@@ -71,6 +71,35 @@ data:extend({
         time = 30,
       },
     },
+    -- Red science, before the economy itself: a player can survey chunks and
+    -- decide where condensers are worth building before researching them.
+    --
+    -- Gated on `radar`, vanilla's own survey instrument and the closest thing
+    -- to this in the tree, and priced just above it (radar is 20). Pollution
+    -- control then requires this, so a player always has the means to read a
+    -- chunk before they can build anything that acts on one.
+    {
+      type = "technology",
+      name = "pr_pollution-sensing",
+      mod = "pollution-reclamation",
+      icon = "__pollution-reclamation__/graphics/technologies/pollution-sensing.png",
+      icon_size = 256,
+      icon_mipmaps = 4,
+      effects = {
+        {
+          type = "unlock-recipe",
+          recipe = "pr_pollution-sensor",
+        },
+      },
+      prerequisites = { "radar" },
+      unit = {
+        count = 25,
+        ingredients = {
+          {"automation-science-pack", 1}
+        },
+        time = 15,
+      },
+    },
     -- Single root technology unlocking both tier-1 pollution-economy
     -- buildings together, per the design doc's explicit "Decided" call: a
     -- player should get a complete, playable capture/vent loop the moment
@@ -107,7 +136,7 @@ data:extend({
           recipe = "pr_pollution-vaporizing",
         },
       },
-      prerequisites = { "fluid-handling" },
+      prerequisites = { "fluid-handling", "pr_pollution-sensing" },
       unit = {
         count = 250,
         ingredients = {
