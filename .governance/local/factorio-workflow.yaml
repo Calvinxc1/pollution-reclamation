@@ -20,6 +20,7 @@ optional_dependencies:
 incompatible_mods:
   - air-filtering
   - Krastorio2
+  - Krastorio2-spaced-out
 scope_boundaries:
   - Owns the pollution sensor, pollution condenser, and pollution vaporizer buildings, the polluted water and solvent fluids, pollution filter items, the pollution filtering and filter restoration recipes, and the pollution technologies.
   - Keep this repository focused on capturing, relocating, and filtering pollution. Keep unrelated gameplay systems out unless Jason explicitly approves a scope expansion.

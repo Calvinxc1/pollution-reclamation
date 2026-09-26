@@ -529,7 +529,8 @@ stone.
 
 ### Krastorio 2
 
-The mod is already hard-incompatible with Krastorio2 (`! Krastorio2` in dependencies), since
+The mod is already hard-incompatible with Krastorio2 and its Space Age port (`! Krastorio2` and
+`! Krastorio2-spaced-out` in dependencies), since
 this content derives from it. Be careful about echoing K2's metal-processing chain shapes
 even where there is no direct conflict.
 
